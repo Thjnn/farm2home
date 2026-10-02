@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Farmer\FarmerPortalController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\OrderController as PublicOrderController;
 use App\Http\Controllers\Public\OrderLookupController;
@@ -16,6 +17,11 @@ Route::get('/dat-hang/cam-on', [PublicOrderController::class, 'thanks'])->name('
 
 Route::get('/tra-cuu', [OrderLookupController::class, 'show'])->name('lookup.show');
 Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('throttle:10,1')->name('lookup.search');
+
+Route::prefix('nong-ho/{farmer:access_token}')->name('farmer.')->middleware('throttle:30,1')->group(function () {
+    Route::get('/', [FarmerPortalController::class, 'show'])->name('show');
+    Route::post('/san-luong', [FarmerPortalController::class, 'storeSupply'])->name('supply.store');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

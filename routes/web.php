@@ -54,6 +54,7 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
 
     Route::resource('orders', AdminOrderController::class)->only(['index', 'create', 'store', 'show']);
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'transition'])->name('orders.transition');
+    Route::post('orders/{order}/reward', [AdminOrderController::class, 'redeem'])->name('orders.redeem');
 
     Route::post('subscriptions/generate', [SubscriptionController::class, 'generate'])->name('subscriptions.generate');
     Route::resource('subscriptions', SubscriptionController::class)->only(['index', 'create', 'store', 'edit', 'update']);

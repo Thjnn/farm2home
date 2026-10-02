@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BatchController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\HarvestPlanController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Farmer\FarmerPortalController;
 use App\Http\Controllers\Public\BatchPageController;
+use App\Http\Controllers\Public\FeedbackController as PublicFeedbackController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\OrderController as PublicOrderController;
 use App\Http\Controllers\Public\OrderLookupController;
@@ -21,6 +23,7 @@ Route::post('/dat-hang', [PublicOrderController::class, 'store'])->middleware('t
 Route::get('/dat-hang/cam-on', [PublicOrderController::class, 'thanks'])->name('orders.thanks');
 
 Route::get('/lo/{batch:code}', BatchPageController::class)->name('batches.public');
+Route::post('/lo/{batch:code}/phan-hoi', [PublicFeedbackController::class, 'store'])->middleware('throttle:5,1')->name('feedbacks.store');
 
 Route::get('/tra-cuu', [OrderLookupController::class, 'show'])->name('lookup.show');
 Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('throttle:10,1')->name('lookup.search');
@@ -65,4 +68,7 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::get('batches/{batch}', [BatchController::class, 'show'])->name('batches.show');
     Route::patch('batches/{batch}', [BatchController::class, 'update'])->name('batches.update');
     Route::get('batches/{batch}/labels', [BatchController::class, 'labels'])->name('batches.labels');
+
+    Route::get('feedbacks', [AdminFeedbackController::class, 'index'])->name('feedbacks.index');
+    Route::patch('feedbacks/{feedback}', [AdminFeedbackController::class, 'update'])->name('feedbacks.update');
 });

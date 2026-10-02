@@ -110,6 +110,10 @@ class OrderService
                 $this->loyalty->awardForDeliveredOrder($order);
             }
 
+            if ($to === OrderStatus::Cancelled) {
+                $this->loyalty->refundForCancelledOrder($order);
+            }
+
             return $order;
         });
     }

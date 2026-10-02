@@ -8,7 +8,11 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\PackagingReturn;
 use App\Models\PointTransaction;
+use App\Models\Product;
+use App\Models\User;
+use App\Support\Reward;
 use Carbon\CarbonInterface;
+use DomainException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -69,6 +73,123 @@ class LoyaltyService
                 $return->created_at,
             );
         });
+    }
+
+    /**
+     * Chỉ đổi quà trước khi đóng gói và phân lô.
+     */
+    public function canRedeemOn(Order $order): bool
+    {
+        return in_array($order->status, [OrderStatus::Pending, OrderStatus::Confirmed], true);
+    }
+
+    public function redemptionFor(Order $order): ?PointTransaction
+    {
+        return PointTransaction::where('order_id', $order->id)->where('reason', PointReason::Redeemed)->first();
+    }
+
+    /**
+     * Người điều phối duyệt một quà cho đơn: trừ điểm và sửa đơn trong cùng một transaction.
+     *
+     * @param  array<int, int|string|null>  $productIds  mỗi phần tử là một gói rau tặng; phần tử rỗng bị bỏ qua
+     *
+     * @throws DomainException khi đơn sai trạng thái, đã đổi quà, thiếu điểm hoặc quà không áp dụng được
+     */
+    public function redeem(Order $order, Reward $reward, array $productIds, User $by): PointTransaction
+    {
+        return DB::transaction(function () use ($order, $reward, $productIds, $by) {
+            // Khóa dòng khách trước khi đọc số dư: hai lần duyệt cùng lúc không tiêu quá số điểm.
+            $customer = Customer::whereKey($order->customer_id)->lockForUpdate()->firstOrFail();
+            $order->refresh();
+
+            if (! $this->canRedeemOn($order)) {
+                throw new DomainException('Chỉ đổi quà được khi đơn đang chờ xác nhận hoặc đã xác nhận.');
+            }
+
+            if ($this->orderHas($order->id, PointReason::Redeemed)) {
+                throw new DomainException('Đơn này đã đổi quà rồi.');
+            }
+
+            $balance = $this->balance($customer);
+
+            if ($balance < $reward->points) {
+                throw new DomainException("Khách chưa đủ điểm: có {$balance}, cần {$reward->points}.");
+            }
+
+            if ($reward->type === Reward::TYPE_GIFT) {
+                $this->addGiftLines($order, $reward, $productIds);
+            } elseif ($reward->type === Reward::TYPE_FREE_SHIPPING) {
+                if ($order->shipping_fee === 0) {
+                    throw new DomainException('Đơn này không có phí giao nên không cần đổi điểm miễn phí giao.');
+                }
+
+                // D22: miễn phí giao ghi vào shipping_fee, không ghi vào discount.
+                $order->shipping_fee = 0;
+            } elseif ($reward->type === Reward::TYPE_DISCOUNT) {
+                $order->discount = min($order->subtotal, $order->discount + $reward->amount);
+            } else {
+                throw new DomainException('Loại quà không hợp lệ.');
+            }
+
+            $order->total = $order->subtotal + $order->shipping_fee - $order->discount;
+            $order->save();
+
+            return $this->record($customer->id, -$reward->points, PointReason::Redeemed, [
+                'order_id' => $order->id,
+                'reward' => $reward->key,
+                'created_by' => $by->id,
+            ]);
+        });
+    }
+
+    /**
+     * Hoàn đúng số điểm đã trừ khi đơn đã đổi quà bị hủy; gọi lại không hoàn lần hai.
+     */
+    public function refundForCancelledOrder(Order $order): ?PointTransaction
+    {
+        $redeemed = $this->redemptionFor($order);
+
+        if ($redeemed === null || $this->orderHas($order->id, PointReason::Refunded)) {
+            return null;
+        }
+
+        return $this->recordOnce($redeemed->customer_id, -$redeemed->points, PointReason::Refunded, [
+            'order_id' => $order->id,
+            'reward' => $redeemed->reward,
+        ]);
+    }
+
+    /**
+     * Gói rau tặng là dòng order_items giá 0đ, vẫn tính vào nhu cầu thu hoạch và phân lô (D23).
+     *
+     * @param  array<int, int|string|null>  $productIds
+     */
+    private function addGiftLines(Order $order, Reward $reward, array $productIds): void
+    {
+        $packs = collect($productIds)->filter()->map(fn ($id) => (int) $id)->countBy();
+
+        if ($packs->sum() !== $reward->packs) {
+            throw new DomainException("Quà này gồm đúng {$reward->packs} gói rau; vui lòng chọn đủ.");
+        }
+
+        $products = Product::where('is_active', true)->findMany($packs->keys());
+
+        if ($products->count() !== $packs->count()) {
+            throw new DomainException('Có loại rau tặng không còn bán.');
+        }
+
+        foreach ($products as $product) {
+            $quantity = $packs[$product->id];
+            $order->items()->create([
+                'product_id' => $product->id,
+                'basket_id' => null,
+                'quantity' => $quantity,
+                'weight_kg' => round($quantity * (float) $product->pack_weight_kg, 3),
+                'unit_price' => 0,
+                'line_total' => 0,
+                'is_gift' => true,
+            ]);
+        }
     }
 
     private function packagingAlreadyCounted(PackagingReturn $return): bool

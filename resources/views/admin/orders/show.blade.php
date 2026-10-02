@@ -100,6 +100,9 @@
                                         <span>{{ $reward->label }} · {{ $reward->points }} điểm{{ $short > 0 ? ' (thiếu '.$short.')' : '' }}</span>
                                     </label>
                                 @endforeach
+                                @error('reward')
+                                    <p class="text-rose-700">{{ $message }}</p>
+                                @enderror
                             </fieldset>
 
                             <div x-show="(packs[reward] ?? 0) > 0" class="space-y-2">

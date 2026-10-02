@@ -97,6 +97,8 @@ class OrderController extends Controller
             'reward' => ['required', Rule::in(Reward::keys())],
             'products' => ['nullable', 'array', 'max:10'],
             'products.*' => ['nullable', 'integer'],
+        ], [
+            'reward.required' => 'Vui lòng chọn một quà.',
         ]);
 
         try {

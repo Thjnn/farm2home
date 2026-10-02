@@ -147,6 +147,18 @@ class AdminRedeemTest extends TestCase
         $this->assertSame(100, $this->balance());
     }
 
+    public function test_submitting_without_choosing_a_reward_tells_the_operator(): void
+    {
+        $this->givePoints(100);
+
+        $this->actingAs($this->operator)->followingRedirects()->from($this->url)
+            ->post($this->url.'/reward', [])
+            ->assertOk()
+            ->assertSee('Vui lòng chọn một quà.');
+
+        $this->assertSame(100, $this->balance());
+    }
+
     public function test_gift_warning_appears_only_when_the_harvest_plan_is_already_confirmed(): void
     {
         $this->givePoints(100);

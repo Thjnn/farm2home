@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BatchController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\HarvestPlanController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Farmer\FarmerPortalController;
+use App\Http\Controllers\Public\BatchPageController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\OrderController as PublicOrderController;
 use App\Http\Controllers\Public\OrderLookupController;
@@ -17,6 +19,8 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/dat-hang', [PublicOrderController::class, 'create'])->name('orders.create');
 Route::post('/dat-hang', [PublicOrderController::class, 'store'])->middleware('throttle:10,1')->name('orders.store');
 Route::get('/dat-hang/cam-on', [PublicOrderController::class, 'thanks'])->name('orders.thanks');
+
+Route::get('/lo/{batch:code}', BatchPageController::class)->name('batches.public');
 
 Route::get('/tra-cuu', [OrderLookupController::class, 'show'])->name('lookup.show');
 Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('throttle:10,1')->name('lookup.search');
@@ -54,4 +58,11 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::post('harvest-plans/{plan}/sent', [HarvestPlanController::class, 'sent'])->name('harvest-plans.sent');
     Route::post('harvest-plans/{plan}/complete', [HarvestPlanController::class, 'complete'])->name('harvest-plans.complete');
     Route::patch('harvest-plan-items/{item}', [HarvestPlanController::class, 'updateItem'])->name('harvest-plan-items.update');
+    Route::post('harvest-plan-items/{item}/receive', [HarvestPlanController::class, 'receive'])->name('harvest-plan-items.receive');
+
+    Route::get('batches', [BatchController::class, 'index'])->name('batches.index');
+    Route::post('batches/allocate', [BatchController::class, 'allocate'])->name('batches.allocate');
+    Route::get('batches/{batch}', [BatchController::class, 'show'])->name('batches.show');
+    Route::patch('batches/{batch}', [BatchController::class, 'update'])->name('batches.update');
+    Route::get('batches/{batch}/labels', [BatchController::class, 'labels'])->name('batches.labels');
 });

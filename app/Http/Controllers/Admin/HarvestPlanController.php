@@ -10,6 +10,7 @@ use App\Models\Farmer;
 use App\Models\HarvestPlan;
 use App\Models\HarvestPlanItem;
 use App\Models\Order;
+use App\Services\BatchService;
 use App\Services\ForecastService;
 use App\Services\HarvestPlanService;
 use Carbon\CarbonImmutable;
@@ -98,6 +99,17 @@ class HarvestPlanController extends Controller
             $plans->complete($plan);
 
             return redirect()->route('admin.harvest-plans.show', $plan)->with('status', 'Kế hoạch đã hoàn tất.');
+        });
+    }
+
+    public function receive(Request $request, HarvestPlanItem $item, BatchService $batches): RedirectResponse
+    {
+        $data = $request->validate(['received_kg' => ['required', 'numeric', 'min:0', 'max:1000']]);
+
+        return $this->attempt(function () use ($data, $item, $batches) {
+            $batch = $batches->receive($item, (float) $data['received_kg']);
+
+            return redirect()->route('admin.harvest-plans.show', $item->harvest_plan_id)->with('status', "Đã nhận hàng, tạo lô {$batch->code}.");
         });
     }
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\HarvestPlanController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PackagingReturnController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WasteController;
@@ -53,6 +54,9 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
 
     Route::resource('orders', AdminOrderController::class)->only(['index', 'create', 'store', 'show']);
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'transition'])->name('orders.transition');
+
+    Route::post('subscriptions/generate', [SubscriptionController::class, 'generate'])->name('subscriptions.generate');
+    Route::resource('subscriptions', SubscriptionController::class)->only(['index', 'create', 'store', 'edit', 'update']);
 
     Route::get('supply', [SupplyController::class, 'index'])->name('supply.index');
     Route::post('supply', [SupplyController::class, 'store'])->name('supply.store');

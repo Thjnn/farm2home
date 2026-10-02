@@ -6,7 +6,9 @@ use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\HarvestPlanController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PackagingReturnController;
 use App\Http\Controllers\Admin\SupplyController;
+use App\Http\Controllers\Admin\WasteController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Farmer\FarmerPortalController;
 use App\Http\Controllers\Public\BatchPageController;
@@ -71,4 +73,9 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
 
     Route::get('feedbacks', [AdminFeedbackController::class, 'index'])->name('feedbacks.index');
     Route::patch('feedbacks/{feedback}', [AdminFeedbackController::class, 'update'])->name('feedbacks.update');
+
+    Route::get('waste', [WasteController::class, 'index'])->name('waste.index');
+    Route::post('waste', [WasteController::class, 'store'])->name('waste.store');
+    Route::get('packaging-returns', [PackagingReturnController::class, 'index'])->name('packaging-returns.index');
+    Route::post('packaging-returns', [PackagingReturnController::class, 'store'])->name('packaging-returns.store');
 });

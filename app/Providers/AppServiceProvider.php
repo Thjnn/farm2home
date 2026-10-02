@@ -22,5 +22,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Blade::directive('vnd', fn (string $expression) => "<?php echo e(\\App\\Support\\Format::vnd((int) ({$expression}))); ?>");
         Blade::directive('kg', fn (string $expression) => "<?php echo e(\\App\\Support\\Format::kg({$expression})); ?>");
+        Blade::directive('pct', fn (string $expression) => "<?php echo e(\\App\\Support\\Format::pct({$expression})); ?>");
     }
 }

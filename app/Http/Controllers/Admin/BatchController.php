@@ -77,7 +77,7 @@ class BatchController extends Controller
     public function labels(Request $request, Batch $batch, QrCodeService $qr): View|RedirectResponse
     {
         if ($batch->quality_status !== QualityStatus::Passed) {
-            return back()->withErrors(['action' => 'Chỉ in tem cho lô đã đạt kiểm tra chất lượng.']);
+            return redirect()->route('admin.batches.show', $batch)->withErrors(['action' => 'Chỉ in tem cho lô đã đạt kiểm tra chất lượng.']);
         }
 
         $count = (int) ($request->validate(['count' => ['nullable', 'integer', 'min:1', 'max:200']])['count'] ?? 12);

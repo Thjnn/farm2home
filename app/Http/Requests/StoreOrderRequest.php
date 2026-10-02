@@ -38,11 +38,19 @@ class StoreOrderRequest extends FormRequest
             'basket_id' => ['required_if:order_type,basket', 'nullable', Rule::exists('baskets', 'id')->where('is_active', true)],
             'items' => ['required_if:order_type,single', 'nullable', 'array', 'max:20'],
             'items.*.product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('is_active', true)],
-            'items.*.quantity' => ['required', 'integer', 'min:0', 'max:20'],
+            'items.*.quantity' => ['nullable', 'integer', 'min:0', 'max:20'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'data_consent' => ['accepted'],
             'note' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return ['items.*.quantity' => 'số gói', 'items.*.product_id' => 'loại rau'];
     }
 
     private function zoneIsPickup(): bool

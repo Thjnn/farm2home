@@ -127,6 +127,30 @@ class PublicOrderFormTest extends TestCase
         $this->assertSame(55000, Order::firstOrFail()->total);
     }
 
+    public function test_a_quantity_box_left_blank_counts_as_zero(): void
+    {
+        $this->post('/dat-hang', $this->form(['items' => [
+            ['product_id' => $this->rm->id, 'quantity' => 2],
+            ['product_id' => $this->cn->id, 'quantity' => ''],
+        ]]))->assertRedirect('/dat-hang/cam-on');
+
+        $order = Order::firstOrFail();
+        $this->assertSame([$this->rm->id], $order->items->pluck('product_id')->all());
+        $this->assertSame(34000, $order->total);
+    }
+
+    public function test_quantity_errors_are_shown_next_to_the_product_list(): void
+    {
+        // Đi theo redirect như trình duyệt: assertSessionHasErrors() ở giữa sẽ nạp lại session và làm mất túi lỗi của request sau.
+        $this->from('/dat-hang')
+            ->followingRedirects()
+            ->post('/dat-hang', $this->form(['items' => [['product_id' => $this->rm->id, 'quantity' => 99]]]))
+            ->assertOk()
+            ->assertSee('Số gói không được lớn hơn 20.');
+
+        $this->assertSame(0, Order::count());
+    }
+
     public function test_thanks_page_without_an_order_goes_home(): void
     {
         $this->get('/dat-hang/cam-on')->assertRedirect('/');

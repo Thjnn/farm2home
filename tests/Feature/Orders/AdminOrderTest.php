@@ -120,6 +120,23 @@ class AdminOrderTest extends TestCase
         ])->assertSessionHasErrors('delivery_date');
     }
 
+    public function test_a_quantity_box_left_blank_counts_as_zero_on_the_admin_form(): void
+    {
+        $this->actingAs($this->operator)->post('/admin/orders', [
+            'name' => 'Trần Văn Bình', 'phone' => '0988000009', 'address' => '5 Lê Lợi',
+            'delivery_zone_id' => $this->zone->id, 'delivery_date' => '2026-10-03', 'time_slot' => '06:00-08:00',
+            'order_type' => 'single',
+            'items' => [
+                ['product_id' => $this->rm->id, 'quantity' => ''],
+                ['product_id' => $this->cn->id, 'quantity' => 3],
+            ],
+            'payment_method' => 'cod', 'channel' => 'phone',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $order = Order::where('code', 'DH261003-002')->firstOrFail();
+        $this->assertSame([$this->cn->id], $order->items->pluck('product_id')->all());
+    }
+
     public function test_create_form_renders_for_operators(): void
     {
         $this->actingAs($this->operator)->get('/admin/orders/create')

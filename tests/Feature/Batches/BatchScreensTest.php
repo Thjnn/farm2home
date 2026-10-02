@@ -121,6 +121,9 @@ class BatchScreensTest extends TestCase
     {
         $batch = $this->receive();
 
-        $this->get('/admin/batches/'.$batch->id.'/labels')->assertRedirect()->assertSessionHasErrors('action');
+        // Trang tem mở ở tab mới nên không có trang trước để quay lại: phải về trang lô.
+        $this->get('/admin/batches/'.$batch->id.'/labels')
+            ->assertRedirect('/admin/batches/'.$batch->id)
+            ->assertSessionHasErrors('action');
     }
 }

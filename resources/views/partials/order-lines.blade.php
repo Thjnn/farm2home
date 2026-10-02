@@ -25,6 +25,9 @@
 @error('items')
     <p class="text-sm text-rose-700" role="alert">{{ $message }}</p>
 @enderror
+@if ($errors->has('items.*'))
+    <p class="text-sm text-rose-700" role="alert">{{ $errors->first('items.*') }}</p>
+@endif
 
 <fieldset x-show="type === 'basket'" class="space-y-2">
     <legend class="mb-2 text-sm font-medium text-stone-700">Chọn giỏ</legend>

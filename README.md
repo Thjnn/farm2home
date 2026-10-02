@@ -1,58 +1,71 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# FARM2HOME AI
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Công cụ điều phối "nhu cầu → thu hoạch" cho chuỗi rau ngắn ở Mỹ Tho: nhận đơn, nhận báo sản lượng của nông hộ, dự báo nhu cầu, gợi ý kế hoạch thu hoạch để operator chốt, truy xuất lô bằng QR và đo KPI pilot.
 
-## About Laravel
+- Mô tả dự án: [`docs/CLAUDE.md`](docs/CLAUDE.md)
+- Kế hoạch code và các quyết định thiết kế: [`docs/PLAN.md`](docs/PLAN.md)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Chạy trên máy (Laragon)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Chạy các lệnh trong **Laragon Terminal** (PHP, Composer, MySQL nằm trên PATH của nó), Laragon đang Start.
 
 ```bash
-composer require laravel/boost --dev
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
 
-php artisan boost:install
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS farm2home CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS farm2home_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+
+php artisan migrate        # dựng 24 bảng từ database/farm2home.sql (bỏ qua nếu DB đã import sẵn)
+php artisan db:seed        # nạp dữ liệu demo, chỉ chạy được trên DB trống
+php artisan storage:link
+npm run dev                # hoặc: npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Mở `http://farm2home.test`.
 
-## Contributing
+## Tài khoản demo
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Vai trò | Email | Mật khẩu |
+|---|---|---|
+| Quản trị | `admin@farm2home.vn` | `password` |
+| Vận hành | `operator@farm2home.vn` | `password` |
 
-## Code of Conduct
+Chỉ dùng cho demo. Khi đưa lên một địa chỉ công khai, hãy đổi mật khẩu và bấm "Cấp link mới" cho từng nông hộ, vì mật khẩu và token mẫu nằm trong mã nguồn.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Các đường dẫn chính
 
-## Security Vulnerabilities
+| Ai dùng | Đường dẫn |
+|---|---|
+| Khách | `/` · `/dat-hang` · `/tra-cuu` · `/lo/{mã lô}` (trang QR + phản hồi) |
+| Nông hộ | `/nong-ho/{token}` (báo sản lượng, xác nhận thu hoạch; không cần đăng nhập) |
+| Operator / Admin | `/login` → `/admin` |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Test
 
-## License
+```bash
+php artisan test
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Test chạy trên DB `farm2home_test` (cấu hình trong `phpunit.xml`), không đụng tới DB `farm2home`.
+
+## Lệnh hữu ích
+
+| Lệnh | Việc làm |
+|---|---|
+| `php artisan forecast:run {ngày?}` | Chạy dự báo cho 7 ngày giao kế tiếp |
+| `php artisan forecast:backfill {ngày?}` | Điền số thực tế cho các dự báo đã qua ngày giao |
+| `php artisan subscriptions:generate {ngày?}` | Sinh đơn cho giỏ định kỳ (mặc định ngày mai) |
+| `php artisan demo:shift-dates` | Dịch ngày của dữ liệu demo về gần hôm nay (theo tuần nguyên) |
+| `php artisan schedule:work` | Chạy lịch tự động trên máy dev (không bắt buộc; mọi việc đều có nút bấm trong admin) |
+
+## Cảnh báo
+
+- **Không chạy `php artisan migrate:fresh`** trên DB có dữ liệu thật: lệnh này xóa toàn bộ bảng.
+- `php artisan db:seed` và `demo:shift-dates` chỉ dành cho bản demo, không dùng trên dữ liệu pilot thật.
+
+## Deploy
+
+Các bước deploy Railway (biến môi trường, lệnh build, volume cho file chứng nhận, nạp dữ liệu ban đầu) nằm ở [`docs/plans/phase-7-p1-deploy.md`](docs/plans/phase-7-p1-deploy.md), Task 7.4.

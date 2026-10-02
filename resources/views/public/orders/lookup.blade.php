@@ -7,6 +7,22 @@
         <button class="min-h-12 w-full rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Tra cứu</button>
     </form>
 
+    @if ($points !== null)
+        <section class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4" aria-live="polite">
+            <h2 class="text-base font-semibold text-emerald-900">Bạn đang có {{ $points }} điểm</h2>
+            <p class="mt-1 text-sm text-emerald-900">Mỗi đơn từ @vnd(config('farm2home.loyalty.min_order_subtotal')) giao xong được +{{ config('farm2home.loyalty.order_points') }} điểm. Trả lại bao bì được +{{ config('farm2home.loyalty.packaging_points') }} điểm.</p>
+            <ul class="mt-3 space-y-1 text-sm">
+                @foreach ($rewards as $reward)
+                    <li class="flex items-center justify-between gap-3">
+                        <span>{{ $reward->label }}</span>
+                        <span @class(['shrink-0 font-medium', 'text-emerald-800' => $points >= $reward->points, 'text-stone-500' => $points < $reward->points])>{{ $reward->points }} điểm{{ $points >= $reward->points ? ' · đủ điểm' : '' }}</span>
+                    </li>
+                @endforeach
+            </ul>
+            <p class="mt-3 text-xs text-stone-600">Muốn đổi quà, hãy chọn quà khi đặt đơn kế tiếp. Chúng tôi xác nhận cùng đơn hàng.</p>
+        </section>
+    @endif
+
     @if ($orders !== null)
         <section class="mt-6" aria-live="polite">
             @if ($orders->isEmpty())

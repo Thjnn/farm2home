@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'delivery_date', 'time_slot', 'delivery_method', 'delivery_address',
     'subtotal', 'shipping_fee', 'discount', 'total',
     'payment_method', 'payment_status', 'status',
-    'confirmed_at', 'delivered_at', 'cancel_reason', 'note',
+    'confirmed_at', 'delivered_at', 'cancel_reason', 'note', 'requested_reward',
 ])]
 class Order extends Model
 {

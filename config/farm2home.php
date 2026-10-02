@@ -22,4 +22,19 @@ return [
     'batch' => [
         'harvest_time' => '05:30',
     ],
+
+    'loyalty' => [
+        // +điểm khi đơn giao xong và khi khách trả bao bì.
+        'order_points' => 5,
+        'packaging_points' => 5,
+        // Đơn có tiền hàng dưới ngưỡng này không được cộng điểm đơn (D27).
+        'min_order_subtotal' => 40000,
+        'rewards' => [
+            'small_bunch' => ['label' => 'Tặng bó rau nhỏ', 'points' => 20, 'type' => 'gift', 'packs' => 1],
+            'free_shipping' => ['label' => 'Miễn phí 1 lần giao hàng', 'points' => 30, 'type' => 'free_shipping'],
+            'discount_20k' => ['label' => 'Giảm 20.000đ cho đơn', 'points' => 50, 'type' => 'discount', 'amount' => 20000],
+            // D26: combo = 3 gói rau do người điều phối chọn.
+            'small_combo' => ['label' => 'Tặng combo rau nhỏ', 'points' => 100, 'type' => 'gift', 'packs' => 3],
+        ],
+    ],
 ];

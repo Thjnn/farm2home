@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\PackagingReturn;
+use App\Services\LoyaltyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,7 +20,7 @@ class PackagingReturnController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, LoyaltyService $loyalty): RedirectResponse
     {
         $data = $request->validate([
             'return_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.today()->toDateString()],
@@ -33,7 +34,7 @@ class PackagingReturnController extends Controller
         $order = filled($data['order_code'] ?? null) ? Order::where('code', $data['order_code'])->first() : null;
         $customer = filled($data['phone'] ?? null) ? Customer::where('phone', $data['phone'])->first() : null;
 
-        PackagingReturn::create([
+        $return = PackagingReturn::create([
             'return_date' => $data['return_date'],
             'customer_id' => $customer?->id ?? $order?->customer_id,
             'order_id' => $order?->id,
@@ -42,6 +43,13 @@ class PackagingReturnController extends Controller
             'note' => $data['note'] ?? null,
         ]);
 
-        return back()->with('status', 'Đã ghi nhận bao bì thu hồi.');
+        $message = 'Đã ghi nhận bao bì thu hồi.';
+        $awarded = $loyalty->awardForPackagingReturn($return);
+
+        if ($awarded !== null) {
+            $message .= " +{$awarded->points} điểm cho {$return->customer->name}.";
+        }
+
+        return back()->with('status', $message);
     }
 }

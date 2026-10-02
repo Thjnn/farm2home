@@ -97,6 +97,20 @@
         </div>
 
         <div>
+            <label for="requested_reward" class="mb-1 block text-sm font-medium text-stone-700">Đổi điểm lấy quà (không bắt buộc)</label>
+            <select id="requested_reward" name="requested_reward" class="block min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-base">
+                <option value="">Không đổi lần này</option>
+                @foreach ($rewards as $reward)
+                    <option value="{{ $reward->key }}" @selected(old('requested_reward') === $reward->key)>{{ $reward->label }} — {{ $reward->points }} điểm</option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-stone-500">Chúng tôi kiểm tra điểm khi xác nhận đơn. Xem điểm của bạn ở trang <a href="{{ route('lookup.show') }}" class="underline">Tra cứu đơn</a>.</p>
+            @error('requested_reward')
+                <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div>
             <label class="flex items-start gap-3 text-sm">
                 <input type="checkbox" name="data_consent" value="1" class="mt-0.5 size-5 shrink-0 rounded border-stone-300" @checked(old('data_consent'))>
                 <span>Tôi đồng ý để FARM2HOME dùng thông tin này để xử lý và giao đơn.</span>

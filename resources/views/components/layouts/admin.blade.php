@@ -11,6 +11,7 @@
         'admin.feedbacks.index' => 'Phản hồi',
         'admin.waste.index' => 'Rau dư',
         'admin.packaging-returns.index' => 'Bao bì',
+        'admin.loyalty.index' => 'Điểm thành viên',
     ];
     $catalog = [
         'admin.products.index' => 'Sản phẩm',

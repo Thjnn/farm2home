@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\FarmerController;
 use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\HarvestPlanController;
+use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PackagingReturnController;
 use App\Http\Controllers\Admin\ProductController;
@@ -54,6 +55,7 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
 
     Route::resource('orders', AdminOrderController::class)->only(['index', 'create', 'store', 'show']);
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'transition'])->name('orders.transition');
+    Route::post('orders/{order}/reward', [AdminOrderController::class, 'redeem'])->name('orders.redeem');
 
     Route::post('subscriptions/generate', [SubscriptionController::class, 'generate'])->name('subscriptions.generate');
     Route::resource('subscriptions', SubscriptionController::class)->only(['index', 'create', 'store', 'edit', 'update']);
@@ -87,6 +89,8 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::post('waste', [WasteController::class, 'store'])->name('waste.store');
     Route::get('packaging-returns', [PackagingReturnController::class, 'index'])->name('packaging-returns.index');
     Route::post('packaging-returns', [PackagingReturnController::class, 'store'])->name('packaging-returns.store');
+    Route::get('loyalty', [LoyaltyController::class, 'index'])->name('loyalty.index');
+    Route::get('loyalty/{customer}', [LoyaltyController::class, 'show'])->name('loyalty.show');
 
     Route::middleware('role:admin')->group(function () {
         $actions = ['index', 'create', 'store', 'edit', 'update'];

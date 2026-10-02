@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Services\OrderService;
 use App\Support\OrderWindow;
+use App\Support\Reward;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\RedirectResponse;
@@ -36,6 +37,7 @@ class OrderController extends Controller
             'timeSlots' => config('farm2home.order.time_slots'),
             'orderTypes' => OrderType::cases(),
             'paymentMethods' => PaymentMethod::cases(),
+            'rewards' => Reward::all(),
         ]);
     }
 
@@ -56,6 +58,6 @@ class OrderController extends Controller
             return redirect()->route('home');
         }
 
-        return view('public.orders.thanks', ['order' => $order]);
+        return view('public.orders.thanks', ['order' => $order, 'requestedReward' => Reward::find($order->requested_reward)]);
     }
 }

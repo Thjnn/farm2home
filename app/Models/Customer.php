@@ -52,4 +52,9 @@ class Customer extends Model
     {
         return $this->hasMany(Feedback::class);
     }
+
+    public function pointTransactions(): HasMany
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
 }

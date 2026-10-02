@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['order_id', 'product_id', 'basket_id', 'quantity', 'weight_kg', 'unit_price', 'line_total', 'fulfilled_quantity'])]
+#[Fillable(['order_id', 'product_id', 'basket_id', 'quantity', 'weight_kg', 'unit_price', 'line_total', 'fulfilled_quantity', 'is_gift'])]
 class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */
@@ -26,6 +26,7 @@ class OrderItem extends Model
             'unit_price' => 'integer',
             'line_total' => 'integer',
             'fulfilled_quantity' => 'integer',
+            'is_gift' => 'boolean',
         ];
     }
 

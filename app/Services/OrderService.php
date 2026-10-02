@@ -25,10 +25,12 @@ use RuntimeException;
 
 class OrderService
 {
+    public function __construct(private readonly LoyaltyService $loyalty) {}
+
     /**
      * Create an order with its lines, price and shipping fee in one transaction.
      *
-     * @param  array{name: string, phone: string, address?: ?string, delivery_zone_id: int|string, delivery_date: string, time_slot: string, order_type: string, basket_id?: int|string|null, items?: ?array<int, array{product_id: int|string, quantity: int|string}>, payment_method: string, data_consent?: mixed, note?: ?string, subscription_id?: ?int}  $data
+     * @param  array{name: string, phone: string, address?: ?string, delivery_zone_id: int|string, delivery_date: string, time_slot: string, order_type: string, basket_id?: int|string|null, items?: ?array<int, array{product_id: int|string, quantity: int|string}>, payment_method: string, data_consent?: mixed, note?: ?string, subscription_id?: ?int, requested_reward?: ?string}  $data
      *
      * @throws ValidationException when there is no valid order line
      */
@@ -64,6 +66,8 @@ class OrderService
                 'payment_status' => PaymentStatus::Unpaid,
                 'status' => OrderStatus::Pending,
                 'note' => $data['note'] ?? null,
+                // D24: chỉ ghi nhận mong muốn của khách; điểm được trừ khi người điều phối duyệt.
+                'requested_reward' => $data['requested_reward'] ?? null,
             ]);
 
             $order->items()->createMany($lines);
@@ -103,6 +107,14 @@ class OrderService
             }
 
             $order->save();
+
+            if ($to === OrderStatus::Delivered) {
+                $this->loyalty->awardForDeliveredOrder($order);
+            }
+
+            if ($to === OrderStatus::Cancelled) {
+                $this->loyalty->refundForCancelledOrder($order);
+            }
 
             return $order;
         });

@@ -6,6 +6,7 @@ use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
 use App\Models\DeliveryZone;
 use App\Support\OrderWindow;
+use App\Support\Reward;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -42,6 +43,7 @@ class StoreOrderRequest extends FormRequest
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'data_consent' => ['accepted'],
             'note' => ['nullable', 'string', 'max:500'],
+            'requested_reward' => ['nullable', Rule::in(Reward::keys())],
         ];
     }
 

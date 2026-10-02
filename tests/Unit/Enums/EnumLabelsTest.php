@@ -7,15 +7,16 @@ use App\Enums\ForecastMethod;
 use App\Enums\HarvestPlanStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\PointReason;
 use App\Enums\WasteReason;
 use PHPUnit\Framework\TestCase;
 
 class EnumLabelsTest extends TestCase
 {
-    public function test_there_are_17_enums_and_every_case_has_a_label(): void
+    public function test_there_are_18_enums_and_every_case_has_a_label(): void
     {
         $files = glob(dirname(__DIR__, 3).'/app/Enums/*.php');
-        $this->assertCount(17, $files);
+        $this->assertCount(18, $files);
 
         foreach ($files as $file) {
             $enum = 'App\\Enums\\'.basename($file, '.php');
@@ -33,5 +34,6 @@ class EnumLabelsTest extends TestCase
         $this->assertSame(['surplus', 'damaged', 'expired', 'discounted'], array_column(WasteReason::cases(), 'value'));
         $this->assertSame(['draft', 'confirmed', 'sent', 'completed'], array_column(HarvestPlanStatus::cases(), 'value'));
         $this->assertSame(['zalo', 'form', 'website', 'phone', 'referral'], array_column(CustomerSource::cases(), 'value'));
+        $this->assertSame(['order_delivered', 'packaging_returned', 'redeemed', 'refunded'], array_column(PointReason::cases(), 'value'));
     }
 }

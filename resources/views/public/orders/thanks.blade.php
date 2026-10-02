@@ -13,6 +13,10 @@
         @if ($order->payment_method === \App\Enums\PaymentMethod::BankTransfer)
             <p class="mt-3 text-sm text-emerald-900">Chúng tôi sẽ gửi thông tin chuyển khoản qua Zalo.</p>
         @endif
+
+        @if ($requestedReward)
+            <p class="mt-3 text-sm text-emerald-900">Bạn muốn đổi điểm lấy: <span class="font-medium">{{ $requestedReward->label }}</span>. Yêu cầu đổi quà sẽ được xác nhận cùng đơn hàng.</p>
+        @endif
     </div>
 
     <div class="mt-5 flex flex-wrap gap-3">

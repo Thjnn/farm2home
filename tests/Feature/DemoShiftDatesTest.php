@@ -58,4 +58,17 @@ class DemoShiftDatesTest extends TestCase
 
         $this->assertSame('2026-10-03', DB::table('orders')->max('delivery_date'));
     }
+
+    public function test_point_transactions_move_with_the_rest(): void
+    {
+        $this->seed(DemoSeeder::class);
+        $this->artisan('loyalty:backfill')->assertSuccessful();
+        $this->travelTo('2026-11-20 09:00:00');
+
+        $this->artisan('demo:shift-dates')->assertSuccessful();
+
+        // Bao bì trả ngày 19/09 → 07/11 (dịch 49 ngày), dòng điểm đi theo.
+        $this->assertSame('2026-11-07 18:00:00', DB::table('point_transactions')->where('packaging_return_id', 1)->value('created_at'));
+        $this->assertSame(89, DB::table('point_transactions')->count());
+    }
 }

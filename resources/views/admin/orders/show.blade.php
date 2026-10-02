@@ -21,7 +21,12 @@
                     <tbody class="divide-y divide-stone-100">
                         @foreach ($order->items as $item)
                             <tr>
-                                <td class="py-2 pr-3">{{ $item->product->name }}</td>
+                                <td class="py-2 pr-3">
+                                    {{ $item->product->name }}
+                                    @if ($item->is_gift)
+                                        <span class="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">Quà đổi điểm</span>
+                                    @endif
+                                </td>
                                 <td class="py-2 pr-3 text-right">{{ $item->quantity }}</td>
                                 <td class="py-2 pr-3 text-right">@kg($item->weight_kg)</td>
                                 <td class="py-2 pr-3 text-right">@vnd($item->line_total)</td>
@@ -60,6 +65,65 @@
                         <div><dt class="inline text-stone-600">Lý do hủy:</dt> <dd class="inline">{{ $order->cancel_reason }}</dd></div>
                     @endif
                 </dl>
+            </section>
+
+            <section class="rounded-xl border border-stone-200 bg-white p-4 text-sm">
+                <h2 class="mb-2 font-semibold">Điểm thành viên</h2>
+                <p>Số dư: <span class="font-semibold">{{ $points }} điểm</span></p>
+
+                @if ($requestedReward)
+                    <p class="mt-1 text-stone-700">Khách muốn đổi: <span class="font-medium">{{ $requestedReward->label }}</span> ({{ $requestedReward->points }} điểm)</p>
+                @endif
+
+                @if ($redemption)
+                    <p class="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-emerald-900">
+                        Đã áp dụng: {{ $appliedReward?->label ?? $redemption->reward }} ({{ $redemption->points }} điểm){{ $redemption->creator ? ' · '.$redemption->creator->name : '' }}
+                    </p>
+                @elseif (! $canRedeem)
+                    <p class="mt-1 text-stone-600">Chỉ đổi quà được trước khi đóng gói.</p>
+                @else
+                    @if ($requestedReward && $points < $requestedReward->points)
+                        <p class="mt-1 text-rose-700">Chưa đủ điểm cho quà khách chọn (thiếu {{ $requestedReward->points - $points }} điểm).</p>
+                    @endif
+
+                    @if (! $anyAffordable)
+                        <p class="mt-1 text-stone-600">Chưa đủ điểm để đổi quà.</p>
+                    @else
+                        <form method="POST" action="{{ route('admin.orders.redeem', $order) }}" class="mt-3 space-y-3" x-data="{ reward: @js($defaultReward), packs: @js($packsByReward) }">
+                            @csrf
+                            <fieldset class="space-y-2">
+                                <legend class="mb-1 text-stone-700">Chọn quà</legend>
+                                @foreach ($rewards as $reward)
+                                    @php($short = $reward->points - $points)
+                                    <label @class(['flex min-h-11 items-center gap-2 rounded-lg border border-stone-300 px-3', 'opacity-50' => $short > 0])>
+                                        <input type="radio" name="reward" value="{{ $reward->key }}" x-model="reward" @disabled($short > 0)>
+                                        <span>{{ $reward->label }} · {{ $reward->points }} điểm{{ $short > 0 ? ' (thiếu '.$short.')' : '' }}</span>
+                                    </label>
+                                @endforeach
+                                @error('reward')
+                                    <p class="text-rose-700">{{ $message }}</p>
+                                @enderror
+                            </fieldset>
+
+                            <div x-show="(packs[reward] ?? 0) > 0" class="space-y-2">
+                                <p class="text-stone-700">Chọn rau tặng</p>
+                                @for ($i = 1; $i <= $maxPacks; $i++)
+                                    <select name="products[]" aria-label="Rau tặng {{ $i }}" x-show="(packs[reward] ?? 0) >= {{ $i }}" :disabled="(packs[reward] ?? 0) < {{ $i }}" class="block min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3">
+                                        <option value="">— Chọn loại rau —</option>
+                                        @foreach ($giftProducts as $product)
+                                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                        @endforeach
+                                    </select>
+                                @endfor
+                                @if ($harvestPlanLocked)
+                                    <p class="text-amber-800">Kế hoạch thu hoạch ngày này đã chốt: rau tặng sẽ lấy từ phần biên an toàn hoặc hàng dư.</p>
+                                @endif
+                            </div>
+
+                            <button class="min-h-11 w-full rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Áp dụng quà</button>
+                        </form>
+                    @endif
+                @endif
             </section>
 
             @if ($order->status->next() !== [])

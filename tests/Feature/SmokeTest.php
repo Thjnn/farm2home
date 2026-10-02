@@ -25,6 +25,7 @@ class SmokeTest extends TestCase
         parent::setUp();
         $this->travelTo('2026-10-02 10:00:00');
         $this->seed(DemoSeeder::class);
+        $this->artisan('loyalty:backfill')->assertSuccessful();
     }
 
     public function test_public_and_farmer_pages_render_with_sample_data(): void
@@ -35,7 +36,7 @@ class SmokeTest extends TestCase
             $this->get($url)->assertOk();
         }
 
-        $this->post('/tra-cuu', ['phone' => '0988000001'])->assertOk()->assertSee('DH26');
+        $this->post('/tra-cuu', ['phone' => '0988000001'])->assertOk()->assertSee('DH26')->assertSee('Bạn đang có 20 điểm');
     }
 
     public function test_every_admin_page_renders_with_sample_data(): void
@@ -71,6 +72,8 @@ class SmokeTest extends TestCase
             '/admin/feedbacks?status=new',
             '/admin/waste?date=2026-10-01',
             '/admin/packaging-returns',
+            '/admin/loyalty',
+            '/admin/loyalty/'.$order->customer_id,
             '/admin/products',
             '/admin/products/create',
             '/admin/baskets',

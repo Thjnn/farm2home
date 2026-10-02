@@ -105,6 +105,8 @@
                     <x-stat label="Khách mua lại" :value="\App\Support\Format::pct($customers['repeat_rate_pct'])" :hint="$customers['repeat_customers'].' / '.$customers['customers'].' khách'" />
                     <x-stat label="Điểm đánh giá" :value="$customers['avg_rating'] === null ? '—' : number_format($customers['avg_rating'], 2, ',', '.')" hint="thang 5" />
                     <x-stat label="Phản hồi đã xử lý" :value="$customers['feedback_resolved'].' / '.$customers['feedback_total']" />
+                    <x-stat label="Điểm đã cộng" :value="$loyalty['points_earned']" hint="đơn giao xong và trả bao bì" />
+                    <x-stat label="Điểm đã đổi" :value="$loyalty['points_redeemed']" :hint="$loyalty['redemptions'].' lượt đổi quà'" />
                 </div>
             </section>
 

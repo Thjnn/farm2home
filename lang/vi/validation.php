@@ -57,6 +57,8 @@ return [
         'payment_method' => 'hình thức thanh toán',
         'data_consent' => 'việc dùng thông tin để xử lý đơn',
         'note' => 'ghi chú',
+        'requested_reward' => 'quà đổi điểm',
+        'reward' => 'quà đổi điểm',
         'rating' => 'đánh giá',
         'freshness_rating' => 'độ tươi',
         'comment' => 'nhận xét',

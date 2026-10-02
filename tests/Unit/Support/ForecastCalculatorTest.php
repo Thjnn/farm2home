@@ -1,0 +1,60 @@
+<?php
+
+namespace Tests\Unit\Support;
+
+use App\Support\ForecastCalculator;
+use PHPUnit\Framework\TestCase;
+
+class ForecastCalculatorTest extends TestCase
+{
+    public function test_moving_average_with_standard_deviation_band(): void
+    {
+        $this->assertSame(
+            ['predicted' => 8.0, 'lower' => 4.0, 'upper' => 12.0],
+            ForecastCalculator::movingAverage([2, 4, 6, 8, 10, 12, 14]),
+        );
+    }
+
+    public function test_moving_average_only_uses_the_last_window(): void
+    {
+        $this->assertSame(
+            ['predicted' => 8.0, 'lower' => 4.0, 'upper' => 12.0],
+            ForecastCalculator::movingAverage([100, 2, 4, 6, 8, 10, 12, 14]),
+        );
+    }
+
+    public function test_moving_average_with_short_history_and_zero_days(): void
+    {
+        $this->assertSame(['predicted' => 4.0, 'lower' => 3.0, 'upper' => 5.0], ForecastCalculator::movingAverage([3, 5]));
+        $this->assertSame(['predicted' => 1.0, 'lower' => 0.18, 'upper' => 1.82], ForecastCalculator::movingAverage([2, 0, 1]));
+        $this->assertSame(['predicted' => 0.0, 'lower' => 0.0, 'upper' => 0.0], ForecastCalculator::movingAverage([]));
+    }
+
+    public function test_exponential_smoothing_level_and_rmse_band(): void
+    {
+        $this->assertSame(['predicted' => 13.0, 'lower' => 3.0, 'upper' => 23.0], ForecastCalculator::expSmoothing([10, 20]));
+        $this->assertSame(['predicted' => 12.1, 'lower' => 4.72, 'upper' => 19.48], ForecastCalculator::expSmoothing([10, 20, 10]));
+        $this->assertSame(['predicted' => 1.28, 'lower' => 0.0, 'upper' => 2.72], ForecastCalculator::expSmoothing([2, 0, 1]));
+    }
+
+    public function test_exponential_smoothing_edge_cases(): void
+    {
+        $this->assertSame(['predicted' => 7.0, 'lower' => 7.0, 'upper' => 7.0], ForecastCalculator::expSmoothing([7]));
+        $this->assertSame(['predicted' => 0.0, 'lower' => 0.0, 'upper' => 0.0], ForecastCalculator::expSmoothing([]));
+    }
+
+    public function test_error_metrics(): void
+    {
+        // |2-4|=2, |3-2|=1, |1-0|=1 → MAE 4/3; MAPE bỏ qua actual = 0: (0.5 + 0.5)/2; WAPE 4/6.
+        $this->assertSame(
+            ['n' => 3, 'mae' => 1.33, 'mape' => 50.0, 'wape' => 66.7],
+            ForecastCalculator::errors([[2.0, 4.0], [3.0, 2.0], [1.0, 0.0]]),
+        );
+    }
+
+    public function test_error_metrics_with_no_data_or_zero_actuals(): void
+    {
+        $this->assertSame(['n' => 0, 'mae' => null, 'mape' => null, 'wape' => null], ForecastCalculator::errors([]));
+        $this->assertSame(['n' => 1, 'mae' => 1.0, 'mape' => null, 'wape' => null], ForecastCalculator::errors([[1.0, 0.0]]));
+    }
+}

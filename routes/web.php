@@ -1,13 +1,18 @@
 <?php
 
+use App\Http\Controllers\Admin\BasketController;
 use App\Http\Controllers\Admin\BatchController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DeliveryZoneController;
+use App\Http\Controllers\Admin\FarmerController;
 use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\HarvestPlanController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PackagingReturnController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplyController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WasteController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Farmer\FarmerPortalController;
@@ -78,4 +83,15 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::post('waste', [WasteController::class, 'store'])->name('waste.store');
     Route::get('packaging-returns', [PackagingReturnController::class, 'index'])->name('packaging-returns.index');
     Route::post('packaging-returns', [PackagingReturnController::class, 'store'])->name('packaging-returns.store');
+
+    Route::middleware('role:admin')->group(function () {
+        $actions = ['index', 'create', 'store', 'edit', 'update'];
+
+        Route::resource('products', ProductController::class)->only($actions);
+        Route::resource('baskets', BasketController::class)->only($actions);
+        Route::resource('farmers', FarmerController::class)->only($actions);
+        Route::post('farmers/{farmer}/token', [FarmerController::class, 'regenerateToken'])->name('farmers.token');
+        Route::resource('zones', DeliveryZoneController::class)->only($actions)->parameters(['zones' => 'zone']);
+        Route::resource('users', UserController::class)->only($actions);
+    });
 });

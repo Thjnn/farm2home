@@ -25,6 +25,8 @@ use RuntimeException;
 
 class OrderService
 {
+    public function __construct(private readonly LoyaltyService $loyalty) {}
+
     /**
      * Create an order with its lines, price and shipping fee in one transaction.
      *
@@ -103,6 +105,10 @@ class OrderService
             }
 
             $order->save();
+
+            if ($to === OrderStatus::Delivered) {
+                $this->loyalty->awardForDeliveredOrder($order);
+            }
 
             return $order;
         });

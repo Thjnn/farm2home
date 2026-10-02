@@ -21,4 +21,12 @@ class FormatTest extends TestCase
         $this->assertSame('0,25 kg', Format::kg(0.25));
         $this->assertSame('10 kg', Format::kg(10));
     }
+
+    public function test_pct_uses_comma_and_handles_null(): void
+    {
+        $this->assertSame('98,3%', Format::pct(98.3));
+        $this->assertSame('96%', Format::pct(96.0));
+        $this->assertSame('0%', Format::pct(0.0));
+        $this->assertSame('—', Format::pct(null));
+    }
 }

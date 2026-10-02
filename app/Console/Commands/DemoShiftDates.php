@@ -31,6 +31,7 @@ class DemoShiftDates extends Command
         'feedbacks' => ['resolved_at'],
         'waste_logs' => ['log_date'],
         'packaging_returns' => ['return_date'],
+        'point_transactions' => [],
     ];
 
     /**

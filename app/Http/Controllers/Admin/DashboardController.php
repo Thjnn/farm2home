@@ -32,6 +32,7 @@ class DashboardController extends Controller
             'economics' => $kpi->economics($from, $to),
             'farmers' => $kpi->farmers($from, $to),
             'environment' => $kpi->environment($from, $to),
+            'loyalty' => $kpi->loyalty($from, $to),
             'methods' => ForecastMethod::cases(),
         ]);
     }

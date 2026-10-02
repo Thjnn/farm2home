@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Enums\FarmerStatus;
 use App\Enums\FeedbackStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PointReason;
 use App\Models\Batch;
 use App\Models\Farmer;
 use App\Models\Feedback;
 use App\Models\HarvestPlanItem;
 use App\Models\PackagingReturn;
+use App\Models\PointTransaction;
 use App\Models\WasteLog;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -157,6 +159,24 @@ class KpiService
             'packaging_returned' => $returned,
             'packaging_reused' => $reused,
             'packaging_reuse_pct' => self::pct($reused, $returned),
+        ];
+    }
+
+    /**
+     * Điểm thành viên trong kỳ, lọc theo thời điểm ghi sổ. Số đã đổi và số lượt đổi là số ròng sau hoàn điểm.
+     *
+     * @return array{points_earned: int, points_redeemed: int, redemptions: int}
+     */
+    public function loyalty(CarbonInterface $from, CarbonInterface $to): array
+    {
+        $rows = PointTransaction::whereBetween('created_at', $this->moments($from, $to));
+        $spent = [PointReason::Redeemed, PointReason::Refunded];
+
+        return [
+            'points_earned' => (int) (clone $rows)->whereNotIn('reason', $spent)->sum('points'),
+            'points_redeemed' => -(int) (clone $rows)->whereIn('reason', $spent)->sum('points'),
+            'redemptions' => (clone $rows)->where('reason', PointReason::Redeemed)->count()
+                - (clone $rows)->where('reason', PointReason::Refunded)->count(),
         ];
     }
 

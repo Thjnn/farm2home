@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Farmer\FarmerPortalController;
 use App\Http\Controllers\Public\HomeController;
@@ -35,4 +36,7 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
 
     Route::resource('orders', AdminOrderController::class)->only(['index', 'create', 'store', 'show']);
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'transition'])->name('orders.transition');
+
+    Route::get('supply', [SupplyController::class, 'index'])->name('supply.index');
+    Route::post('supply', [SupplyController::class, 'store'])->name('supply.store');
 });

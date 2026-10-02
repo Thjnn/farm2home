@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\OrderController as PublicOrderController;
@@ -25,4 +26,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 
 Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
+
+    Route::resource('orders', AdminOrderController::class)->only(['index', 'create', 'store', 'show']);
+    Route::patch('orders/{order}/status', [AdminOrderController::class, 'transition'])->name('orders.transition');
 });

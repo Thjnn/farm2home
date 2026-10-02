@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Farmer;
 
 use App\Enums\FarmerStatus;
+use App\Enums\HarvestPlanStatus;
 use App\Enums\SupplySource;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSupplyRequest;
 use App\Models\Farmer;
+use App\Models\HarvestPlan;
+use App\Services\HarvestPlanService;
 use App\Services\SupplyReportService;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -27,12 +31,20 @@ class FarmerPortalController extends Controller
             ->groupBy(fn ($report) => $report->available_date->toDateString())
             ->map(fn ($group) => $group->pluck('quantity_kg', 'product_id'));
 
+        $ownRows = fn ($query) => $query->where('farmer_id', $farmer->id)->where('final_kg', '>', 0);
+
         return view('farmer.show', [
             'farmer' => $farmer,
             'products' => $farmer->products()->where('is_active', true)->orderBy('products.id')->get(),
             'dates' => $dates,
             'reports' => $reports,
             'locked' => collect($dates)->mapWithKeys(fn ($date) => [$date => $supply->isLocked($date)]),
+            'harvests' => HarvestPlan::whereIn('status', [HarvestPlanStatus::Confirmed, HarvestPlanStatus::Sent])
+                ->whereDate('harvest_date', '>=', today()->toDateString())
+                ->whereHas('items', $ownRows)
+                ->with(['items' => fn ($query) => $ownRows($query)->with('product')])
+                ->orderBy('harvest_date')
+                ->get(),
         ]);
     }
 
@@ -48,6 +60,19 @@ class FarmerPortalController extends Controller
         $supply->save($farmer, $data, SupplySource::Form);
 
         return redirect()->route('farmer.show', $farmer->access_token)->with('status', 'Đã lưu sản lượng. Cảm ơn cô chú!');
+    }
+
+    public function confirmHarvest(Farmer $farmer, HarvestPlan $plan, HarvestPlanService $plans): RedirectResponse
+    {
+        $this->ensureActive($farmer);
+
+        try {
+            $plans->farmerConfirm($plan, $farmer);
+        } catch (DomainException $e) {
+            return back()->withErrors(['action' => $e->getMessage()]);
+        }
+
+        return redirect()->route('farmer.show', $farmer->access_token)->with('status', 'Đã ghi nhận. Cảm ơn cô chú!');
     }
 
     private function ensureActive(Farmer $farmer): void

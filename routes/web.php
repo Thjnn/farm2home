@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ForecastController;
+use App\Http\Controllers\Admin\HarvestPlanController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Auth\LoginController;
@@ -22,6 +24,7 @@ Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('t
 Route::prefix('nong-ho/{farmer:access_token}')->name('farmer.')->middleware('throttle:30,1')->group(function () {
     Route::get('/', [FarmerPortalController::class, 'show'])->name('show');
     Route::post('/san-luong', [FarmerPortalController::class, 'storeSupply'])->name('supply.store');
+    Route::post('/thu-hoach/{plan}', [FarmerPortalController::class, 'confirmHarvest'])->name('harvest.confirm');
 });
 
 Route::middleware('guest')->group(function () {
@@ -39,4 +42,16 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
 
     Route::get('supply', [SupplyController::class, 'index'])->name('supply.index');
     Route::post('supply', [SupplyController::class, 'store'])->name('supply.store');
+
+    Route::get('forecasts', [ForecastController::class, 'index'])->name('forecasts.index');
+    Route::post('forecasts/run', [ForecastController::class, 'run'])->name('forecasts.run');
+    Route::post('forecasts/backfill', [ForecastController::class, 'backfill'])->name('forecasts.backfill');
+
+    Route::get('harvest-plans', [HarvestPlanController::class, 'index'])->name('harvest-plans.index');
+    Route::post('harvest-plans/generate', [HarvestPlanController::class, 'generate'])->name('harvest-plans.generate');
+    Route::get('harvest-plans/{plan}', [HarvestPlanController::class, 'show'])->name('harvest-plans.show');
+    Route::post('harvest-plans/{plan}/confirm', [HarvestPlanController::class, 'confirm'])->name('harvest-plans.confirm');
+    Route::post('harvest-plans/{plan}/sent', [HarvestPlanController::class, 'sent'])->name('harvest-plans.sent');
+    Route::post('harvest-plans/{plan}/complete', [HarvestPlanController::class, 'complete'])->name('harvest-plans.complete');
+    Route::patch('harvest-plan-items/{item}', [HarvestPlanController::class, 'updateItem'])->name('harvest-plan-items.update');
 });

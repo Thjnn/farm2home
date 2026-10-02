@@ -11,7 +11,7 @@
         <dl class="divide-y divide-stone-100 text-sm">
             <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Nông hộ</dt><dd class="text-right font-medium">{{ $batch->farmer->name }}</dd></div>
             @if ($batch->farmer->growing_area)
-                <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Khu vực trồng</dt><dd class="text-right">{{ $batch->farmer->growing_area }}</dd></div>
+                <div class="flex justify-between gap-4 py-2"><dt class="shrink-0 text-stone-600">Khu vực trồng</dt><dd class="text-right">{{ $batch->farmer->growing_area }}</dd></div>
             @endif
             @if ($batch->farmer->farming_method)
                 <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Cách canh tác (theo nông hộ khai)</dt><dd class="text-right">{{ $batch->farmer->farming_method }}</dd></div>
@@ -19,7 +19,7 @@
             <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Thu hoạch</dt><dd class="text-right">{{ $batch->harvested_at->format('d/m/Y H:i') }}</dd></div>
             @if ($batch->processed_at)
                 <div class="flex justify-between gap-4 py-2">
-                    <dt class="text-stone-600">Sơ chế</dt>
+                    <dt class="shrink-0 text-stone-600">Sơ chế</dt>
                     <dd class="text-right">{{ $batch->processed_at->format('d/m/Y H:i') }}@if ($batch->processing_note)<span class="block text-stone-600">{{ $batch->processing_note }}</span>@endif</dd>
                 </div>
             @endif

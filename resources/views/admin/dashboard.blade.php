@@ -1,14 +1,3 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8">
-    <title>Tổng quan · FARM2HOME</title>
-</head>
-<body>
-    <h1>Tổng quan</h1>
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button>Đăng xuất</button>
-    </form>
-</body>
-</html>
+<x-layouts.admin title="Tổng quan">
+    <p class="text-stone-600">Các chỉ số KPI sẽ hiển thị ở đây sau Phase 6.</p>
+</x-layouts.admin>

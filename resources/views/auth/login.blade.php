@@ -1,22 +1,13 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8">
-    <title>Đăng nhập · FARM2HOME</title>
-</head>
-<body>
-    <h1>Đăng nhập</h1>
-    <form method="POST" action="{{ route('login.store') }}">
+<x-layouts.public title="Đăng nhập">
+    <h1 class="mb-4 text-xl font-semibold">Đăng nhập</h1>
+
+    <form method="POST" action="{{ route('login.store') }}" class="space-y-4 rounded-xl border border-stone-200 bg-white p-4">
         @csrf
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" value="{{ old('email') }}">
-        @error('email')
-            <p>{{ $message }}</p>
-        @enderror
-        <label for="password">Mật khẩu</label>
-        <input id="password" name="password" type="password">
-        <label><input type="checkbox" name="remember" value="1"> Ghi nhớ đăng nhập</label>
-        <button>Đăng nhập</button>
+        <x-field name="email" label="Email" type="email" autocomplete="username" required autofocus />
+        <x-field name="password" label="Mật khẩu" type="password" autocomplete="current-password" required />
+        <label class="flex min-h-11 items-center gap-2 text-sm">
+            <input type="checkbox" name="remember" value="1" class="size-5 rounded border-stone-300"> Ghi nhớ đăng nhập
+        </label>
+        <button class="min-h-12 w-full rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Đăng nhập</button>
     </form>
-</body>
-</html>
+</x-layouts.public>

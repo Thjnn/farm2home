@@ -86,6 +86,7 @@ docs/                   mô tả dự án và kế hoạch code
 
 Tài liệu chi tiết:
 
+- Hướng dẫn sử dụng từng màn hình, kèm bài thực hành: [`docs/HUONG-DAN-SU-DUNG.md`](docs/HUONG-DAN-SU-DUNG.md)
 - Mô tả dự án, quy ước dữ liệu và nghiệp vụ: [`docs/CLAUDE.md`](docs/CLAUDE.md)
 - Kế hoạch code và các quyết định thiết kế: [`docs/PLAN.md`](docs/PLAN.md)
 

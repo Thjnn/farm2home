@@ -3,6 +3,7 @@
 namespace Tests\Unit\Support;
 
 use App\Support\ForecastCalculator;
+use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 
 class ForecastCalculatorTest extends TestCase
@@ -41,6 +42,28 @@ class ForecastCalculatorTest extends TestCase
     {
         $this->assertSame(['predicted' => 7.0, 'lower' => 7.0, 'upper' => 7.0], ForecastCalculator::expSmoothing([7]));
         $this->assertSame(['predicted' => 0.0, 'lower' => 0.0, 'upper' => 0.0], ForecastCalculator::expSmoothing([]));
+    }
+
+    public function test_weekday_average_only_uses_the_same_weekday(): void
+    {
+        // 03/10/2026 là Thứ Bảy. Các Thứ Bảy trước: 12/09 = 20, 19/09 = 28, 26/09 = 24.
+        $history = [
+            '2026-09-12' => 20.0, '2026-09-14' => 2.0, '2026-09-19' => 28.0,
+            '2026-09-23' => 5.0, '2026-09-26' => 24.0, '2026-10-01' => 4.0,
+        ];
+
+        $result = ForecastCalculator::weekdayAverage($history, CarbonImmutable::parse('2026-10-03'));
+
+        // Độ lệch chuẩn của 20, 28, 24 là √(32/3) ≈ 3,27.
+        $this->assertSame(['predicted' => 24.0, 'lower' => 20.73, 'upper' => 27.27], $result);
+    }
+
+    public function test_weekday_average_without_matching_days_is_zero(): void
+    {
+        $this->assertSame(
+            ['predicted' => 0.0, 'lower' => 0.0, 'upper' => 0.0],
+            ForecastCalculator::weekdayAverage(['2026-10-01' => 4.0], CarbonImmutable::parse('2026-10-03')),
+        );
     }
 
     public function test_error_metrics(): void

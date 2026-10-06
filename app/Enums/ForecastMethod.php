@@ -8,6 +8,7 @@ enum ForecastMethod: string
     case ExpSmoothing = 'exp_smoothing';
     case TreeRegression = 'tree_regression';
     case Manual = 'manual';
+    case WeekdayAverage = 'weekday_average';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum ForecastMethod: string
             self::ExpSmoothing => 'Làm mượt hàm mũ',
             self::TreeRegression => 'Cây hồi quy',
             self::Manual => 'Nhập tay',
+            self::WeekdayAverage => 'Trung bình cùng thứ (4 tuần)',
         };
     }
 }

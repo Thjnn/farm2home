@@ -37,8 +37,8 @@ class ForecastScreenTest extends TestCase
     {
         $this->post('/admin/forecasts/run')->assertRedirect()->assertSessionHas('status');
 
-        // 7 sản phẩm × 7 ngày × 2 phương pháp
-        $this->assertSame(98, Forecast::whereDate('generated_on', '2026-10-02')->count());
+        // 7 sản phẩm × 7 ngày × 3 phương pháp
+        $this->assertSame(147, Forecast::whereDate('generated_on', '2026-10-02')->count());
     }
 
     public function test_backfill_button_fills_actuals(): void

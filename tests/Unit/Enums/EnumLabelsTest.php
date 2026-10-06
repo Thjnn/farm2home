@@ -29,7 +29,7 @@ class EnumLabelsTest extends TestCase
     public function test_values_match_the_mysql_enums(): void
     {
         $this->assertSame(['pending', 'confirmed', 'packing', 'delivering', 'delivered', 'cancelled'], array_column(OrderStatus::cases(), 'value'));
-        $this->assertSame(['moving_average', 'exp_smoothing', 'tree_regression', 'manual'], array_column(ForecastMethod::cases(), 'value'));
+        $this->assertSame(['moving_average', 'exp_smoothing', 'tree_regression', 'manual', 'weekday_average'], array_column(ForecastMethod::cases(), 'value'));
         $this->assertSame(['cod', 'bank_transfer'], array_column(PaymentMethod::cases(), 'value'));
         $this->assertSame(['surplus', 'damaged', 'expired', 'discounted'], array_column(WasteReason::cases(), 'value'));
         $this->assertSame(['draft', 'confirmed', 'sent', 'completed'], array_column(HarvestPlanStatus::cases(), 'value'));

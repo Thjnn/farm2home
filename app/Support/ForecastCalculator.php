@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
+
 final class ForecastCalculator
 {
     /**
@@ -47,6 +50,25 @@ final class ForecastCalculator
         $sd = $squaredErrors === [] ? 0.0 : sqrt(array_sum($squaredErrors) / count($squaredErrors));
 
         return self::band($level, $sd);
+    }
+
+    /**
+     * Trung bình của $weeks ngày cùng thứ gần nhất với ngày đích (bắt nhịp cuối tuần).
+     *
+     * @param  array<string, float|int>  $historyByDate  ['Y-m-d' => kg], cũ → mới
+     * @return array{predicted: float, lower: float, upper: float}
+     */
+    public static function weekdayAverage(array $historyByDate, CarbonInterface $target, int $weeks = 4): array
+    {
+        $sameWeekday = [];
+
+        foreach ($historyByDate as $date => $kg) {
+            if (CarbonImmutable::parse($date)->dayOfWeekIso === $target->dayOfWeekIso) {
+                $sameWeekday[] = $kg;
+            }
+        }
+
+        return self::movingAverage($sameWeekday, $weeks);
     }
 
     /**

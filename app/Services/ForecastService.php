@@ -40,18 +40,21 @@ class ForecastService
 
     /**
      * Quyết định D3: mọi đơn chưa hủy của ngày giao đều tính là nhu cầu đã có.
+     * $knownAt: chỉ đếm đơn đã tạo tới thời điểm đó (khi chạy lại dự báo cho ngày đã qua).
      */
-    public function confirmedKg(Product $product, CarbonInterface $date): float
+    public function confirmedKg(Product $product, CarbonInterface $date, ?CarbonInterface $knownAt = null): float
     {
         return round((float) $this->demandQuery($product)
             ->where('orders.delivery_date', $date->toDateString())
+            ->when($knownAt, fn (Builder $query) => $query->where('orders.created_at', '<=', $knownAt))
             ->sum('order_items.weight_kg'), 2);
     }
 
     /**
      * Ghi dự báo của mọi phương pháp cho các ngày giao kế tiếp. Chạy lại cùng ngày thì cập nhật.
+     * $knownAt bỏ trống = đếm mọi đơn đang có; có giá trị = chỉ đơn đã tạo tới lúc đó (replay).
      */
-    public function run(CarbonInterface $generatedOn, ?int $horizonDays = null): int
+    public function run(CarbonInterface $generatedOn, ?int $horizonDays = null, ?CarbonInterface $knownAt = null): int
     {
         $horizonDays ??= (int) config('farm2home.forecast.horizon_days');
         $generatedOn = CarbonImmutable::parse($generatedOn)->startOfDay();
@@ -69,7 +72,8 @@ class ForecastService
         $rows = [];
 
         foreach (Product::where('is_active', true)->orderBy('id')->get() as $product) {
-            $history = $from->gt($generatedOn) ? [] : array_values($this->demandHistory($product, $from, $generatedOn));
+            $historyByDate = $from->gt($generatedOn) ? [] : $this->demandHistory($product, $from, $generatedOn);
+            $history = array_values($historyByDate);
 
             $models = [
                 ForecastMethod::MovingAverage->value => ForecastCalculator::movingAverage($history, (int) config('farm2home.forecast.window_days')),
@@ -78,9 +82,13 @@ class ForecastService
 
             for ($offset = 1; $offset <= $horizonDays; $offset++) {
                 $target = $generatedOn->addDays($offset);
-                $confirmed = $this->confirmedKg($product, $target);
+                $confirmed = $this->confirmedKg($product, $target, $knownAt);
 
-                foreach ($models as $method => $model) {
+                $perTarget = $models + [
+                    ForecastMethod::WeekdayAverage->value => ForecastCalculator::weekdayAverage($historyByDate, $target),
+                ];
+
+                foreach ($perTarget as $method => $model) {
                     // Quyết định D6: dự báo không bao giờ thấp hơn đơn đã đặt.
                     $total = max($model['predicted'], $confirmed);
 

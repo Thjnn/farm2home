@@ -1,4 +1,8 @@
 <x-layouts.admin title="Dự báo nhu cầu">
+    <x-slot:head>
+        @vite('resources/js/dashboard.js')
+    </x-slot:head>
+
     <div class="mb-4 flex flex-wrap items-center gap-3">
         <form method="POST" action="{{ route('admin.forecasts.run') }}">
             @csrf
@@ -10,8 +14,23 @@
         </form>
     </div>
 
+    <nav class="mb-3 flex flex-wrap gap-2" aria-label="Chọn phương pháp">
+        @foreach ($methods as $candidate)
+            @continue(in_array($candidate, [\App\Enums\ForecastMethod::Manual, \App\Enums\ForecastMethod::TreeRegression], true))
+            <a href="{{ route('admin.forecasts.index', array_filter(['method' => $candidate->value, 'product' => $product?->id])) }}"
+               @class([
+                   'inline-flex min-h-11 items-center rounded-lg border px-3 text-sm',
+                   'border-emerald-700 bg-emerald-700 font-semibold text-white' => $candidate === $method,
+                   'border-stone-300 bg-white hover:bg-stone-100' => $candidate !== $method,
+               ])
+               @if ($candidate === $method) aria-current="page" @endif>
+                {{ $candidate->label() }}@if ($candidate === $planMethod)<span class="ml-1 text-xs font-normal">(đang dùng cho kế hoạch)</span>@endif
+            </a>
+        @endforeach
+    </nav>
+
     <p class="mb-4 text-sm text-stone-700">
-        Phương pháp đang dùng: <span class="font-semibold">{{ $method->label() }}</span> ·
+        Đang xem: <span class="font-semibold">{{ $method->label() }}</span> ·
         @if ($latestRun)
             Lần chạy gần nhất: <span class="font-semibold">{{ \Carbon\Carbon::parse($latestRun)->format('d/m/Y') }}</span>
         @else
@@ -40,7 +59,12 @@
                             @continue(! isset($accuracy[$candidate->value]))
                             @php($row = $accuracy[$candidate->value])
                             <tr>
-                                <td class="py-2 pr-3">{{ $candidate->label() }}</td>
+                                <td class="py-2 pr-3">
+                                    {{ $candidate->label() }}
+                                    @if ($candidate === $bestMethod)
+                                        <span class="ml-1 rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-800">Sai số thấp nhất</span>
+                                    @endif
+                                </td>
                                 <td class="py-2 pr-3 text-right">{{ $row['n'] }}</td>
                                 <td class="py-2 pr-3 text-right">@kg($row['mae'])</td>
                                 <td class="py-2 pr-3 text-right">{{ $row['mape'] === null ? '—' : number_format($row['mape'], 1, ',', '.').'%' }}</td>
@@ -53,6 +77,28 @@
             <p class="mt-2 text-xs text-stone-500">WAPE = tổng sai số tuyệt đối / tổng thực tế. MAPE bị phóng đại khi khối lượng mỗi loại rau nhỏ.</p>
         @endif
     </section>
+
+    @if ($chart)
+        <figure class="mb-6 rounded-xl border border-stone-200 bg-white p-4">
+            <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <figcaption class="text-sm font-medium text-stone-700">Nhu cầu 28 ngày qua và dự báo 7 ngày tới (kg)</figcaption>
+                <form method="GET" action="{{ route('admin.forecasts.index') }}">
+                    <input type="hidden" name="method" value="{{ $method->value }}">
+                    <label class="sr-only" for="chart-product">Loại rau</label>
+                    <select id="chart-product" name="product" onchange="this.form.submit()"
+                            class="min-h-11 rounded-lg border border-stone-300 bg-white px-3 text-sm">
+                        <option value="">Tất cả loại rau</option>
+                        @foreach ($products as $item)
+                            <option value="{{ $item->id }}" @selected($product?->id === $item->id)>{{ $item->name }}</option>
+                        @endforeach
+                    </select>
+                    <noscript><button class="min-h-11 rounded-lg border border-stone-300 px-3 text-sm">Xem</button></noscript>
+                </form>
+            </div>
+            <div class="h-64"><canvas id="chart-forecast" role="img" aria-label="Biểu đồ đường: nhu cầu thực tế 28 ngày qua và dự báo 7 ngày tới kèm khoảng thấp–cao"></canvas></div>
+        </figure>
+        <script type="application/json" id="chart-forecast-data">@json($chart)</script>
+    @endif
 
     @forelse ($byDate as $date => $rows)
         <section class="mb-4 rounded-xl border border-stone-200 bg-white p-4">

@@ -165,6 +165,51 @@ class ForecastService
             ->all();
     }
 
+    /**
+     * Dữ liệu biểu đồ: nhu cầu thực tế $pastDays ngày tới hết $runDate, rồi dự báo của lần chạy $runDate.
+     * $product null = cộng mọi loại rau đang bán.
+     *
+     * @return array{labels: list<string>, actual: list<?float>, forecast: list<?float>, lower: list<?float>, upper: list<?float>}
+     */
+    public function chartSeries(CarbonInterface $runDate, ForecastMethod $method, ?Product $product = null, int $pastDays = 28): array
+    {
+        $runDate = CarbonImmutable::parse($runDate)->startOfDay();
+        $from = $runDate->subDays($pastDays - 1);
+
+        $products = $product ? collect([$product]) : Product::where('is_active', true)->get();
+        $actual = [];
+        foreach ($products as $item) {
+            foreach ($this->demandHistory($item, $from, $runDate) as $date => $kg) {
+                $actual[$date] = ($actual[$date] ?? 0) + $kg;
+            }
+        }
+
+        // ponytail: khoảng thấp–cao của "Tất cả" là tổng khoảng từng loại, rộng hơn khoảng thật của tổng.
+        $ahead = Forecast::whereDate('generated_on', $runDate->toDateString())
+            ->where('method', $method)
+            ->whereIn('product_id', $products->pluck('id'))
+            ->groupBy('target_date')
+            ->orderBy('target_date')
+            ->selectRaw('target_date, SUM(predicted_total_kg) as total, SUM(lower_kg) as lower, SUM(upper_kg) as upper')
+            ->get();
+
+        $series = ['labels' => [], 'actual' => [], 'forecast' => [], 'lower' => [], 'upper' => []];
+        foreach ($actual as $date => $kg) {
+            $series['labels'][] = CarbonImmutable::parse($date)->format('d/m');
+            $series['actual'][] = round($kg, 2);
+            $series['forecast'][] = $series['lower'][] = $series['upper'][] = null;
+        }
+        foreach ($ahead as $row) {
+            $series['labels'][] = $row->target_date->format('d/m');
+            $series['actual'][] = null;
+            $series['forecast'][] = round((float) $row->total, 2);
+            $series['lower'][] = round((float) $row->lower, 2);
+            $series['upper'][] = round((float) $row->upper, 2);
+        }
+
+        return $series;
+    }
+
     private function demandQuery(Product $product): Builder
     {
         return DB::table('order_items')

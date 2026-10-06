@@ -51,6 +51,42 @@ if (wasteCanvas) {
     });
 }
 
+const forecastCanvas = document.getElementById('chart-forecast');
+if (forecastCanvas) {
+    const data = read('chart-forecast-data');
+    const line = { borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, pointHitRadius: 16, tension: 0, spanGaps: false };
+
+    new Chart(forecastCanvas, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [
+                { label: 'Thực tế', data: data.actual, borderColor: SERIES_1, backgroundColor: SERIES_1, ...line },
+                { label: 'Dự báo', data: data.forecast, borderColor: SERIES_2, backgroundColor: SERIES_2, borderDash: [6, 4], ...line },
+                // Band: upper line filled down to the lower line; both lines hidden from the legend.
+                { label: 'Khoảng thấp', data: data.lower, borderWidth: 0, pointRadius: 0, pointHitRadius: 0 },
+                { label: 'Khoảng cao', data: data.upper, borderWidth: 0, pointRadius: 0, pointHitRadius: 0, fill: '-1', backgroundColor: 'rgba(235, 104, 52, 0.15)' },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: { ...axes((value) => kg(value)), x: { grid: { display: false }, border: { color: GRID }, ticks: { maxTicksLimit: 8 } } },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 12, boxHeight: 12, filter: (item) => item.datasetIndex < 2 },
+                },
+                tooltip: {
+                    filter: (item) => item.parsed.y !== null,
+                    callbacks: { label: (item) => `${item.dataset.label}: ${kg(item.parsed.y)}` },
+                },
+            },
+        },
+    });
+}
+
 const revenueCanvas = document.getElementById('chart-revenue');
 if (revenueCanvas) {
     const data = read('chart-revenue-data');

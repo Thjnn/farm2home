@@ -72,17 +72,17 @@ final class ForecastCalculator
     }
 
     /**
-     * MAPE bỏ qua các điểm có thực tế bằng 0; WAPE = Σ|sai số| / Σ thực tế. Cả hai tính bằng %.
+     * MAPE bỏ qua các điểm có thực tế bằng 0; WAPE = Σ|sai số| / Σ thực tế. Cả hai tính bằng %. bias = trung bình (dự báo − thực tế) kg: dương là đoán dư, âm là đoán thiếu.
      *
      * @param  list<array{0: float, 1: float}>  $pairs  [predicted, actual]
-     * @return array{n: int, mae: ?float, mape: ?float, wape: ?float}
+     * @return array{n: int, mae: ?float, mape: ?float, wape: ?float, bias: ?float}
      */
     public static function errors(array $pairs): array
     {
         $n = count($pairs);
 
         if ($n === 0) {
-            return ['n' => 0, 'mae' => null, 'mape' => null, 'wape' => null];
+            return ['n' => 0, 'mae' => null, 'mape' => null, 'wape' => null, 'bias' => null];
         }
 
         $absolute = array_map(fn ($pair) => abs($pair[0] - $pair[1]), $pairs);
@@ -100,6 +100,7 @@ final class ForecastCalculator
             'mae' => round(array_sum($absolute) / $n, 2),
             'mape' => $percentages === [] ? null : round(100 * array_sum($percentages) / count($percentages), 1),
             'wape' => $sumActual > 0 ? round(100 * array_sum($absolute) / $sumActual, 1) : null,
+            'bias' => round(array_sum(array_map(fn ($pair) => $pair[0] - $pair[1], $pairs)) / $n, 2),
         ];
     }
 

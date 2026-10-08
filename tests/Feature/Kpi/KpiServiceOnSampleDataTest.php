@@ -35,7 +35,7 @@ class KpiServiceOnSampleDataTest extends TestCase
     {
         $kpi = $this->kpi->forecast($this->from, $this->to);
 
-        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 51.4, 'wape' => 39.1], $kpi['accuracy']['moving_average']);
+        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 51.4, 'wape' => 39.1, 'bias' => 0.18], $kpi['accuracy']['moving_average']);
         $this->assertSame(112, $kpi['plan_items']);
         $this->assertSame(38, $kpi['adjusted_items']);
     }

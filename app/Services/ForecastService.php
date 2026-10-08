@@ -150,7 +150,7 @@ class ForecastService
     /**
      * Sai số của từng phương pháp cho các dự báo được tạo trước ngày giao $leadDays ngày.
      *
-     * @return array<string, array{n: int, mae: ?float, mape: ?float, wape: ?float}>
+     * @return array<string, array{n: int, mae: ?float, mape: ?float, wape: ?float, bias: ?float}>
      */
     public function accuracy(CarbonInterface $from, CarbonInterface $to, int $leadDays = 1): array
     {

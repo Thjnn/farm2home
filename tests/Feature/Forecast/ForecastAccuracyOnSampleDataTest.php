@@ -19,8 +19,8 @@ class ForecastAccuracyOnSampleDataTest extends TestCase
 
         $accuracy = app(ForecastService::class)->accuracy(CarbonImmutable::parse('2026-09-17'), CarbonImmutable::parse('2026-10-01'));
 
-        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 51.4, 'wape' => 39.1], $accuracy['moving_average']);
-        $this->assertSame(['n' => 105, 'mae' => 0.7, 'mape' => 56.6, 'wape' => 42.1], $accuracy['exp_smoothing']);
+        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 51.4, 'wape' => 39.1, 'bias' => 0.18], $accuracy['moving_average']);
+        $this->assertSame(['n' => 105, 'mae' => 0.7, 'mape' => 56.6, 'wape' => 42.1, 'bias' => 0.23], $accuracy['exp_smoothing']);
     }
 
     public function test_demand_on_sample_data(): void

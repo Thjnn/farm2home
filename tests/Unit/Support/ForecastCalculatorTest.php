@@ -70,14 +70,14 @@ class ForecastCalculatorTest extends TestCase
     {
         // |2-4|=2, |3-2|=1, |1-0|=1 → MAE 4/3; MAPE bỏ qua actual = 0: (0.5 + 0.5)/2; WAPE 4/6.
         $this->assertSame(
-            ['n' => 3, 'mae' => 1.33, 'mape' => 50.0, 'wape' => 66.7],
+            ['n' => 3, 'mae' => 1.33, 'mape' => 50.0, 'wape' => 66.7, 'bias' => 0.0],
             ForecastCalculator::errors([[2.0, 4.0], [3.0, 2.0], [1.0, 0.0]]),
         );
     }
 
     public function test_error_metrics_with_no_data_or_zero_actuals(): void
     {
-        $this->assertSame(['n' => 0, 'mae' => null, 'mape' => null, 'wape' => null], ForecastCalculator::errors([]));
-        $this->assertSame(['n' => 1, 'mae' => 1.0, 'mape' => null, 'wape' => null], ForecastCalculator::errors([[1.0, 0.0]]));
+        $this->assertSame(['n' => 0, 'mae' => null, 'mape' => null, 'wape' => null, 'bias' => null], ForecastCalculator::errors([]));
+        $this->assertSame(['n' => 1, 'mae' => 1.0, 'mape' => null, 'wape' => null, 'bias' => 1.0], ForecastCalculator::errors([[1.0, 0.0]]));
     }
 }

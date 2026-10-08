@@ -50,7 +50,8 @@ class ForecastScreenTest extends TestCase
         $this->get('/admin/forecasts?method=weekday_average')
             ->assertOk()
             ->assertViewHas('method', ForecastMethod::WeekdayAverage)
-            ->assertSee('đang dùng cho kế hoạch');
+            ->assertSee('đang dùng cho kế hoạch')
+            ->assertSee('Trợ lý dự báo · '.ForecastMethod::WeekdayAverage->label());
 
         $this->get('/admin/forecasts?method=bogus')
             ->assertOk()
@@ -62,7 +63,9 @@ class ForecastScreenTest extends TestCase
         $this->get('/admin/forecasts')
             ->assertOk()
             ->assertViewHas('bestMethod', fn ($best) => $best instanceof ForecastMethod)
-            ->assertSee('Sai số thấp nhất');
+            ->assertSee('Sai số thấp nhất')
+            ->assertSee('đoán sát nhất')
+            ->assertSee('Lệch dư/thiếu');
     }
 
     public function test_chart_has_28_days_of_actuals_and_the_latest_run_ahead(): void

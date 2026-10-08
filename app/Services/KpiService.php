@@ -28,7 +28,7 @@ class KpiService
     public function __construct(private readonly ForecastService $forecasts) {}
 
     /**
-     * @return array{accuracy: array<string, array{n: int, mae: ?float, mape: ?float, wape: ?float}>, plan_items: int, adjusted_items: int}
+     * @return array{accuracy: array<string, array{n: int, mae: ?float, mape: ?float, wape: ?float, bias: ?float}>, plan_items: int, adjusted_items: int}
      */
     public function forecast(CarbonInterface $from, CarbonInterface $to): array
     {

@@ -13,6 +13,23 @@
         </div>
     </section>
 
+    @if ($products->isNotEmpty())
+        <section aria-labelledby="products-heading" class="mb-8">
+            <h2 id="products-heading" class="mb-3 text-lg font-semibold">Rau đang có</h2>
+            <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                @foreach ($products as $product)
+                    <li class="overflow-hidden rounded-xl border border-stone-200 bg-white">
+                        <x-product-image :product="$product" class="aspect-[4/3] w-full" />
+                        <div class="p-3">
+                            <p class="font-semibold">{{ $product->name }}</p>
+                            <p class="text-sm text-stone-600">@vnd($product->price) / @kg($product->pack_weight_kg)</p>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <section aria-labelledby="baskets-heading">
         <h2 id="baskets-heading" class="mb-3 text-lg font-semibold">Giỏ rau</h2>
         <div class="space-y-3">
@@ -25,9 +42,9 @@
                     @if ($basket->description)
                         <p class="mt-1 text-sm text-stone-600">{{ $basket->description }}</p>
                     @endif
-                    <ul class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-stone-700">
+                    <ul class="mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-sm text-stone-700">
                         @foreach ($basket->items as $item)
-                            <li>{{ $item->quantity }} × {{ $item->product->name }}</li>
+                            <li class="flex items-center gap-1.5"><x-product-image :product="$item->product" class="size-6 rounded-full" />{{ $item->quantity }} × {{ $item->product->name }}</li>
                         @endforeach
                     </ul>
                 </article>

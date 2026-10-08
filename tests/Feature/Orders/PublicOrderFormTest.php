@@ -45,6 +45,14 @@ class PublicOrderFormTest extends TestCase
             ->assertDontSee('100%');
     }
 
+    public function test_home_and_order_form_show_product_photos(): void
+    {
+        $this->rm->update(['image' => 'products/rau-muong.jpg']);
+
+        $this->get('/')->assertOk()->assertSee('images/products/rau-muong.jpg');
+        $this->get('/dat-hang')->assertOk()->assertSee('images/products/rau-muong.jpg');
+    }
+
     public function test_order_form_lists_catalog_and_allowed_dates(): void
     {
         $this->get('/dat-hang')

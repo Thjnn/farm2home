@@ -52,7 +52,7 @@
                         @foreach ($products as $product)
                             @php($reported = isset($reports[$date][$product->id]) ? (float) $reports[$date][$product->id] : null)
                             <div class="flex items-center justify-between gap-3">
-                                <label for="supply-{{ $date }}-{{ $product->id }}" class="min-w-0 flex-1">{{ $product->name }}</label>
+                                <label for="supply-{{ $date }}-{{ $product->id }}" class="flex min-w-0 flex-1 items-center gap-3"><x-product-image :product="$product" class="size-12 rounded-lg" />{{ $product->name }}</label>
                                 @if ($locked[$date])
                                     <span class="font-semibold">{{ $reported === null ? '—' : \App\Support\Format::kg($reported) }}</span>
                                 @else

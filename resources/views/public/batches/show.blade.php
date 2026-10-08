@@ -1,5 +1,6 @@
 <x-layouts.public :title="'Lô '.$batch->code">
     <header class="mb-4">
+        <x-product-image :product="$batch->product" class="mb-4 aspect-[16/9] w-full rounded-xl" />
         <p class="text-sm text-stone-600">Thông tin lô hàng</p>
         <h1 class="text-2xl font-bold tracking-tight">{{ $batch->product->name }}</h1>
         <p class="mt-1 text-sm text-stone-600">Mã lô <span class="font-semibold text-stone-900">{{ $batch->code }}</span></p>

@@ -51,7 +51,8 @@
 <fieldset x-show="type === 'single'" x-cloak class="space-y-2">
     <legend class="mb-2 text-sm font-medium text-stone-700">Chọn rau (số gói)</legend>
     @foreach ($products as $index => $product)
-        <div class="flex items-center gap-3 rounded-xl border border-stone-300 bg-white p-3">
+        <div class="flex items-center gap-2 rounded-xl border border-stone-300 bg-white p-3">
+            <x-product-image :product="$product" class="size-10 rounded-lg" />
             <div class="min-w-0 flex-1">
                 <p class="font-semibold">{{ $product->name }}</p>
                 <p class="text-sm text-stone-600">@kg($product->pack_weight_kg)/gói · @vnd($product->price)</p>

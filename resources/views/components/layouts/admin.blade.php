@@ -33,7 +33,7 @@
 
     <header class="border-b border-stone-200 bg-white print:hidden">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2">
-            <a href="{{ route('admin.dashboard') }}" class="py-2 text-lg font-bold tracking-tight text-emerald-800">FARM2HOME</a>
+            <a href="{{ route('admin.dashboard') }}" class="shrink-0 py-1"><img src="{{ asset('images/logo.jpg') }}" alt="FARM2HOME" width="269" height="70" class="h-10 w-auto rounded-md"></a>
             <form method="POST" action="{{ route('logout') }}" class="ml-auto flex items-center gap-3 text-sm">
                 @csrf
                 <span class="text-stone-600">{{ auth()->user()->name }} · {{ auth()->user()->role->label() }}</span>

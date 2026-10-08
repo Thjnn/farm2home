@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // Chatbot trang đặt hàng. Không có key thì bot trả lời theo kịch bản.
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-flash-lite-latest'),
+    ],
+
 ];

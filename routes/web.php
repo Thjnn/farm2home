@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\WasteController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Farmer\FarmerPortalController;
 use App\Http\Controllers\Public\BatchPageController;
+use App\Http\Controllers\Public\ChatbotController;
 use App\Http\Controllers\Public\FeedbackController as PublicFeedbackController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\OrderController as PublicOrderController;
@@ -30,6 +31,7 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/dat-hang', [PublicOrderController::class, 'create'])->name('orders.create');
 Route::post('/dat-hang', [PublicOrderController::class, 'store'])->middleware('throttle:10,1')->name('orders.store');
 Route::get('/dat-hang/cam-on', [PublicOrderController::class, 'thanks'])->name('orders.thanks');
+Route::post('/hoi-dap', ChatbotController::class)->middleware('throttle:30,1')->name('chatbot.reply');
 
 Route::get('/lo/{batch:code}', BatchPageController::class)->name('batches.public');
 Route::post('/lo/{batch:code}/phan-hoi', [PublicFeedbackController::class, 'store'])->middleware('throttle:5,1')->name('feedbacks.store');

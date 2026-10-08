@@ -131,4 +131,8 @@
 
         <button class="min-h-12 w-full rounded-lg bg-emerald-700 px-4 text-base font-semibold text-white hover:bg-emerald-800">Gửi đơn</button>
     </form>
+
+    {{-- Chừa chỗ để nút Hỏi đáp không che nút Gửi đơn trên điện thoại. --}}
+    <div class="h-16" aria-hidden="true"></div>
+    @include('partials.chatbot')
 </x-layouts.public>

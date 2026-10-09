@@ -149,7 +149,7 @@
                             class="mt-2 block w-full rounded-lg border border-stone-300 bg-stone-50 p-2 text-sm">{{ $messages[$farmer->id] }}</textarea>
                         <div class="mt-2 flex flex-wrap gap-2">
                             <button type="button" class="min-h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100"
-                                @click="navigator.clipboard.writeText($refs.message.value); copied = true; setTimeout(() => copied = false, 1500)">
+                                @click="copyText($refs.message.value).then(() => { copied = true; setTimeout(() => copied = false, 1500) })">
                                 <span x-show="!copied">Sao chép</span><span x-show="copied" x-cloak>Đã chép</span>
                             </button>
                             <a href="{{ $farmer->zaloLink() }}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center rounded-lg border border-stone-300 px-3 hover:bg-stone-100">Mở Zalo</a>

@@ -39,7 +39,7 @@
                     <span class="text-stone-600">Link báo sản lượng:</span>
                     <code class="break-all rounded bg-stone-100 px-1.5 py-0.5" x-ref="link">{{ route('farmer.show', $farmer->access_token) }}</code>
                     <button type="button" class="rounded-md border border-stone-300 px-2 py-1 hover:bg-stone-100"
-                        @click="navigator.clipboard.writeText($refs.link.textContent); copied = true; setTimeout(() => copied = false, 1500)">
+                        @click="copyText($refs.link.textContent).then(() => { copied = true; setTimeout(() => copied = false, 1500) })">
                         <span x-show="!copied">Sao chép</span><span x-show="copied" x-cloak>Đã chép</span>
                     </button>
                     <a href="{{ $farmer->zaloLink() }}" target="_blank" rel="noopener" class="text-emerald-800 underline">Mở Zalo</a>

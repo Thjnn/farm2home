@@ -68,6 +68,17 @@ class ChatbotTest extends TestCase
         $this->assertStringContainsString('18:00', $reply);
     }
 
+    public function test_dish_question_suggests_vegetables_instead_of_delivery_hours(): void
+    {
+        $reply = $this->ask('ngày mai tui có bữa tiệc tui cần rau nấu lẩu có thể giới thiệu vài nguyên liệu rau k');
+
+        $this->assertStringContainsString('Món lẩu bạn có thể chọn', $reply);
+        $this->assertStringContainsString('Rau muống: 12.000đ', $reply);
+        $this->assertStringContainsString('ngày giao sớm nhất', $reply);
+        // "bao lâu" bỏ dấu cũng thành "lau" nhưng không phải món lẩu.
+        $this->assertStringNotContainsString('Món lẩu', $this->ask('đặt trước bao lâu'));
+    }
+
     public function test_health_questions_get_no_medical_advice(): void
     {
         $this->assertStringContainsString('không tư vấn sức khỏe', $this->ask('bị tiểu đường nên ăn rau gì'));

@@ -57,4 +57,9 @@ class Customer extends Model
     {
         return $this->hasMany(PointTransaction::class);
     }
+
+    public function zaloLink(): string
+    {
+        return 'https://zalo.me/'.($this->zalo_phone ?: $this->phone);
+    }
 }

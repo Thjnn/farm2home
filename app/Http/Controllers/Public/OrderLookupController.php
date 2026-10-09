@@ -29,7 +29,8 @@ class OrderLookupController extends Controller
             ->orderByDesc('delivery_date')
             ->orderByDesc('id')
             ->limit(5)
-            ->get(['id', 'code', 'delivery_date', 'time_slot', 'status', 'total']);
+            ->get(['id', 'code', 'delivery_date', 'time_slot', 'status', 'total'])
+            ->load('items.batches.product');
 
         $customer = Customer::where('phone', $data['phone'])->first();
 

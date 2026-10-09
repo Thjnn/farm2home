@@ -40,6 +40,16 @@
                                 <span>{{ $order->delivery_date->format('d/m/Y') }} · {{ $order->time_slot }}</span>
                                 <span class="font-medium text-stone-900">@vnd($order->total)</span>
                             </div>
+                            @if ($order->feedbackBatches()->isNotEmpty())
+                                <div class="mt-3 border-t border-stone-100 pt-3">
+                                    <p class="text-sm text-stone-600">Xem nguồn gốc và đánh giá rau trong đơn:</p>
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        @foreach ($order->feedbackBatches() as $batch)
+                                            <a href="{{ route('batches.public', $batch->code) }}" class="inline-flex min-h-11 items-center rounded-lg border border-emerald-300 px-3 text-sm font-medium text-emerald-800 hover:bg-emerald-50">Đánh giá {{ $batch->product->name }}</a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </li>
                     @endforeach
                 </ul>

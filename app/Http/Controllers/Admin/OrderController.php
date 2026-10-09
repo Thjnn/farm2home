@@ -83,7 +83,7 @@ class OrderController extends Controller
 
     public function show(Order $order, LoyaltyService $loyalty): View
     {
-        $order->load('customer', 'zone', 'items.product', 'items.batches');
+        $order->load('customer', 'zone', 'items.product', 'items.batches.product');
 
         return view('admin.orders.show', ['order' => $order] + $this->loyaltyPanel($order, $loyalty));
     }

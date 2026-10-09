@@ -67,6 +67,21 @@
                 </dl>
             </section>
 
+            @if ($order->feedbackBatches()->isNotEmpty())
+                <section class="rounded-xl border border-stone-200 bg-white p-4 text-sm" x-data="{ copied: false }">
+                    <h2 class="mb-2 font-semibold">Nhờ khách đánh giá</h2>
+                    <textarea readonly rows="6" x-ref="message" aria-label="Tin nhắn nhờ khách đánh giá"
+                        class="block w-full rounded-lg border border-stone-300 bg-stone-50 p-2">{{ $order->feedbackRequestMessage() }}</textarea>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="min-h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100"
+                            @click="copyText($refs.message.value).then(() => { copied = true; setTimeout(() => copied = false, 1500) })">
+                            <span x-show="!copied">Sao chép</span><span x-show="copied" x-cloak>Đã chép</span>
+                        </button>
+                        <a href="{{ $order->customer->zaloLink() }}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center rounded-lg border border-stone-300 px-3 hover:bg-stone-100">Mở Zalo</a>
+                    </div>
+                </section>
+            @endif
+
             <section class="rounded-xl border border-stone-200 bg-white p-4 text-sm">
                 <h2 class="mb-2 font-semibold">Điểm thành viên</h2>
                 <p>Số dư: <span class="font-semibold">{{ $points }} điểm</span></p>

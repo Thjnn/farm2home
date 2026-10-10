@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Orders;
 
+use App\Models\Forecast;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -66,6 +67,47 @@ class ChatbotTest extends TestCase
 
         $this->assertStringContainsString('06:00-08:00', $reply);
         $this->assertStringContainsString('18:00', $reply);
+    }
+
+    public function test_forecast_question_gives_the_weekly_total_peak_day_and_reason(): void
+    {
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'predicted_total_kg' => 20.2, 'confirmed_kg' => 5]);
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-05', 'predicted_total_kg' => 10, 'confirmed_kg' => 8]);
+        // Lần chạy cũ hơn và phương pháp khác không được tính.
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'generated_on' => '2026-10-01', 'predicted_total_kg' => 50]);
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'method' => 'weekday_average', 'predicted_total_kg' => 70]);
+
+        $reply = $this->ask('dự báo số lượng rau muống tuần này như thế nào?');
+
+        $this->assertStringContainsString('Rau muống: dự kiến khách đặt khoảng 30 kg (03/10–05/10)', $reply);
+        $this->assertStringContainsString('Đông nhất thứ bảy 03/10, khoảng 20 kg, vì cuối tuần thường đông khách hơn', $reply);
+        $this->assertStringContainsString('không phải số rau đang còn', $reply);
+        $this->assertStringNotContainsString('12.000đ', $reply);
+    }
+
+    public function test_even_forecast_names_no_peak_day(): void
+    {
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'predicted_total_kg' => 10]);
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-04', 'predicted_total_kg' => 11]);
+
+        $reply = $this->ask('dự báo rau muống');
+
+        $this->assertStringContainsString('Các ngày khá đều, khoảng 10,5 kg mỗi ngày', $reply);
+        $this->assertStringNotContainsString('Đông nhất', $reply);
+    }
+
+    public function test_forecast_question_without_forecasts_says_so(): void
+    {
+        $this->assertStringContainsString('chưa có số dự kiến', $this->ask('nhu cầu rau tuần tới'));
+        $this->assertStringContainsString('ngày giao sớm nhất', $this->ask('dự kiến khi nào giao'));
+    }
+
+    public function test_delivery_date_answer_gives_the_date_and_the_reason(): void
+    {
+        $this->assertStringContainsString('ngày giao sớm nhất là thứ bảy 03/10, vì vẫn trước 18:00', mb_strtolower($this->ask('khi nào giao')));
+
+        $this->travelTo('2026-10-02 19:00:00');
+        $this->assertStringContainsString('chủ nhật 04/10, vì đã qua 18:00', mb_strtolower($this->ask('khi nào giao')));
     }
 
     public function test_dish_question_suggests_vegetables_instead_of_delivery_hours(): void

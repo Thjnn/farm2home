@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSupplyRequest;
 use App\Models\Farmer;
 use App\Models\HarvestPlan;
+use App\Services\ForecastService;
 use App\Services\HarvestPlanService;
 use App\Services\SupplyReportService;
 use Carbon\CarbonImmutable;
@@ -20,10 +21,11 @@ use Illuminate\View\View;
 
 class FarmerPortalController extends Controller
 {
-    public function show(Farmer $farmer, SupplyReportService $supply): View
+    public function show(Farmer $farmer, SupplyReportService $supply, ForecastService $forecasts): View
     {
         $this->ensureActive($farmer);
         $dates = $this->dates();
+        $products = $farmer->products()->where('is_active', true)->orderBy('products.id')->get();
 
         $reports = $farmer->supplyReports()
             ->whereDate('available_date', '>=', $dates[0])
@@ -35,7 +37,8 @@ class FarmerPortalController extends Controller
 
         return view('farmer.show', [
             'farmer' => $farmer,
-            'products' => $farmer->products()->where('is_active', true)->orderBy('products.id')->get(),
+            'products' => $products,
+            'outlooks' => $products->mapWithKeys(fn ($product) => [$product->id => $forecasts->outlook($product, today())])->filter(),
             'dates' => $dates,
             'reports' => $reports,
             'locked' => collect($dates)->mapWithKeys(fn ($date) => [$date => $supply->isLocked($date)]),

@@ -4,6 +4,7 @@ namespace Tests\Feature\Farmer;
 
 use App\Enums\HarvestPlanStatus;
 use App\Enums\SupplySource;
+use App\Models\Forecast;
 use App\Models\HarvestPlan;
 use App\Models\SupplyReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,6 +36,26 @@ class FarmerPortalTest extends TestCase
             ->assertSee('03/10')
             ->assertSee('09/10')
             ->assertDontSee('10/10');
+    }
+
+    public function test_farmer_sees_the_expected_demand_for_own_products_with_a_harvest_warning(): void
+    {
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'predicted_total_kg' => 20.2, 'confirmed_kg' => 5]);
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-04', 'predicted_total_kg' => 10]);
+        Forecast::factory()->create(['product_id' => $this->cn->id, 'target_date' => '2026-10-03', 'predicted_total_kg' => 99]);
+
+        $this->get($this->url)
+            ->assertOk()
+            ->assertSee('Tuần này khách dự kiến cần')
+            ->assertSee('khoảng 30 kg')
+            ->assertSee('thứ bảy 03/10: khoảng 20 kg', false)
+            ->assertSee('Chỉ cắt rau theo')
+            ->assertDontSee('Cải ngọt');
+    }
+
+    public function test_no_demand_box_without_forecasts(): void
+    {
+        $this->get($this->url)->assertOk()->assertDontSee('Tuần này khách dự kiến cần');
     }
 
     public function test_unknown_token_and_inactive_farmer_get_404(): void

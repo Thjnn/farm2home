@@ -38,6 +38,7 @@ Route::post('/lo/{batch:code}/phan-hoi', [PublicFeedbackController::class, 'stor
 
 Route::get('/tra-cuu', [OrderLookupController::class, 'show'])->name('lookup.show');
 Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('throttle:10,1')->name('lookup.search');
+Route::post('/diem-thuong', [OrderLookupController::class, 'points'])->middleware('throttle:20,1')->name('lookup.points');
 
 Route::prefix('nong-ho/{farmer:access_token}')->name('farmer.')->middleware('throttle:30,1')->group(function () {
     Route::get('/', [FarmerPortalController::class, 'show'])->name('show');

@@ -101,10 +101,10 @@
             <select id="requested_reward" name="requested_reward" class="block min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-base">
                 <option value="">Không đổi lần này</option>
                 @foreach ($rewards as $reward)
-                    <option value="{{ $reward->key }}" @selected(old('requested_reward') === $reward->key)>{{ $reward->label }} — {{ $reward->points }} điểm</option>
+                    <option value="{{ $reward->key }}" data-points="{{ $reward->points }}" data-label="{{ $reward->label }} — {{ $reward->points }} điểm" @selected(old('requested_reward') === $reward->key)>{{ $reward->label }} — {{ $reward->points }} điểm</option>
                 @endforeach
             </select>
-            <p class="mt-1 text-xs text-stone-500">Chúng tôi kiểm tra điểm khi xác nhận đơn. Xem điểm của bạn ở trang <a href="{{ route('lookup.show') }}" class="underline">Tra cứu đơn</a>.</p>
+            <p id="reward-points" class="mt-1 text-sm text-stone-600" aria-live="polite">Nhập số điện thoại để xem bạn có bao nhiêu điểm.</p>
             @error('requested_reward')
                 <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
             @enderror
@@ -134,5 +134,53 @@
 
     {{-- Chừa chỗ để nút Hỏi đáp không che nút Gửi đơn trên điện thoại. --}}
     <div class="h-16" aria-hidden="true"></div>
+
+    <script>
+        // Nhập đủ số điện thoại thì hỏi số điểm, làm mờ (khóa) quà chưa đủ điểm. Server vẫn kiểm tra lại khi gửi đơn.
+        (() => {
+            const phone = document.getElementById('phone');
+            const select = document.getElementById('requested_reward');
+            const status = document.getElementById('reward-points');
+            let asked = null;
+
+            const apply = (points) => {
+                for (const option of select.querySelectorAll('option[data-points]')) {
+                    const missing = Number(option.dataset.points) - points;
+                    option.disabled = missing > 0;
+                    option.textContent = option.dataset.label + (missing > 0 ? ` (còn thiếu ${missing} điểm)` : '');
+                }
+                if (select.selectedOptions[0]?.disabled) {
+                    select.value = '';
+                }
+                status.textContent = `Bạn đang có ${points} điểm.` + (points === 0 ? ' Mỗi đơn giao xong sẽ được cộng điểm.' : '');
+            };
+
+            const check = async () => {
+                const value = phone.value.trim();
+                if (!/^0\d{9}$/.test(value) || value === asked) {
+                    return;
+                }
+                asked = value;
+                status.textContent = 'Đang xem điểm của bạn…';
+                try {
+                    const response = await fetch('{{ route('lookup.points') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                        body: JSON.stringify({ phone: value }),
+                    });
+                    if (!response.ok) {
+                        throw new Error(response.status);
+                    }
+                    apply((await response.json()).points);
+                } catch {
+                    asked = null;
+                    status.textContent = 'Chưa xem được điểm. Chúng tôi sẽ kiểm tra điểm khi xác nhận đơn.';
+                }
+            };
+
+            phone.addEventListener('input', check);
+            check();
+        })();
+    </script>
     @include('partials.chatbot')
 </x-layouts.public>

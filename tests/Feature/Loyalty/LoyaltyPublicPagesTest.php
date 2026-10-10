@@ -54,12 +54,15 @@ class LoyaltyPublicPagesTest extends TestCase
 
     public function test_requested_reward_is_stored_without_touching_points_or_totals(): void
     {
+        $customer = Customer::factory()->create(['phone' => '0988000001']);
+        PointTransaction::factory()->create(['customer_id' => $customer->id, 'points' => 30]);
+
         $this->post('/dat-hang', $this->form(['requested_reward' => 'free_shipping']))->assertRedirect('/dat-hang/cam-on');
 
         $order = Order::firstOrFail();
         $this->assertSame('free_shipping', $order->requested_reward);
         $this->assertSame([10000, 34000], [$order->shipping_fee, $order->total]);
-        $this->assertSame(0, PointTransaction::count());
+        $this->assertSame(1, PointTransaction::count());
 
         $this->get('/dat-hang/cam-on')
             ->assertOk()
@@ -73,6 +76,30 @@ class LoyaltyPublicPagesTest extends TestCase
 
         $this->assertNull(Order::firstOrFail()->requested_reward);
         $this->get('/dat-hang/cam-on')->assertOk()->assertDontSee('Yêu cầu đổi quà');
+    }
+
+    public function test_reward_above_the_balance_is_rejected(): void
+    {
+        $customer = Customer::factory()->create(['phone' => '0988000001']);
+        PointTransaction::factory()->create(['customer_id' => $customer->id, 'points' => 25]);
+
+        $this->post('/dat-hang', $this->form(['requested_reward' => 'free_shipping']))
+            ->assertSessionHasErrors(['requested_reward' => 'Bạn đang có 25 điểm, chưa đủ 30 điểm để đổi quà này.']);
+        $this->post('/dat-hang', $this->form(['phone' => '0988000999', 'requested_reward' => 'small_bunch']))
+            ->assertSessionHasErrors('requested_reward');
+
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_points_endpoint_returns_the_balance_for_a_phone(): void
+    {
+        $customer = Customer::factory()->create(['phone' => '0988000001']);
+        PointTransaction::factory()->create(['customer_id' => $customer->id, 'points' => 35]);
+
+        $this->postJson('/diem-thuong', ['phone' => '0988000001'])->assertOk()->assertExactJson(['points' => 35]);
+        $this->postJson('/diem-thuong', ['phone' => '0988000999'])->assertOk()->assertExactJson(['points' => 0]);
+        $this->postJson('/diem-thuong', ['phone' => '123'])->assertUnprocessable();
+        $this->get('/dat-hang')->assertSee('data-points="30"', false)->assertSee('Nhập số điện thoại để xem bạn có bao nhiêu điểm.');
     }
 
     public function test_unknown_reward_key_is_rejected_and_no_order_is_created(): void

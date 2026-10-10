@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Services\LoyaltyService;
 use App\Support\Reward;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -15,6 +16,17 @@ class OrderLookupController extends Controller
     public function show(): View
     {
         return view('public.orders.lookup', ['orders' => null, 'phone' => null, 'points' => null, 'rewards' => []]);
+    }
+
+    /**
+     * Số điểm của số điện thoại, để form đặt hàng làm mờ quà chưa đủ điểm. Số chưa từng đặt = 0 điểm.
+     */
+    public function points(Request $request, LoyaltyService $loyalty): JsonResponse
+    {
+        $data = $request->validate(['phone' => ['required', 'regex:/^0\d{9}$/']]);
+        $customer = Customer::where('phone', $data['phone'])->first();
+
+        return response()->json(['points' => $customer === null ? 0 : $loyalty->balance($customer)]);
     }
 
     /**

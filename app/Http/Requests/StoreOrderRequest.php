@@ -4,10 +4,13 @@ namespace App\Http\Requests;
 
 use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
+use App\Models\Customer;
 use App\Models\DeliveryZone;
+use App\Services\LoyaltyService;
 use App\Support\OrderWindow;
 use App\Support\Reward;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -20,7 +23,7 @@ class StoreOrderRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, ValidationRule|string>>
+     * @return array<string, array<int, ValidationRule|Closure|string>>
      */
     public function rules(): array
     {
@@ -43,7 +46,15 @@ class StoreOrderRequest extends FormRequest
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'data_consent' => ['accepted'],
             'note' => ['nullable', 'string', 'max:500'],
-            'requested_reward' => ['nullable', Rule::in(Reward::keys())],
+            'requested_reward' => ['nullable', Rule::in(Reward::keys()), function (string $attribute, mixed $value, Closure $fail) {
+                $reward = Reward::find($value);
+                $customer = Customer::where('phone', $this->input('phone'))->first();
+                $points = $customer === null ? 0 : app(LoyaltyService::class)->balance($customer);
+
+                if ($reward !== null && $reward->points > $points) {
+                    $fail("Bạn đang có {$points} điểm, chưa đủ {$reward->points} điểm để đổi quà này.");
+                }
+            }],
         ];
     }
 

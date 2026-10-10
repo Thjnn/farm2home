@@ -3,134 +3,94 @@
         @vite('resources/js/dashboard.js')
     </x-slot:head>
 
-    <div class="mb-4 flex flex-wrap items-center gap-3">
-        <form method="POST" action="{{ route('admin.forecasts.run') }}">
-            @csrf
-            <button class="min-h-11 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Chạy dự báo hôm nay</button>
-        </form>
-        <form method="POST" action="{{ route('admin.forecasts.backfill') }}">
-            @csrf
-            <button class="min-h-11 rounded-lg border border-stone-300 bg-white px-4 hover:bg-stone-100">Cập nhật số thực tế</button>
-        </form>
-    </div>
+    @php
+        $current = $accuracy[$method->value] ?? null;
+        $dayName = function (string $date): string {
+            $day = \Carbon\Carbon::parse($date)->locale('vi');
+            $prefix = match ((int) today()->diffInDays($day, false)) {
+                0 => 'Hôm nay · ',
+                1 => 'Ngày mai · ',
+                2 => 'Ngày kia · ',
+                default => '',
+            };
 
-    <nav class="mb-3 flex flex-wrap gap-2" aria-label="Chọn phương pháp">
-        @foreach ($methods as $candidate)
-            @continue(in_array($candidate, [\App\Enums\ForecastMethod::Manual, \App\Enums\ForecastMethod::TreeRegression], true))
-            <a href="{{ route('admin.forecasts.index', array_filter(['method' => $candidate->value, 'product' => $product?->id])) }}"
-               @class([
-                   'inline-flex min-h-11 items-center rounded-lg border px-3 text-sm',
-                   'border-emerald-700 bg-emerald-700 font-semibold text-white' => $candidate === $method,
-                   'border-stone-300 bg-white hover:bg-stone-100' => $candidate !== $method,
-               ])
-               @if ($candidate === $method) aria-current="page" @endif>
-                {{ $candidate->label() }}@if ($candidate === $planMethod)<span class="ml-1 text-xs font-normal">(đang dùng cho kế hoạch)</span>@endif
-            </a>
-        @endforeach
-    </nav>
+            return $prefix.str($day->isoFormat('dddd, DD/MM'))->ucfirst();
+        };
+    @endphp
 
-    <p class="mb-4 text-sm text-stone-700">
-        Đang xem: <span class="font-semibold">{{ $method->label() }}</span> ·
-        @if ($latestRun)
-            Lần chạy gần nhất: <span class="font-semibold">{{ \Carbon\Carbon::parse($latestRun)->format('d/m/Y') }}</span>
+    {{-- 1. Máy đoán thế nào, nói ngắn gọn --}}
+    <section class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-stone-800">
+        <h2 class="mb-1 text-lg font-semibold">Mấy ngày tới cần bao nhiêu rau?</h2>
+        <p class="leading-relaxed">
+            Máy xem <strong>khách đã đặt bao nhiêu</strong> và <strong>những ngày trước bán được bao nhiêu</strong>,
+            rồi đoán mỗi loại rau cần khoảng bao nhiêu kg. Đây chỉ là gợi ý: người điều phối luôn xem lại rồi mới báo cho nông hộ.
+        </p>
+        <p class="mt-2 text-sm text-stone-600">
+            Cách đoán đang xem: <strong>{{ $method->plainExplanation() }}</strong>
+            @if ($latestRun)
+                · Đoán lần gần nhất ngày <strong>{{ \Carbon\Carbon::parse($latestRun)->format('d/m/Y') }}</strong>
+            @endif
+        </p>
+    </section>
+
+    {{-- 2. Máy đoán có đúng không --}}
+    <section class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
+        <h2 class="mb-2 font-semibold">Máy đoán có đúng không? (14 ngày qua)</h2>
+        @if ($current === null)
+            <p class="text-sm text-stone-600">Chưa đủ số liệu để chấm điểm. Sau ngày giao, bấm "Cập nhật số thực tế" bên dưới.</p>
         @else
-            Chưa chạy dự báo lần nào.
-        @endif
-    </p>
-
-    <section class="mb-6 rounded-xl border border-stone-200 bg-white p-4">
-        <h2 class="mb-1 font-semibold">Độ chính xác 14 ngày gần nhất (dự báo trước 1 ngày)</h2>
-        <p class="mb-2 text-xs text-stone-500">Bảng này luôn so sánh cả 3 phương pháp nên không đổi khi bấm nút chọn. Dòng tô đậm là phương pháp đang xem. Biểu đồ và các bảng theo ngày giao bên dưới thì đổi theo nút.</p>
-        @if ($accuracy === [])
-            <p class="text-sm text-stone-500">Chưa có dự báo nào đã có số thực tế. Bấm "Cập nhật số thực tế" sau ngày giao.</p>
-        @else
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[560px] text-left text-sm">
-                    <thead class="border-b border-stone-200 text-stone-600">
-                        <tr>
-                            <th class="py-2 pr-3 font-medium">Phương pháp</th>
-                            <th class="py-2 pr-3 text-right font-medium">Số điểm</th>
-                            <th class="py-2 pr-3 text-right font-medium">MAE</th>
-                            <th class="py-2 pr-3 text-right font-medium">MAPE</th>
-                            <th class="py-2 pr-3 text-right font-medium">WAPE</th>
-                            <th class="py-2 text-right font-medium">Lệch dư/thiếu</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-100">
-                        @foreach ($methods as $candidate)
-                            @continue(! isset($accuracy[$candidate->value]))
-                            @php($row = $accuracy[$candidate->value])
-                            <tr @class(["bg-emerald-50 font-semibold" => $candidate === $method])>
-                                <td class="py-2 pr-3">
-                                    {{ $candidate->label() }}
-                                    @if ($candidate === $bestMethod)
-                                        <span class="ml-1 rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-800">Sai số thấp nhất</span>
-                                    @endif
-                                </td>
-                                <td class="py-2 pr-3 text-right">{{ $row['n'] }}</td>
-                                <td class="py-2 pr-3 text-right">@kg($row['mae'])</td>
-                                <td class="py-2 pr-3 text-right">{{ $row['mape'] === null ? '—' : number_format($row['mape'], 1, ',', '.').'%' }}</td>
-                                <td class="py-2 pr-3 text-right">{{ $row['wape'] === null ? '—' : number_format($row['wape'], 1, ',', '.').'%' }}</td>
-                                <td class="py-2 text-right">{{ $row['bias'] > 0 ? '+' : '' }}@kg($row['bias'])</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-3 rounded-lg bg-emerald-50 p-3 text-sm leading-relaxed text-stone-700">
-                @php($current = $accuracy[$method->value] ?? null)
-                <div class="flex items-start gap-2" aria-live="polite">
-                    <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-xs font-bold text-white" aria-hidden="true">AI</span>
-                    <div class="rounded-2xl rounded-tl-sm bg-white px-3 py-2 shadow-sm ring-1 ring-emerald-100">
-                        <p class="mb-1 text-xs font-medium text-emerald-800">Trợ lý dự báo · {{ $method->label() }}</p>
-                        @if ($current === null)
-                            <p>Phương pháp <strong>{{ $method->label() }}</strong> chưa có dự báo nào đã có số thực tế để chấm điểm trong 14 ngày qua.</p>
-                        @else
-                            <p>
-                                Trong 14 ngày qua mình đã chấm {{ $current['n'] }} lần dự báo của phương pháp <strong>{{ $method->label() }}</strong>.
-                                Trung bình mỗi loại rau mỗi ngày nó đoán lệch <strong>@kg($current['mae'])</strong>.
-                                Cộng tất cả lại, phần đoán lệch bằng khoảng <strong>@pct($current['wape'])</strong> tổng số rau thực tế đã giao.
-                            </p>
-                            <p class="mt-1">
-                                @if (abs($current['bias']) < 0.1)
-                                    Phần đoán dư và đoán thiếu gần như cân nhau, nên nó không nghiêng về phía nào.
-                                @elseif ($current['bias'] > 0)
-                                    Nó hay đoán <strong>dư</strong> khoảng @kg($current['bias']) mỗi loại mỗi ngày.
-                                    Với {{ $products->count() }} loại rau, nếu làm theo nó có thể thu hoạch thừa khoảng @kg($current['bias'] * $products->count()) mỗi ngày.
-                                @else
-                                    Nó hay đoán <strong>thiếu</strong> khoảng @kg(abs($current['bias'])) mỗi loại mỗi ngày.
-                                    Với {{ $products->count() }} loại rau, nếu làm theo nó có thể thiếu khoảng @kg(abs($current['bias']) * $products->count()) rau giao khách mỗi ngày.
-                                @endif
-                            </p>
-                            <p class="mt-1">
-                                @if ($method === $bestMethod)
-                                    Đây là phương pháp <strong>đoán sát nhất</strong> trong các cách đang so sánh.
-                                @elseif ($bestMethod)
-                                    Phương pháp đoán sát nhất hiện là <strong>{{ $bestMethod->label() }}</strong> (lệch @pct($accuracy[$bestMethod->value]['wape'])), nên cách này chưa phải lựa chọn tốt nhất.
-                                @endif
-                                @if ($method === $planMethod)
-                                    Kế hoạch thu hoạch đang dùng phương pháp này.
-                                @endif
-                            </p>
-                        @endif
-                    </div>
+            @php($hitRate = max(0, 100 - (float) $current['wape']))
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex size-24 shrink-0 flex-col items-center justify-center rounded-full border-4 {{ $hitRate >= config('farm2home.forecast.target_hit_rate') ? 'border-emerald-600' : ($hitRate >= 60 ? 'border-amber-500' : 'border-red-500') }}">
+                    <span class="text-2xl font-bold">{{ number_format($hitRate, 0) }}%</span>
+                    <span class="text-xs text-stone-600">đoán đúng</span>
                 </div>
-                <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-stone-600">
-                    <li><strong>Dự báo trước 1 ngày</strong>: chỉ chấm các con số được dự báo hôm trước cho ngày giao hôm sau, tức đúng con số dùng để quyết định thu hoạch.</li>
-                    <li><strong>Số điểm</strong>: số lần dự báo đã có số thực tế để so (mỗi loại rau × mỗi ngày giao là 1 lần). Càng nhiều điểm thì kết quả càng đáng tin.</li>
-                    <li><strong>MAE</strong>: trung bình mỗi lần đoán lệch bao nhiêu kg, không phân biệt đoán dư hay đoán thiếu.</li>
-                    <li><strong>MAPE</strong>: trung bình mỗi lần đoán lệch bao nhiêu % so với thực tế. Loại rau bán ít (1–2 kg) chỉ lệch 1 kg cũng thành 50%, nên con số này thường cao hơn thực chất.</li>
-                    <li><strong>WAPE</strong>: tổng số kg đoán lệch chia cho tổng số kg thực tế. Đây là thước đo chính để chọn phương pháp. Càng thấp càng tốt.</li>
-                    <li><strong>Lệch dư/thiếu</strong>: trung bình của (dự báo − thực tế). Số dương (+) là hay đoán dư, dễ thừa rau. Số âm (−) là hay đoán thiếu, dễ thiếu hàng. Càng gần 0 càng tốt.</li>
+                <ul class="min-w-0 flex-1 space-y-1 leading-relaxed">
+                    <li>Cứ <strong>100 kg</strong> rau thật sự giao, máy đoán đúng khoảng <strong>{{ number_format($hitRate, 0) }} kg</strong>.</li>
+                    <li>Mỗi loại rau mỗi ngày, máy đoán lệch trung bình <strong>@kg($current['mae'])</strong>.</li>
+                    <li>
+                        @if (abs($current['bias']) < 0.1)
+                            Máy không hay đoán dư hay đoán thiếu, khá cân bằng.
+                        @elseif ($current['bias'] > 0)
+                            Máy hay đoán <strong>dư</strong> một chút (khoảng @kg($current['bias']) mỗi loại mỗi ngày), nên cẩn thận kẻo thừa rau.
+                        @else
+                            Máy hay đoán <strong>thiếu</strong> một chút (khoảng @kg(abs($current['bias'])) mỗi loại mỗi ngày), nên có thể chuẩn bị thêm.
+                        @endif
+                    </li>
                 </ul>
             </div>
+            <p class="mt-2 text-xs text-stone-500">Dựa trên {{ $current['n'] }} lần đoán đã có số thật để so (mỗi loại rau mỗi ngày là 1 lần).</p>
+
+            @if ($worstDays !== [])
+                <div class="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm leading-relaxed text-stone-800" role="alert">
+                    <p class="font-semibold text-amber-900">⚠ Đoán đúng dưới {{ config('farm2home.forecast.target_hit_rate') }}%. Những ngày máy đoán lệch nhiều nhất:</p>
+                    <ul class="mt-1 space-y-1">
+                        @foreach ($worstDays as $day)
+                            @php($gap = $day['predicted'] - $day['actual'])
+                            <li>
+                                <strong>{{ str($day['date']->locale('vi')->isoFormat('dddd DD/MM'))->ucfirst() }}</strong>:
+                                máy đoán @kg($day['predicted']), thực tế @kg($day['actual'])
+                                ({{ $gap >= 0 ? 'dư' : 'thiếu' }} @kg(abs($gap))).
+                                <span class="text-stone-600">
+                                    {{ $gap >= 0 ? 'Khách mua ít hơn mọi khi' : 'Khách mua nhiều hơn mọi khi' }}{{ $day['cancelled'] > 0 ? ", có {$day['cancelled']} đơn bị hủy" : '' }}.
+                                </span>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <p class="mt-2 text-xs text-stone-600">Hãy xem ngày đó có mưa bão, nghỉ lễ, hay đơn chưa được nhập đủ không. Ngày lệch sẽ tự ra khỏi bảng điểm sau 14 ngày.</p>
+                </div>
+            @endif
         @endif
     </section>
 
+    {{-- 3. Biểu đồ --}}
     @if ($chart)
-        <figure class="mb-6 rounded-xl border border-stone-200 bg-white p-4">
+        <figure class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <figcaption class="text-sm font-medium text-stone-700">Nhu cầu 28 ngày qua và dự báo 7 ngày tới (kg)</figcaption>
+                <figcaption>
+                    <span class="font-semibold">Rau đã bán và rau máy đoán (kg)</span>
+                    <span class="block text-xs text-stone-500">Đường liền: số đã bán thật 4 tuần qua. Đường đứt: máy đoán 7 ngày tới. Vùng tô màu: có thể ít hơn hoặc nhiều hơn trong khoảng này.</span>
+                </figcaption>
                 <form method="GET" action="{{ route('admin.forecasts.index') }}">
                     <input type="hidden" name="method" value="{{ $method->value }}">
                     <label class="sr-only" for="chart-product">Loại rau</label>
@@ -144,40 +104,121 @@
                     <noscript><button class="min-h-11 rounded-lg border border-stone-300 px-3 text-sm">Xem</button></noscript>
                 </form>
             </div>
-            <div class="h-64"><canvas id="chart-forecast" role="img" aria-label="Biểu đồ đường: nhu cầu thực tế 28 ngày qua và dự báo 7 ngày tới kèm khoảng thấp–cao"></canvas></div>
+            <div class="h-64"><canvas id="chart-forecast" role="img" aria-label="Biểu đồ đường: rau đã bán 4 tuần qua và rau máy đoán 7 ngày tới"></canvas></div>
         </figure>
         <script type="application/json" id="chart-forecast-data">@json($chart)</script>
     @endif
 
+    {{-- 4. Từng ngày giao: mỗi loại rau cần bao nhiêu --}}
     @forelse ($byDate as $date => $rows)
-        <section class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
-            <h2 class="mb-2 font-semibold">Ngày giao {{ str(\Carbon\Carbon::parse($date)->locale('vi')->isoFormat('dddd, DD/MM/YYYY'))->ucfirst() }}</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[520px] text-left text-sm">
-                    <thead class="border-b border-stone-200 text-stone-600">
-                        <tr>
-                            <th class="py-2 pr-3 font-medium">Loại rau</th>
-                            <th class="py-2 pr-3 text-right font-medium">Đã đặt</th>
-                            <th class="py-2 pr-3 text-right font-medium">Dự báo thêm</th>
-                            <th class="py-2 pr-3 text-right font-medium">Tổng dự báo</th>
-                            <th class="py-2 text-right font-medium">Khoảng</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-100">
-                        @foreach ($rows as $forecast)
-                            <tr>
-                                <td class="py-2 pr-3">{{ $forecast->product->name }}</td>
-                                <td class="py-2 pr-3 text-right">@kg($forecast->confirmed_kg)</td>
-                                <td class="py-2 pr-3 text-right">@kg($forecast->predicted_extra_kg)</td>
-                                <td class="py-2 pr-3 text-right font-semibold">@kg($forecast->predicted_total_kg)</td>
-                                <td class="py-2 text-right text-stone-600">@kg($forecast->lower_kg) – @kg($forecast->upper_kg)</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        <details class="group mb-3 rounded-xl border border-stone-200 bg-white" @if ($loop->first) open @endif>
+            <summary class="flex min-h-12 cursor-pointer items-center justify-between gap-2 px-4 py-3 font-semibold">
+                <span>{{ $dayName($date) }}</span>
+                <span class="text-sm font-normal text-stone-600">Cần khoảng <strong class="text-stone-900">@kg($rows->sum('predicted_total_kg'))</strong> rau</span>
+            </summary>
+            <ul class="grid gap-3 px-4 pb-4 sm:grid-cols-2">
+                @foreach ($rows as $forecast)
+                    @php($total = (float) $forecast->predicted_total_kg)
+                    @php($orderedShare = $total > 0 ? round((float) $forecast->confirmed_kg / $total * 100) : 0)
+                    <li class="rounded-lg border border-stone-200 p-3">
+                        <div class="flex items-baseline justify-between gap-2">
+                            <span class="font-medium">{{ $forecast->product->name }}</span>
+                            <span class="text-xl font-bold text-emerald-800">@kg($total)</span>
+                        </div>
+                        <div class="my-2 flex h-3 overflow-hidden rounded-full bg-emerald-100" aria-hidden="true">
+                            <div class="bg-emerald-700" style="width: {{ $orderedShare }}%"></div>
+                        </div>
+                        <p class="text-sm leading-relaxed text-stone-700">
+                            <span class="inline-block size-2.5 rounded-full bg-emerald-700" aria-hidden="true"></span> Khách đã đặt: <strong>@kg($forecast->confirmed_kg)</strong><br>
+                            <span class="inline-block size-2.5 rounded-full bg-emerald-200" aria-hidden="true"></span> Đoán khách đặt thêm: <strong>@kg($forecast->predicted_extra_kg)</strong>
+                        </p>
+                        <p class="mt-1 text-xs text-stone-500">Có thể từ @kg($forecast->lower_kg) đến @kg($forecast->upper_kg).</p>
+                    </li>
+                @endforeach
+            </ul>
+        </details>
     @empty
         <p class="rounded-lg bg-stone-100 px-4 py-3 text-sm text-stone-700">Chưa có dự báo. Bấm "Chạy dự báo hôm nay" để bắt đầu.</p>
     @endforelse
+
+    {{-- 5. Nút thao tác --}}
+    <div class="my-4 flex flex-wrap items-center gap-3">
+        <form method="POST" action="{{ route('admin.forecasts.run') }}">
+            @csrf
+            <button class="min-h-11 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Chạy dự báo hôm nay</button>
+        </form>
+        <form method="POST" action="{{ route('admin.forecasts.backfill') }}">
+            @csrf
+            <button class="min-h-11 rounded-lg border border-stone-300 bg-white px-4 hover:bg-stone-100">Cập nhật số thực tế</button>
+        </form>
+    </div>
+
+    {{-- 6. Chi tiết kỹ thuật: gập lại, chỉ người điều phối cần --}}
+    <details class="rounded-xl border border-stone-200 bg-white" @if (request()->has('method')) open @endif>
+        <summary class="flex min-h-12 cursor-pointer items-center px-4 py-3 font-semibold">So sánh các cách đoán (chi tiết kỹ thuật)</summary>
+        <div class="px-4 pb-4">
+            <nav class="mb-3 flex flex-wrap gap-2" aria-label="Chọn cách đoán">
+                @foreach ($methods as $candidate)
+                    @continue(in_array($candidate, [\App\Enums\ForecastMethod::Manual, \App\Enums\ForecastMethod::TreeRegression], true))
+                    <a href="{{ route('admin.forecasts.index', array_filter(['method' => $candidate->value, 'product' => $product?->id])) }}"
+                       @class([
+                           'inline-flex min-h-11 items-center rounded-lg border px-3 text-sm',
+                           'border-emerald-700 bg-emerald-700 font-semibold text-white' => $candidate === $method,
+                           'border-stone-300 bg-white hover:bg-stone-100' => $candidate !== $method,
+                       ])
+                       @if ($candidate === $method) aria-current="page" @endif>
+                        {{ $candidate->label() }}@if ($candidate === $planMethod)<span class="ml-1 text-xs font-normal">(đang dùng cho kế hoạch)</span>@endif
+                    </a>
+                @endforeach
+            </nav>
+
+            @if ($accuracy === [])
+                <p class="text-sm text-stone-500">Chưa có dự báo nào đã có số thực tế.</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[560px] text-left text-sm">
+                        <thead class="border-b border-stone-200 text-stone-600">
+                            <tr>
+                                <th class="py-2 pr-3 font-medium">Cách đoán</th>
+                                <th class="py-2 pr-3 text-right font-medium">Đoán đúng</th>
+                                <th class="py-2 pr-3 text-right font-medium">Số điểm</th>
+                                <th class="py-2 pr-3 text-right font-medium">MAE</th>
+                                <th class="py-2 pr-3 text-right font-medium">MAPE</th>
+                                <th class="py-2 pr-3 text-right font-medium">WAPE</th>
+                                <th class="py-2 text-right font-medium">Lệch dư/thiếu</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-stone-100">
+                            @foreach ($methods as $candidate)
+                                @continue(! isset($accuracy[$candidate->value]))
+                                @php($row = $accuracy[$candidate->value])
+                                <tr @class(['bg-emerald-50 font-semibold' => $candidate === $method])>
+                                    <td class="py-2 pr-3">
+                                        {{ $candidate->label() }}
+                                        @if ($candidate === $bestMethod)
+                                            <span class="ml-1 rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-800">Đoán sát nhất</span>
+                                        @endif
+                                        <span class="block text-xs font-normal text-stone-500">{{ $candidate->plainExplanation() }}</span>
+                                    </td>
+                                    <td class="py-2 pr-3 text-right">{{ $row['wape'] === null ? '—' : number_format(max(0, 100 - $row['wape']), 0).'%' }}</td>
+                                    <td class="py-2 pr-3 text-right">{{ $row['n'] }}</td>
+                                    <td class="py-2 pr-3 text-right">@kg($row['mae'])</td>
+                                    <td class="py-2 pr-3 text-right">@pct($row['mape'])</td>
+                                    <td class="py-2 pr-3 text-right">@pct($row['wape'])</td>
+                                    <td class="py-2 text-right">{{ $row['bias'] > 0 ? '+' : '' }}@kg($row['bias'])</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="mt-3 list-disc space-y-1 pl-5 text-xs text-stone-600">
+                    <li><strong>Đoán đúng</strong> = 100% − WAPE. Chỉ chấm con số đoán trước 1 ngày, tức con số dùng để quyết định thu hoạch.</li>
+                    <li><strong>MAE</strong>: mỗi lần đoán lệch trung bình bao nhiêu kg.</li>
+                    <li><strong>MAPE</strong>: mỗi lần lệch bao nhiêu % so với thực tế. Rau bán ít (1–2 kg) lệch 1 kg đã thành 50%, nên số này thường cao.</li>
+                    <li><strong>WAPE</strong>: tổng kg đoán lệch chia tổng kg thực tế. Đây là thước đo chính để chọn cách đoán; càng thấp càng tốt.</li>
+                    <li><strong>Lệch dư/thiếu</strong>: dương (+) là hay đoán dư, âm (−) là hay đoán thiếu. Càng gần 0 càng tốt.</li>
+                </ul>
+            @endif
+        </div>
+    </details>
 </x-layouts.admin>

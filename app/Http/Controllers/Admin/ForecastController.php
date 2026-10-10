@@ -30,6 +30,10 @@ class ForecastController extends Controller
             ->get();
 
         $accuracy = $forecasts->accuracy(today()->subDays(14), today());
+        $wape = $accuracy[$method->value]['wape'] ?? null;
+        $worstDays = $wape !== null && 100 - $wape < config('farm2home.forecast.target_hit_rate')
+            ? $forecasts->worstDays(today()->subDays(14), today(), $method)
+            : [];
         $bestMethod = collect($accuracy)->filter(fn (array $row) => $row['wape'] !== null)->sortBy('wape')->keys()->first();
 
         return view('admin.forecasts.index', [
@@ -38,6 +42,7 @@ class ForecastController extends Controller
             'latestRun' => $latestRun,
             'byDate' => $rows->groupBy(fn (Forecast $forecast) => $forecast->target_date->toDateString()),
             'accuracy' => $accuracy,
+            'worstDays' => $worstDays,
             'bestMethod' => $bestMethod === null ? null : ForecastMethod::from($bestMethod),
             'methods' => ForecastMethod::cases(),
             'products' => $products,
@@ -55,7 +60,8 @@ class ForecastController extends Controller
 
     public function backfill(ForecastService $forecasts): RedirectResponse
     {
-        $count = $forecasts->backfillActuals(today());
+        // Hôm nay chưa giao xong: điền bây giờ sẽ chốt một số thực tế còn thiếu (chỉ điền dòng còn trống).
+        $count = $forecasts->backfillActuals(today()->subDay());
 
         return back()->with('status', "Đã cập nhật số thực tế cho {$count} dòng.");
     }

@@ -20,4 +20,18 @@ enum ForecastMethod: string
             self::WeekdayAverage => 'Trung bình cùng thứ (4 tuần)',
         };
     }
+
+    /**
+     * Cách đoán, nói bằng lời thường cho người không chuyên.
+     */
+    public function plainExplanation(): string
+    {
+        return match ($this) {
+            self::MovingAverage => 'Lấy trung bình số rau bán được trong 7 ngày gần nhất.',
+            self::ExpSmoothing => 'Xem các ngày đã qua, nhưng coi trọng mấy ngày gần đây hơn.',
+            self::TreeRegression => 'Mô hình học máy, sẽ dùng khi có đủ dữ liệu.',
+            self::Manual => 'Người điều phối tự nhập.',
+            self::WeekdayAverage => 'Lấy trung bình của cùng thứ trong 4 tuần trước (ví dụ các ngày Thứ Bảy).',
+        };
+    }
 }

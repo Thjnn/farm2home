@@ -61,11 +61,11 @@ if (forecastCanvas) {
         data: {
             labels: data.labels,
             datasets: [
-                { label: 'Thực tế', data: data.actual, borderColor: SERIES_1, backgroundColor: SERIES_1, ...line },
-                { label: 'Dự báo', data: data.forecast, borderColor: SERIES_2, backgroundColor: SERIES_2, borderDash: [6, 4], ...line },
+                { label: 'Đã bán thật', data: data.actual, borderColor: SERIES_1, backgroundColor: SERIES_1, ...line },
+                { label: 'Máy đoán', data: data.forecast, borderColor: SERIES_2, backgroundColor: SERIES_2, borderDash: [6, 4], ...line },
                 // Band: upper line filled down to the lower line; both lines hidden from the legend.
-                { label: 'Khoảng thấp', data: data.lower, borderWidth: 0, pointRadius: 0, pointHitRadius: 0 },
-                { label: 'Khoảng cao', data: data.upper, borderWidth: 0, pointRadius: 0, pointHitRadius: 0, fill: '-1', backgroundColor: 'rgba(235, 104, 52, 0.15)' },
+                { label: 'Ít nhất', data: data.lower, borderWidth: 0, pointRadius: 0, pointHitRadius: 0 },
+                { label: 'Nhiều nhất', data: data.upper, borderWidth: 0, pointRadius: 0, pointHitRadius: 0, fill: '-1', backgroundColor: 'rgba(235, 104, 52, 0.15)' },
             ],
         },
         options: {

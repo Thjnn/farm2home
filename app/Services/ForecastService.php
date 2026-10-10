@@ -166,6 +166,80 @@ class ForecastService
     }
 
     /**
+     * Nhu cầu dự kiến các ngày giao sắp tới của một loại rau, theo lần chạy gần nhất của phương pháp đang dùng cho kế hoạch.
+     * Dùng cho chatbot và trang nông hộ; null = chưa có dự báo cho các ngày tới.
+     *
+     * @return array{from: CarbonImmutable, to: CarbonImmutable, total: float, average: float, peak: array{date: CarbonImmutable, kg: float, confirmed: float}|null}|null
+     */
+    public function outlook(Product $product, CarbonInterface $today): ?array
+    {
+        $method = ForecastMethod::from(config('farm2home.forecast.default_method'));
+        $latestRun = Forecast::where('product_id', $product->id)->where('method', $method)
+            ->whereDate('generated_on', '<=', $today->toDateString())
+            ->max('generated_on');
+        if ($latestRun === null) {
+            return null;
+        }
+
+        $days = Forecast::where('product_id', $product->id)->where('method', $method)
+            ->whereDate('generated_on', $latestRun)
+            ->whereDate('target_date', '>', $today->toDateString())
+            ->orderBy('target_date')
+            ->get();
+        if ($days->isEmpty()) {
+            return null;
+        }
+
+        $peak = $days->sortByDesc('predicted_total_kg')->first();
+        $average = (float) $days->avg('predicted_total_kg');
+
+        return [
+            'from' => CarbonImmutable::parse($days->first()->target_date),
+            'to' => CarbonImmutable::parse($days->last()->target_date),
+            'total' => round((float) $days->sum('predicted_total_kg'), 2),
+            'average' => round($average, 2),
+            // Ngày đông nhất chỉ đáng nói khi cao hơn trung bình rõ rệt (≥ 20%), không thì các ngày coi như đều nhau.
+            'peak' => (float) $peak->predicted_total_kg < $average * 1.2 ? null : [
+                'date' => CarbonImmutable::parse($peak->target_date),
+                'kg' => (float) $peak->predicted_total_kg,
+                'confirmed' => (float) $peak->confirmed_kg,
+            ],
+        ];
+    }
+
+    /**
+     * Các ngày giao máy đoán lệch nhiều nhất (cộng mọi loại rau), kèm số đơn bị hủy để nêu lý do.
+     *
+     * @return list<array{date: CarbonImmutable, predicted: float, actual: float, cancelled: int}>
+     */
+    public function worstDays(CarbonInterface $from, CarbonInterface $to, ForecastMethod $method, int $limit = 3, int $leadDays = 1): array
+    {
+        $days = Forecast::whereNotNull('actual_kg')
+            ->whereBetween('target_date', [$from->toDateString(), $to->toDateString()])
+            ->whereRaw('DATEDIFF(target_date, generated_on) = ?', [$leadDays])
+            ->where('method', $method)
+            ->groupBy('target_date')
+            ->selectRaw('target_date, SUM(predicted_total_kg) as predicted, SUM(actual_kg) as actual')
+            ->get()
+            ->sortByDesc(fn (Forecast $day) => abs($day->predicted - $day->actual))
+            ->take($limit);
+
+        $cancelled = Order::where('status', OrderStatus::Cancelled)
+            ->whereIn('delivery_date', $days->map(fn (Forecast $day) => $day->target_date->toDateString()))
+            ->groupBy('delivery_date')
+            ->selectRaw('delivery_date, COUNT(*) as n')
+            ->pluck('n', 'delivery_date')
+            ->mapWithKeys(fn ($n, $date) => [CarbonImmutable::parse($date)->toDateString() => (int) $n]);
+
+        return $days->map(fn (Forecast $day) => [
+            'date' => CarbonImmutable::parse($day->target_date),
+            'predicted' => round((float) $day->predicted, 2),
+            'actual' => round((float) $day->actual, 2),
+            'cancelled' => $cancelled[$day->target_date->toDateString()] ?? 0,
+        ])->values()->all();
+    }
+
+    /**
      * Dữ liệu biểu đồ: nhu cầu thực tế $pastDays ngày tới hết $runDate, rồi dự báo của lần chạy $runDate.
      * $product null = cộng mọi loại rau đang bán.
      *

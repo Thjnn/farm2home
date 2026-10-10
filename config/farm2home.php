@@ -10,6 +10,8 @@ return [
         'alpha' => 0.3,
         'horizon_days' => 7,
         'history_days' => 28,
+        // Mục tiêu "% đoán đúng" (100 − WAPE); thấp hơn thì trang dự báo hiện cảnh báo.
+        'target_hit_rate' => 80,
     ],
 
     'order' => [

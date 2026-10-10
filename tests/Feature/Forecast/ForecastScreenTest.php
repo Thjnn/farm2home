@@ -32,7 +32,9 @@ class ForecastScreenTest extends TestCase
             ->assertSee('7,5 kg')
             ->assertSee('MAE')
             ->assertSee('WAPE')
-            ->assertSee('Làm mượt hàm mũ');
+            ->assertSee('Làm mượt hàm mũ')
+            ->assertSee('Khách đã đặt')
+            ->assertSee('đoán đúng');
     }
 
     public function test_run_button_creates_todays_forecasts(): void
@@ -51,7 +53,7 @@ class ForecastScreenTest extends TestCase
             ->assertOk()
             ->assertViewHas('method', ForecastMethod::WeekdayAverage)
             ->assertSee('đang dùng cho kế hoạch')
-            ->assertSee('Trợ lý dự báo · '.ForecastMethod::WeekdayAverage->label());
+            ->assertSee(ForecastMethod::WeekdayAverage->plainExplanation());
 
         $this->get('/admin/forecasts?method=bogus')
             ->assertOk()
@@ -63,9 +65,28 @@ class ForecastScreenTest extends TestCase
         $this->get('/admin/forecasts')
             ->assertOk()
             ->assertViewHas('bestMethod', fn ($best) => $best instanceof ForecastMethod)
-            ->assertSee('Sai số thấp nhất')
-            ->assertSee('đoán sát nhất')
+            ->assertSee('Đoán sát nhất')
+            ->assertSee('Máy đoán có đúng không?')
             ->assertSee('Lệch dư/thiếu');
+    }
+
+    public function test_warning_lists_the_worst_day_when_hit_rate_is_below_target(): void
+    {
+        config(['farm2home.forecast.target_hit_rate' => 101]);
+        Forecast::whereDate('target_date', '2026-09-30')->update(['actual_kg' => 0]);
+
+        $this->get('/admin/forecasts')
+            ->assertOk()
+            ->assertSee('Đoán đúng dưới 101%')
+            ->assertSee('Thứ tư 30/09')
+            ->assertSee('Khách mua ít hơn mọi khi');
+    }
+
+    public function test_no_warning_when_hit_rate_meets_target(): void
+    {
+        config(['farm2home.forecast.target_hit_rate' => 0]);
+
+        $this->get('/admin/forecasts')->assertOk()->assertViewHas('worstDays', [])->assertDontSee('Đoán đúng dưới');
     }
 
     public function test_chart_has_28_days_of_actuals_and_the_latest_run_ahead(): void

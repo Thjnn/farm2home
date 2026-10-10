@@ -1,8 +1,8 @@
 @props(['title' => 'FARM2HOME'])
 <x-layouts.base :title="$title">
     <header class="border-b border-stone-200 bg-white">
-        <div class="mx-auto flex max-w-xl items-center gap-4 px-4 py-2">
-            <a href="{{ route('home') }}" class="shrink-0 py-1"><img src="{{ asset('images/logo.jpg') }}" alt="FARM2HOME" width="269" height="70" class="h-8 w-auto rounded-md sm:h-10"></a>
+        <div class="mx-auto flex max-w-xl flex-wrap items-center gap-x-4 px-4 py-2">
+            <a href="{{ route('home') }}" class="shrink-0 py-1"><x-brand /></a>
             <nav class="ml-auto flex gap-1 text-sm" aria-label="Điều hướng">
                 @if (Route::has('orders.create'))
                     <a href="{{ route('orders.create') }}" class="whitespace-nowrap rounded-md px-2 py-2.5 hover:bg-stone-100 sm:px-3">Đặt hàng</a>

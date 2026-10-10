@@ -72,8 +72,8 @@ class HarvestPlanServiceTest extends TestCase
         $this->assertSame('10.00', $plan->safety_margin_pct);
         $this->assertSame($this->operator->id, $plan->created_by);
 
-        // Rau muống: 7,5 × 1,1 = 8,25 → 8,5. NH01 báo 8,4 → lấy 8,0; còn 0,5 cho NH02.
-        $this->assertSame([[$this->nh01->id, 8.0, 7.5], [$this->nh02->id, 0.5, 0.0]], $this->rows($plan, $this->rm));
+        // Rau muống: 7,5 × 1,1 = 8,25 → 8,5. Chia theo tỉ lệ báo 8 : 7,5 → 4,39 và 4,11 → 4,5 và 4,0.
+        $this->assertSame([[$this->nh01->id, 4.5, 7.5], [$this->nh02->id, 4.0, 0.0]], $this->rows($plan, $this->rm));
         // Cải ngọt: 2,0 × 1,1 = 2,2 → 2,5.
         $this->assertSame([[$this->nh02->id, 2.5, 2.0]], $this->rows($plan, $this->cn));
         // Hành lá không có nhu cầu → không có dòng.
@@ -192,8 +192,8 @@ class HarvestPlanServiceTest extends TestCase
         $this->assertSame(HarvestPlanStatus::Confirmed, $plan->status);
         $this->assertSame($this->operator->id, $plan->confirmed_by);
         $this->assertNotNull($plan->confirmed_at);
-        $this->assertSame(['8.00', '0.50', '2.00'], $plan->items()->orderBy('id')->pluck('final_kg')->all());
-        $this->assertSame(['8.00', '0.50', '2.50'], $plan->items()->orderBy('id')->pluck('suggested_kg')->all());
+        $this->assertSame(['4.50', '4.00', '2.00'], $plan->items()->orderBy('id')->pluck('final_kg')->all());
+        $this->assertSame(['4.50', '4.00', '2.50'], $plan->items()->orderBy('id')->pluck('suggested_kg')->all());
     }
 
     public function test_confirmed_plan_cannot_be_regenerated_or_edited(): void
@@ -219,9 +219,9 @@ class HarvestPlanServiceTest extends TestCase
 
         $this->assertStringContainsString('Trần Thị Hồng', $message);
         $this->assertStringContainsString('03/10/2026', $message);
-        $this->assertStringContainsString('- Rau muống: 0,5 kg', $message);
+        $this->assertStringContainsString('- Rau muống: 4 kg', $message);
         $this->assertStringContainsString('- Cải ngọt: 2,5 kg', $message);
-        $this->assertStringNotContainsString('8 kg', $message);
+        $this->assertStringNotContainsString('4,5 kg', $message);
         $this->assertStringContainsString('/nong-ho/'.$this->nh02->access_token, $message);
     }
 

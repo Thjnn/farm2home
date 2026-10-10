@@ -151,11 +151,13 @@ Ví dụ: đã đặt 8 kg, dự báo thêm 4 kg, tồn kho 1,5 kg. Ta có (8 + 
 
 Hệ thống dùng sản lượng mà nông hộ đã tự báo qua link `/nong-ho/{token}` cho ngày đó (bảng `supply_reports`), và chỉ tính nông hộ đang `active`:
 
-1. Sắp xếp nông hộ theo **sản lượng báo nhiều nhất trước**.
-2. Mỗi nông hộ nhận `min(phần còn thiếu, sản lượng đã báo làm tròn xuống 0,5 kg)`.
-3. Phần còn thiếu sau khi đã hết nông hộ trở thành một **dòng chưa có nông hộ**, để operator tự chọn người thu hoặc đặt số về 0.
+1. Sản lượng đã báo được làm tròn xuống 0,5 kg. Đây là mức tối đa mỗi nhà có thể nhận.
+2. Nếu tổng sản lượng báo **không đủ**, mọi nhà thu hết số mình báo, phần thiếu trở thành một **dòng chưa có nông hộ** để operator tự chọn người thu hoặc đặt số về 0.
+3. Nếu **đủ**, nhu cầu được chia **theo tỉ lệ sản lượng đã báo** để nhà nhỏ cũng có phần (tăng trưởng bao trùm, và giảm rủi ro khi một nhà gặp sự cố). Mỗi phần làm tròn xuống 0,5 kg; phần lẻ còn lại trao từng 0,5 kg cho nhà bị làm tròn hụt nhiều nhất.
+4. Nhà được chia dưới `min_allocation_kg` (mặc định 2 kg, trong `config/farm2home.php`) nhường phần cho các nhà khác, để không ai phải đi giao chỉ nửa ký. Chỉ nhường khi các nhà còn lại vẫn đủ rau.
 
-Ví dụ: cần 12 kg, NH01 báo 7,3 kg và NH02 báo 3 kg. Kết quả là NH01 thu 7 kg, NH02 thu 3 kg, và còn **2 kg chưa có nông hộ**.
+Ví dụ: cần 30 kg, NH01 báo 40 kg và NH02 báo 15 kg. Theo tỉ lệ là 21,8 và 8,2 kg, nên NH01 thu **22 kg**, NH02 thu **8 kg**.
+Ví dụ thiếu: cần 12 kg, NH01 báo 7,3 kg và NH02 báo 3 kg. NH01 thu 7 kg, NH02 thu 3 kg, còn **2 kg chưa có nông hộ**.
 
 Số "đã đặt / dự báo thêm / tồn" chỉ được ghi ở dòng đầu tiên của mỗi loại rau, để khi cộng theo sản phẩm thì không bị nhân đôi.
 

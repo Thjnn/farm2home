@@ -16,6 +16,13 @@
         @endif
     </div>
 
+    @if ($isDraft)
+        <p class="mb-4 text-sm text-stone-600">
+            Phần của mỗi nông hộ được chia theo tỉ lệ sản lượng họ đã báo, không ai bị giao quá số mình báo.
+            Nhà được chia dưới {{ (float) config('farm2home.min_allocation_kg') }} kg thì nhường phần cho nhà khác (nếu các nhà còn lại đủ rau).
+        </p>
+    @endif
+
     @if ($pendingOrders > 0)
         <div class="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
             Còn {{ $pendingOrders }} đơn chờ xác nhận cho ngày này. Số gợi ý đã tính cả các đơn đó.

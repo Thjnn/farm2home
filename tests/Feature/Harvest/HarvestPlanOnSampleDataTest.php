@@ -45,9 +45,9 @@ class HarvestPlanOnSampleDataTest extends TestCase
         // Khớp kế hoạch mẫu, trừ hành lá: mẫu ghi 2,5 kg vì không trừ 0,2 kg tồn.
         $this->assertSame(['RM' => 8.5, 'CN' => 7.0, 'CX' => 3.0, 'MT' => 5.5, 'RD' => 3.5, 'XL' => 1.0, 'HL' => 2.0], $byCode);
 
-        // Rau muống: NH01 báo 8,4 → 8,0; NH03 nhận 0,5 còn lại.
+        // Rau muống 8,5 kg chia theo tỉ lệ sản lượng đã báo của NH01 và NH03.
         $rauMuong = $plan->items->filter(fn ($item) => $item->product->code === 'RM')->values();
-        $this->assertSame([['NH01', 8.0], ['NH03', 0.5]], $rauMuong->map(fn ($item) => [$item->farmer->code, (float) $item->suggested_kg])->all());
+        $this->assertSame([['NH01', 4.5], ['NH03', 4.0]], $rauMuong->map(fn ($item) => [$item->farmer->code, (float) $item->suggested_kg])->all());
         $this->assertSame(17, $plan->id);
     }
 }

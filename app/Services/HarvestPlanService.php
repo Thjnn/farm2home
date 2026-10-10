@@ -68,7 +68,7 @@ class HarvestPlanService
                     ->map(fn ($kg) => (float) $kg)
                     ->all();
 
-                foreach (HarvestMath::allocate($suggested, $supply) as $index => $row) {
+                foreach (HarvestMath::allocate($suggested, $supply, (float) config('farm2home.min_allocation_kg')) as $index => $row) {
                     // Quyết định D5: số nhu cầu chỉ ghi ở dòng đầu để tổng theo sản phẩm không bị nhân đôi.
                     $plan->items()->create([
                         'product_id' => $product->id,

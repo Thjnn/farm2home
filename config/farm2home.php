@@ -4,6 +4,9 @@ return [
     // Biên an toàn mặc định (%) khi gợi ý thu hoạch.
     'safety_margin_pct' => 10,
 
+    // Chia thu hoạch theo tỉ lệ sản lượng đã báo; nhà được chia dưới mức này (kg) thì nhường phần cho nhà khác.
+    'min_allocation_kg' => 2,
+
     'forecast' => [
         'default_method' => 'moving_average',
         'window_days' => 7,

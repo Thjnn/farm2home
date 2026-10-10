@@ -40,7 +40,7 @@ Các điểm dưới đây spec chưa nói rõ; kế hoạch chọn một phươ
 | D2 | DB cho test | MySQL `farm2home_test` (không dùng sqlite) để ENUM/DECIMAL/DATE/`lockForUpdate` hành xử như production. |
 | D3 | `confirmed_order_kg` nghĩa là gì | Tổng kg của mọi đơn **chưa hủy** cho ngày giao (gồm cả `pending`). Đã kiểm chứng: khớp dữ liệu mẫu (kế hoạch 03/10, rau muống = 7,50 kg). |
 | D4 | `available_stock_kg` lấy từ đâu | Tồn của các lô `passed`, thu hoạch trước ngày giao, `best_before >= ngày giao`: `quantity_kg − kg đã gán cho đơn − kg trong waste_logs`. |
-| D5 | Chia cho nhiều nông hộ | Nông hộ báo nhiều nhất trước, mỗi phần làm tròn xuống 0,5 kg. Dòng đầu mang số `confirmed/extra/stock`; dòng tách thêm để 0. Phần thiếu tạo dòng `farmer_id = null` và phải xử lý trước khi chốt. |
+| D5 | Chia cho nhiều nông hộ | (Đổi 2026-10-10) Chia theo tỉ lệ sản lượng đã báo, mỗi phần làm tròn xuống 0,5 kg; nhà được chia dưới `min_allocation_kg` (2 kg) nhường phần cho nhà khác nếu các nhà còn lại đủ rau. Trước đây: nông hộ báo nhiều nhất trước. Dòng đầu mang số `confirmed/extra/stock`; dòng tách thêm để 0. Phần thiếu tạo dòng `farmer_id = null` và phải xử lý trước khi chốt. |
 | D6 | Dự báo ghi vào `forecasts` | `predicted_total_kg = max(mô hình, confirmed)`, `predicted_extra_kg = total − confirmed`, `lower = max(lower, confirmed)`. Lịch sử 28 ngày, ngày không có đơn tính 0. |
 | D7 | Đo sai số | Báo cáo MAE, MAPE và thêm **WAPE** (Σ\|sai số\| / Σ thực tế) vì khối lượng từng loại quá nhỏ làm MAPE phóng đại. |
 | D8 | Nội dung mã QR | URL đầy đủ `{APP_URL}/lo/{code}` (camera điện thoại mở thẳng trang), không phải chỉ chuỗi mã lô. |

@@ -12,6 +12,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ForecastService
@@ -282,6 +283,32 @@ class ForecastService
         }
 
         return $series;
+    }
+
+    /**
+     * Lịch dự báo từ $from đến $to: mỗi ngày giao lấy lần đoán gần nhất trước ngày đó (ngày đã qua là đoán trước 1 ngày, ngày tới là lần chạy mới nhất).
+     *
+     * @return array<string, array{predicted: float, confirmed: float, actual: ?float, items: Collection<int, Forecast>}>
+     */
+    public function calendar(CarbonInterface $from, CarbonInterface $to, ForecastMethod $method): array
+    {
+        return Forecast::with('product')
+            ->where('method', $method)
+            ->whereHas('product', fn ($query) => $query->where('is_active', true))
+            ->whereBetween('target_date', [$from->toDateString(), $to->toDateString()])
+            ->orderByDesc('generated_on')
+            ->orderBy('product_id')
+            ->get()
+            ->unique(fn (Forecast $forecast) => $forecast->target_date->toDateString().'#'.$forecast->product_id)
+            ->groupBy(fn (Forecast $forecast) => $forecast->target_date->toDateString())
+            ->map(fn (Collection $items) => [
+                'predicted' => round((float) $items->sum('predicted_total_kg'), 2),
+                'confirmed' => round((float) $items->sum('confirmed_kg'), 2),
+                'actual' => $items->every(fn (Forecast $forecast) => $forecast->actual_kg !== null)
+                    ? round((float) $items->sum('actual_kg'), 2) : null,
+                'items' => $items->sortBy('product_id')->values(),
+            ])
+            ->all();
     }
 
     private function demandQuery(Product $product): Builder

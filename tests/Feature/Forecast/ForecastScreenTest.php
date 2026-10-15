@@ -41,8 +41,8 @@ class ForecastScreenTest extends TestCase
     {
         $this->post('/admin/forecasts/run')->assertRedirect()->assertSessionHas('status');
 
-        // 7 sản phẩm × 7 ngày × 3 phương pháp
-        $this->assertSame(147, Forecast::whereDate('generated_on', '2026-10-02')->count());
+        // 5 sản phẩm đang bán × 7 ngày × 3 phương pháp
+        $this->assertSame(105, Forecast::whereDate('generated_on', '2026-10-02')->count());
     }
 
     public function test_method_can_be_switched_and_unknown_method_falls_back_to_default(): void
@@ -111,6 +111,31 @@ class ForecastScreenTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_calendar_uses_the_latest_forecast_before_each_day(): void
+    {
+        $this->get('/admin/forecasts?day=2026-09-30')
+            ->assertOk()
+            ->assertSee('Tháng 9, 2026')
+            ->assertSee('Thứ tư, 30/09')
+            ->assertViewHas('calendar', function (array $calendar) {
+                // 30/09 đã giao: số đoán trước 1 ngày của rau đang bán, có thực tế.
+                $past = $calendar['2026-09-30'];
+                $expected = Forecast::where('method', 'moving_average')->whereDate('target_date', '2026-09-30')
+                    ->whereDate('generated_on', '2026-09-29')->whereHas('product', fn ($query) => $query->where('is_active', true))->sum('predicted_total_kg');
+                $this->assertEqualsWithDelta((float) $expected, $past['predicted'], 0.001);
+                $this->assertNotNull($past['actual']);
+
+                // 03/10 chưa giao: lấy lần chạy mới nhất (01/10).
+                $this->assertSame('2026-10-01', $calendar['2026-10-03']['items']->first()->generated_on->toDateString());
+                $this->assertNull($calendar['2026-10-03']['actual']);
+
+                return true;
+            });
+
+        $this->get('/admin/forecasts?month=2026-11')->assertOk()->assertSee('Tháng 11, 2026');
+        $this->get('/admin/forecasts?month=bogus&day=xx')->assertOk();
     }
 
     public function test_backfill_button_fills_actuals(): void

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Forecast;
 use App\Models\Product;
 use App\Services\ForecastService;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -34,6 +35,14 @@ class ForecastController extends Controller
         $worstDays = $wape !== null && 100 - $wape < config('farm2home.forecast.target_hit_rate')
             ? $forecasts->worstDays(today()->subDays(14), today(), $method)
             : [];
+        // Lịch tháng: ?month=2026-10, ?day=2026-10-03 (mặc định hôm nay).
+        $day = rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query('day')), null, false)
+            ?? today();
+        $month = rescue(fn () => Carbon::createFromFormat('!Y-m', (string) $request->query('month')), null, false)
+            ?? $day->copy()->startOfMonth();
+        $gridStart = $month->copy()->startOfWeek(Carbon::MONDAY);
+        $gridEnd = $month->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY);
+
         $bestMethod = collect($accuracy)->filter(fn (array $row) => $row['wape'] !== null)->sortBy('wape')->keys()->first();
 
         return view('admin.forecasts.index', [
@@ -47,6 +56,10 @@ class ForecastController extends Controller
             'methods' => ForecastMethod::cases(),
             'products' => $products,
             'product' => $product,
+            'month' => $month,
+            'selectedDay' => $day,
+            'calendarDays' => collect(CarbonPeriod::create($gridStart, $gridEnd)),
+            'calendar' => $forecasts->calendar($gridStart, $gridEnd, $method),
             'chart' => $latestRun === null ? null : $forecasts->chartSeries(Carbon::parse($latestRun), $method, $product),
         ]);
     }

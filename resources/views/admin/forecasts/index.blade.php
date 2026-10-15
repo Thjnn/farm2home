@@ -16,6 +16,11 @@
 
             return $prefix.str($day->isoFormat('dddd, DD/MM'))->ucfirst();
         };
+        $target = config('farm2home.forecast.target_hit_rate');
+        $calendarUrl = fn (array $query) => route('admin.forecasts.index', array_filter($query + ['method' => request('method'), 'product' => $product?->id])).'#lich';
+        $dayHitRate = fn (array $entry) => $entry['actual'] === null || $entry['actual'] <= 0 ? null
+            : max(0, 100 - abs($entry['predicted'] - $entry['actual']) / $entry['actual'] * 100);
+        $selected = $calendar[$selectedDay->toDateString()] ?? null;
     @endphp
 
     {{-- 1. Máy đoán thế nào, nói ngắn gọn --}}
@@ -83,7 +88,114 @@
         @endif
     </section>
 
-    {{-- 3. Biểu đồ --}}
+    {{-- 3. Lịch tháng: mỗi ô là một ngày giao --}}
+    <section id="lich" class="mb-4 scroll-mt-4 rounded-xl border border-stone-200 bg-white">
+        <header class="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div>
+                <h2 class="text-lg font-semibold">{{ str($month->copy()->locale('vi')->isoFormat('MMMM, YYYY'))->ucfirst() }}</h2>
+                <p class="text-sm text-stone-600">Bấm vào một ngày để xem từng loại rau.</p>
+            </div>
+            <nav class="inline-flex w-full -space-x-px sm:w-auto" aria-label="Đổi tháng">
+                <a href="{{ $calendarUrl(['month' => $month->copy()->subMonth()->format('Y-m')]) }}" aria-label="Tháng trước"
+                   class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-s-lg border border-stone-300 hover:bg-stone-100">‹</a>
+                <a href="{{ $calendarUrl(['day' => today()->toDateString()]) }}"
+                   class="inline-flex min-h-11 flex-1 items-center justify-center border border-stone-300 px-4 text-sm hover:bg-stone-100 sm:flex-none">Hôm nay</a>
+                <a href="{{ $calendarUrl(['month' => $month->copy()->addMonth()->format('Y-m')]) }}" aria-label="Tháng sau"
+                   class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-e-lg border border-stone-300 hover:bg-stone-100">›</a>
+            </nav>
+        </header>
+
+        <div class="grid grid-cols-7 border-y border-stone-200 bg-stone-50 text-center text-xs font-semibold text-stone-600">
+            @foreach (['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] as $weekday)
+                <div class="py-2">{{ $weekday }}</div>
+            @endforeach
+        </div>
+        <div class="grid grid-cols-7">
+            @foreach ($calendarDays as $date)
+                @php($entry = $calendar[$date->toDateString()] ?? null)
+                @php($dayRate = $entry ? $dayHitRate($entry) : null)
+                @php($isSelected = $date->isSameDay($selectedDay))
+                <a href="{{ $calendarUrl(['month' => $month->format('Y-m'), 'day' => $date->toDateString()]) }}"
+                   @if ($isSelected) aria-current="date" @endif
+                   @class([
+                       'flex min-h-16 flex-col gap-1 border-b border-r border-stone-100 p-1.5 text-xs hover:bg-stone-100 sm:min-h-24 sm:p-2',
+                       'bg-stone-50 text-stone-400' => ! $date->isSameMonth($month),
+                       'ring-2 ring-inset ring-emerald-700' => $isSelected,
+                   ])>
+                    <time datetime="{{ $date->toDateString() }}" @class([
+                        'flex size-6 items-center justify-center self-end rounded-full',
+                        'bg-emerald-700 font-bold text-white' => $date->isToday(),
+                    ])>{{ $date->day }}</time>
+                    @if ($entry)
+                        @if ($entry['actual'] !== null)
+                            <span @class([
+                                'rounded px-1 py-0.5 leading-tight',
+                                'bg-emerald-100 text-emerald-900' => $dayRate !== null && $dayRate >= $target,
+                                'bg-amber-100 text-amber-900' => $dayRate !== null && $dayRate < $target && $dayRate >= 60,
+                                'bg-red-100 text-red-900' => $dayRate === null || $dayRate < 60,
+                            ])>
+                                <span class="font-semibold">@kg($entry['actual'])</span>
+                                <span class="hidden sm:block">đoán @kg($entry['predicted'])</span>
+                            </span>
+                        @else
+                            <span class="rounded border border-dashed border-emerald-400 px-1 py-0.5 leading-tight text-emerald-900">
+                                <span class="font-semibold">@kg($entry['predicted'])</span>
+                                <span class="hidden sm:block">máy đoán</span>
+                            </span>
+                        @endif
+                    @endif
+                </a>
+            @endforeach
+        </div>
+
+        <ul class="flex flex-wrap gap-x-4 gap-y-1 px-4 py-3 text-xs text-stone-600">
+            <li><span class="mr-1 inline-block size-2.5 rounded-sm border border-dashed border-emerald-400" aria-hidden="true"></span>Máy đoán (chưa giao)</li>
+            <li><span class="mr-1 inline-block size-2.5 rounded-sm bg-emerald-100" aria-hidden="true"></span>Đã giao, đoán đúng từ {{ $target }}%</li>
+            <li><span class="mr-1 inline-block size-2.5 rounded-sm bg-amber-100" aria-hidden="true"></span>Đúng 60–{{ $target }}%</li>
+            <li><span class="mr-1 inline-block size-2.5 rounded-sm bg-red-100" aria-hidden="true"></span>Lệch nhiều</li>
+        </ul>
+
+        <div class="border-t border-stone-200 p-4">
+            <h3 class="mb-2 font-semibold">{{ $dayName($selectedDay->toDateString()) }}</h3>
+            @if ($selected === null)
+                <p class="text-sm text-stone-600">Ngày này chưa có dự báo.</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="border-b border-stone-200 text-stone-600">
+                            <tr>
+                                <th class="py-2 pr-3 font-medium">Loại rau</th>
+                                <th class="py-2 pr-3 text-right font-medium">Khách đã đặt</th>
+                                <th class="py-2 pr-3 text-right font-medium">Máy đoán</th>
+                                <th class="py-2 text-right font-medium">Thực tế</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-stone-100">
+                            @foreach ($selected['items'] as $forecast)
+                                <tr>
+                                    <td class="py-2 pr-3">{{ $forecast->product->name }}</td>
+                                    <td class="py-2 pr-3 text-right">@kg($forecast->confirmed_kg)</td>
+                                    <td class="py-2 pr-3 text-right font-semibold">@kg($forecast->predicted_total_kg)</td>
+                                    <td class="py-2 text-right">{{ $forecast->actual_kg === null ? '—' : \App\Support\Format::kg($forecast->actual_kg) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="border-t border-stone-200 font-semibold">
+                            <tr>
+                                <td class="py-2 pr-3">Tổng</td>
+                                <td class="py-2 pr-3 text-right">@kg($selected['confirmed'])</td>
+                                <td class="py-2 pr-3 text-right">@kg($selected['predicted'])</td>
+                                <td class="py-2 text-right">{{ $selected['actual'] === null ? '—' : \App\Support\Format::kg($selected['actual']) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <p class="mt-2 text-xs text-stone-500">Số máy đoán là lần đoán gần nhất trước ngày giao (đoán ngày {{ $selected['items']->max('generated_on')->format('d/m') }}).</p>
+            @endif
+        </div>
+    </section>
+
+    {{-- 4. Biểu đồ --}}
     @if ($chart)
         <figure class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -109,7 +221,7 @@
         <script type="application/json" id="chart-forecast-data">@json($chart)</script>
     @endif
 
-    {{-- 4. Từng ngày giao: mỗi loại rau cần bao nhiêu --}}
+    {{-- 5. Từng ngày giao: mỗi loại rau cần bao nhiêu --}}
     @forelse ($byDate as $date => $rows)
         <details class="group mb-3 rounded-xl border border-stone-200 bg-white" @if ($loop->first) open @endif>
             <summary class="flex min-h-12 cursor-pointer items-center justify-between gap-2 px-4 py-3 font-semibold">
@@ -141,7 +253,7 @@
         <p class="rounded-lg bg-stone-100 px-4 py-3 text-sm text-stone-700">Chưa có dự báo. Bấm "Chạy dự báo hôm nay" để bắt đầu.</p>
     @endforelse
 
-    {{-- 5. Nút thao tác --}}
+    {{-- 6. Nút thao tác --}}
     <div class="my-4 flex flex-wrap items-center gap-3">
         <form method="POST" action="{{ route('admin.forecasts.run') }}">
             @csrf
@@ -153,7 +265,7 @@
         </form>
     </div>
 
-    {{-- 6. Chi tiết kỹ thuật: gập lại, chỉ người điều phối cần --}}
+    {{-- 7. Chi tiết kỹ thuật: gập lại, chỉ người điều phối cần --}}
     <details class="rounded-xl border border-stone-200 bg-white" @if (request()->has('method')) open @endif>
         <summary class="flex min-h-12 cursor-pointer items-center px-4 py-3 font-semibold">So sánh các cách đoán (chi tiết kỹ thuật)</summary>
         <div class="px-4 pb-4">

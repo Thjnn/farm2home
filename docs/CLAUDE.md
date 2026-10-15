@@ -135,6 +135,6 @@ Admin area under `/admin`, protected by `auth` + a role middleware.
 
 ## 9. Open questions (confirm with team before hardcoding)
 - Final list of 5–7 vegetables, pack sizes and prices (sample data is placeholder)
-- Basket contents and prices (sample: Giỏ Mini 45k, Giỏ Xanh Tiết Kiệm 70k, Giỏ Gia Đình 115k)
+- Basket contents and prices (sample: Giỏ Mini 50k, Giỏ Xanh Tiết Kiệm 70k, Giỏ Gia Đình 115k)
 - Real delivery zones / pickup point and fees
 - Real farmer info and certificates (NH02's VietGAP in the sample data is fake, for UI testing only)

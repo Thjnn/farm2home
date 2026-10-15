@@ -99,7 +99,7 @@ Hiện phần giới thiệu, ba bước "Cách hoạt động" và danh sách g
 Điền từ trên xuống:
 
 1. **Bạn muốn đặt gì?** Chọn **Giỏ rau** (giỏ đóng sẵn) hoặc **Chọn lẻ** (tự chọn từng loại).
-   - Giỏ rau: chọn một giỏ. Dữ liệu mẫu có Giỏ Mini 45.000đ, Giỏ Xanh Tiết Kiệm 70.000đ, Giỏ Gia Đình 115.000đ.
+   - Giỏ rau: chọn một giỏ. Dữ liệu mẫu có Giỏ Mini 50.000đ, Giỏ Xanh Tiết Kiệm 70.000đ, Giỏ Gia Đình 115.000đ.
    - Chọn lẻ: bấm **+** / **−** hoặc gõ số gói cho từng loại rau, tối đa 20 gói mỗi loại. Ô để trống tính là 0.
 2. **Ngày giao:** chỉ hiện những ngày còn nhận đơn. Sớm nhất là ngày mai; sau 18:00 thì sớm nhất là ngày kia. Đặt trước tối đa 7 ngày.
 3. **Khung giờ giao:** 06:00-08:00, 10:00-12:00 hoặc 17:00-19:00.

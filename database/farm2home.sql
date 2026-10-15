@@ -501,7 +501,7 @@ INSERT INTO `farmer_products` (`farmer_id`, `product_id`, `typical_weekly_kg`) V
 
 -- baskets
 INSERT INTO `baskets` (`id`, `name`, `slug`, `description`, `household_min`, `household_max`, `price`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'Giỏ Mini', 'gio-mini', 'Cho 1–2 người, đủ 3–4 bữa rau.', 1, 2, 45000, 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
+(1, 'Giỏ Mini', 'gio-mini', 'Cho 1–2 người, đủ 3–4 bữa rau.', 1, 2, 50000, 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
 (2, 'Giỏ Xanh Tiết Kiệm', 'gio-xanh-tiet-kiem', 'Cho 2–3 người, đa dạng rau ăn lá và rau nấu canh.', 2, 3, 70000, 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
 (3, 'Giỏ Gia Đình', 'gio-gia-dinh', 'Cho 3–5 người, dùng cả tuần.', 3, 5, 115000, 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00');
 

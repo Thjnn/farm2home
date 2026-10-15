@@ -2,7 +2,7 @@
 
 Tài liệu này giải thích phần "AI" trong dự án: AI đang làm gì, tính bằng công thức nào, nằm ở file nào, hiện trên màn hình nào, và những giới hạn cần nói thật khi thuyết trình.
 
-> **Nói ngắn gọn:** "AI" trong bản MVP là **dự báo nhu cầu bằng thống kê** (trung bình trượt, làm mượt hàm mũ) cộng với **thuật toán gợi ý thu hoạch theo luật**. Bản này chưa có mô hình học máy hay mô hình ngôn ngữ (LLM). Đây là chủ ý: pilot 4 tuần chưa có đủ dữ liệu để huấn luyện mô hình, và một mô hình chỉ được coi là "tốt hơn" khi nó có sai số thực tế thấp hơn baseline.
+> **Nói ngắn gọn:** "AI" trong bản MVP là **dự báo nhu cầu bằng thống kê** (trung bình trượt, làm mượt hàm mũ) cộng với **thuật toán gợi ý thu hoạch theo luật**. Phần dự báo chưa dùng học máy. Đây là chủ ý: pilot 4 tuần chưa có đủ dữ liệu để huấn luyện mô hình, và một mô hình chỉ được coi là "tốt hơn" khi nó có sai số thực tế thấp hơn baseline. Mô hình ngôn ngữ (LLM, Gemini) chỉ được dùng cho **chatbot hỏi đáp** ở trang đặt hàng, không tham gia quyết định thu hoạch.
 
 ---
 
@@ -25,6 +25,7 @@ Nông hộ báo sản lượng ────────────────�
 | 3 | Human-in-the-loop | AI chỉ gợi ý, operator chốt và phải ghi lý do khi sửa số | `HarvestPlanService::updateItem()`, `confirm()` |
 | 4 | Đo độ chính xác | So dự báo với thực tế bằng MAE, MAPE, WAPE | `ForecastService::backfillActuals()`, `accuracy()` |
 | 5 | KPI trên dashboard | Theo dõi AI có giúp giảm rau dư hay không | `app/Services/KpiService.php` |
+| 6 | Chatbot hỏi đáp | Trả lời khách về giá, giỏ, giờ giao, tra đơn, nguồn gốc lô, nhu cầu dự kiến; gợi ý rau theo món. Dùng Gemini khi có `GEMINI_API_KEY`, không thì trả lời theo kịch bản | `app/Services/ChatbotService.php` |
 
 Tất cả tham số nằm trong `config/farm2home.php`:
 
@@ -228,7 +229,7 @@ Rau dư và fill rate là hai mặt của cùng một bài toán. Dự báo tố
 
 ## 8. Giới hạn hiện tại (nên nói thật khi thuyết trình)
 
-1. **Không có học máy / LLM.** Hiện chỉ có thống kê cơ bản. Đây là baseline có chủ đích.
+1. **Dự báo chưa có học máy.** Hiện chỉ có thống kê cơ bản, là baseline có chủ đích. LLM (Gemini) chỉ nằm ở chatbot: nó trả lời dựa trên danh sách rau, giỏ và dự báo lấy từ hệ thống, chỉ gợi ý mua sắm, không tư vấn sức khỏe. Gemini lỗi hoặc không có key thì chatbot dùng câu trả lời soạn sẵn.
 2. **Chưa tính lễ tết, thời tiết.** Trung bình trượt và làm mượt hàm mũ cho cùng một số cho cả 7 ngày tới. Trung bình cùng thứ bắt được nhịp trong tuần nhưng cần đủ 4 tuần dữ liệu và chưa biết gì về lễ tết hay mưa bão.
 3. **"Thực tế" là kg khách đặt, không phải kg đã giao.** Vì vậy sai số đo được là sai số dự báo *nhu cầu*. Nhu cầu bị cắt do thiếu hàng sẽ không hiện ra.
 4. **Đơn `pending` được tính là nhu cầu chắc chắn.** Nếu nhiều đơn bị hủy sau giờ chốt, gợi ý sẽ thừa.
@@ -256,6 +257,7 @@ Rau dư và fill rate là hai mặt của cùng một bài toán. Dự báo tố
 | File | Nội dung |
 |---|---|
 | `app/Support/ForecastCalculator.php` | Công thức trung bình trượt, làm mượt hàm mũ, trung bình cùng thứ, MAE/MAPE/WAPE (hàm thuần, dễ test) |
+| `app/Services/ChatbotService.php` | Chatbot: gọi Gemini kèm dữ liệu rau, giỏ, dự báo; câu trả lời dự phòng theo kịch bản |
 | `app/Services/ForecastService.php` | Lấy lịch sử, chạy dự báo (có `knownAt` cho replay), backfill, tính độ chính xác, dữ liệu biểu đồ |
 | `app/Console/Commands/DemoOrders.php` | Lệnh `demo:orders`: sinh đơn mô phỏng và replay dự báo |
 | `app/Support/HarvestMath.php` | Công thức `suggested_kg`, làm tròn 0,5 kg, chia cho nông hộ |

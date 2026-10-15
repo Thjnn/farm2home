@@ -40,7 +40,7 @@ class ChatbotService
      */
     private const DISH_PRODUCTS = [
         'lẩu' => ['RM', 'CN', 'CX', 'HL'],
-        'canh' => ['MT', 'RD', 'CX', 'CN', 'HL'],
+        'canh' => ['CX', 'CN', 'RM', 'HL'],
         'xào' => ['RM', 'CN', 'CX'],
         'gỏi' => ['XL', 'HL'],
     ];

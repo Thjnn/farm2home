@@ -471,9 +471,9 @@ INSERT INTO `delivery_zones` (`id`, `name`, `description`, `shipping_fee`, `free
 INSERT INTO `products` (`id`, `code`, `name`, `slug`, `pack_weight_kg`, `price`, `cost_price_per_kg`, `shelf_life_days`, `storage_guide`, `image`, `is_active`, `created_at`, `updated_at`) VALUES
 (1, 'RM', 'Rau muống', 'rau-muong', '0.500', 12000, 14000, 2, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 2 ngày.', 'products/rau-muong.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
 (2, 'CN', 'Cải ngọt', 'cai-ngot', '0.500', 15000, 18000, 3, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 3 ngày.', 'products/cai-ngot.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
-(3, 'CX', 'Cải bẹ xanh', 'cai-be-xanh', '0.500', 15000, 18000, 3, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 3 ngày.', 'products/cai-be-xanh.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
-(4, 'MT', 'Mồng tơi', 'mong-toi', '0.500', 12000, 14000, 2, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 2 ngày.', 'products/mong-toi.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
-(5, 'RD', 'Rau dền', 'rau-den', '0.500', 12000, 14000, 2, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 2 ngày.', 'products/rau-den.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
+(3, 'CX', 'Cải xanh', 'cai-be-xanh', '0.500', 15000, 18000, 3, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 3 ngày.', 'products/cai-be-xanh.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
+(4, 'MT', 'Mồng tơi', 'mong-toi', '0.500', 12000, 14000, 2, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 2 ngày.', 'products/mong-toi.jpg', 0, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
+(5, 'RD', 'Rau dền', 'rau-den', '0.500', 12000, 14000, 2, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 2 ngày.', 'products/rau-den.jpg', 0, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
 (6, 'XL', 'Xà lách', 'xa-lach', '0.300', 15000, 30000, 3, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 3 ngày.', 'products/xa-lach.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00'),
 (7, 'HL', 'Hành lá', 'hanh-la', '0.200', 8000, 30000, 5, 'Bảo quản ngăn mát 4–8°C, để nguyên túi, không rửa trước khi cất. Dùng ngon nhất trong 5 ngày.', 'products/hanh-la.jpg', 1, '2026-10-01 21:00:00', '2026-10-01 21:00:00');
 
@@ -509,19 +509,16 @@ INSERT INTO `baskets` (`id`, `name`, `slug`, `description`, `household_min`, `ho
 INSERT INTO `basket_items` (`id`, `basket_id`, `product_id`, `quantity`, `allow_substitute`) VALUES
 (1, 1, 1, 1, 1),
 (2, 1, 2, 1, 1),
-(3, 1, 4, 1, 1),
+(3, 1, 3, 1, 1),
 (4, 1, 7, 1, 1),
 (5, 2, 1, 1, 1),
 (6, 2, 2, 1, 1),
 (7, 2, 3, 1, 1),
-(8, 2, 4, 1, 1),
-(9, 2, 5, 1, 1),
+(8, 2, 6, 1, 1),
 (10, 2, 7, 1, 1),
 (11, 3, 1, 2, 1),
 (12, 3, 2, 2, 1),
-(13, 3, 3, 1, 1),
-(14, 3, 4, 1, 1),
-(15, 3, 5, 1, 1),
+(13, 3, 3, 2, 1),
 (16, 3, 6, 1, 1),
 (17, 3, 7, 1, 1);
 

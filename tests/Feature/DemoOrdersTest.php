@@ -97,7 +97,7 @@ class DemoOrdersTest extends TestCase
         $this->artisan('demo:orders', self::OPTIONS)->assertSuccessful();
 
         $replayed = Forecast::where('method', ForecastMethod::WeekdayAverage)->whereDate('generated_on', '2026-10-01')->count();
-        $this->assertSame(7 * 7, $replayed);
+        $this->assertSame(5 * 7, $replayed);
         $this->assertSame('2026-10-06', Forecast::max('generated_on'));
 
         // Thực tế đã được điền tới hôm qua, và chỉ tới hôm qua.

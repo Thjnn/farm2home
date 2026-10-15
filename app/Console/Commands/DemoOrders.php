@@ -38,7 +38,7 @@ class DemoOrders extends Command
      */
     private const AHEAD_FACTOR = [1 => 0.85, 2 => 0.5, 3 => 0.35, 4 => 0.25, 5 => 0.2, 6 => 0.15];
 
-    private const PRODUCT_POPULARITY = ['RM' => 25, 'CN' => 18, 'CX' => 12, 'MT' => 12, 'RD' => 10, 'XL' => 13, 'HL' => 10];
+    private const PRODUCT_POPULARITY = ['RM' => 25, 'CN' => 18, 'CX' => 17, 'XL' => 18, 'HL' => 10];
 
     /**
      * Số ngày đặt trước ngày giao.

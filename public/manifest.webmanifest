@@ -1,0 +1,16 @@
+{
+    "name": "Farm2Home – Nông sản sạch đến từng mái ấm",
+    "short_name": "Farm2Home",
+    "description": "Đặt rau sạch theo nhu cầu ở Mỹ Tho; nông hộ báo sản lượng; người điều phối lên kế hoạch thu hoạch.",
+    "lang": "vi",
+    "start_url": "/app",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#fafaf9",
+    "theme_color": "#047857",
+    "icons": [
+        { "src": "/images/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/images/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/images/pwa/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ]
+}

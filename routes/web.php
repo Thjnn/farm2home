@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\HarvestPlanController;
 use App\Http\Controllers\Admin\LoyaltyController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PackagingReturnController;
 use App\Http\Controllers\Admin\ProductController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WasteController;
+use App\Http\Controllers\AppEntryController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Farmer\FarmerPortalController;
 use App\Http\Controllers\Public\BatchPageController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\Public\OrderLookupController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/app', AppEntryController::class)->name('app');
 
 Route::get('/dat-hang', [PublicOrderController::class, 'create'])->name('orders.create');
 Route::post('/dat-hang', [PublicOrderController::class, 'store'])->middleware('throttle:10,1')->name('orders.store');
@@ -55,6 +58,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 
 Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('notifications', NotificationController::class)->name('notifications');
 
     Route::resource('orders', AdminOrderController::class)->only(['index', 'create', 'store', 'show']);
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'transition'])->name('orders.transition');

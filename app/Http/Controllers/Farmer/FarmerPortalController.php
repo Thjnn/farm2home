@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Farmer;
 use App\Enums\FarmerStatus;
 use App\Enums\HarvestPlanStatus;
 use App\Enums\SupplySource;
+use App\Http\Controllers\AppEntryController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSupplyRequest;
 use App\Models\Farmer;
@@ -16,6 +17,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -24,6 +26,8 @@ class FarmerPortalController extends Controller
     public function show(Farmer $farmer, SupplyReportService $supply, ForecastService $forecasts): View
     {
         $this->ensureActive($farmer);
+        // App đã cài (PWA) mở thẳng trang này lần sau, xem AppEntryController.
+        Cookie::queue(AppEntryController::FARMER_COOKIE, $farmer->access_token, 60 * 24 * 365);
         $dates = $this->dates();
         $products = $farmer->products()->where('is_active', true)->orderBy('products.id')->get();
 

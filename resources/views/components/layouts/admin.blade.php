@@ -29,12 +29,16 @@
     $icon = fn (string $paths, string $class = 'size-5') => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="'.$class.' shrink-0" aria-hidden="true">'.$paths.'</svg>';
     // Chữ ẩn khi thu gọn (chỉ màn hình lớn; trên điện thoại menu luôn mở đủ).
     $label = 'truncate lg:group-data-[collapsed=true]:hidden';
+    // Số trên menu, cập nhật mỗi 15 giây qua admin.notifications.
+    $badgeKeys = ['admin.orders.index' => 'orders', 'admin.feedbacks.index' => 'feedbacks'];
+    $badges = app(\App\Services\NotificationService::class)->badges();
 @endphp
 <x-layouts.base :title="$title">
     @isset($head)
         <x-slot:head>{{ $head }}</x-slot:head>
     @endisset
 
+    <div x-data="adminNotifications({ url: @js(route('admin.notifications')), since: {{ now()->getTimestamp() }}, badges: @js($badges) })">
     <div x-data="{
             collapsed: (() => { try { return localStorage.getItem('f2h-sidebar') === '1' } catch (e) { return false } })(),
             drawer: false,
@@ -45,8 +49,9 @@
 
         {{-- Thanh trên cho điện thoại --}}
         <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-200 bg-white px-4 py-2 lg:hidden print:hidden">
-            <button type="button" @click="drawer = true" class="inline-flex size-11 items-center justify-center rounded-lg border border-stone-300 hover:bg-stone-100" aria-label="Mở menu">
+            <button type="button" @click="drawer = true" class="relative inline-flex size-11 items-center justify-center rounded-lg border border-stone-300 hover:bg-stone-100" aria-label="Mở menu">
                 {!! $icon('<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>') !!}
+                <span x-show="badges.orders + badges.feedbacks > 0" @if ($badges['orders'] + $badges['feedbacks'] === 0) x-cloak @endif class="absolute -right-1 -top-1 size-3 rounded-full bg-red-500" aria-hidden="true"></span>
             </button>
             <a href="{{ route('admin.dashboard') }}" class="py-1"><x-brand /></a>
         </header>
@@ -76,12 +81,17 @@
                             <a href="{{ route($routeName) }}" title="{{ $text }}"
                                @if ($isCurrent($routeName)) aria-current="page" @endif
                                @class([
-                                   'flex min-h-11 items-center gap-3 rounded-md border-l-2 px-3 lg:min-h-9 transition-colors lg:group-data-[collapsed=true]:justify-center lg:group-data-[collapsed=true]:px-0',
+                                   'relative flex min-h-11 items-center gap-3 rounded-md border-l-2 px-3 lg:min-h-9 transition-colors lg:group-data-[collapsed=true]:justify-center lg:group-data-[collapsed=true]:px-0',
                                    'border-emerald-600 bg-emerald-50 font-semibold text-emerald-800' => $isCurrent($routeName),
                                    'border-transparent text-stone-600 hover:bg-stone-100 hover:text-stone-900' => ! $isCurrent($routeName),
                                ])>
                                 {!! $icon($paths) !!}
                                 <span class="{{ $label }}">{{ $text }}</span>
+                                @isset($badgeKeys[$routeName])
+                                    @php($badgeKey = $badgeKeys[$routeName])
+                                    <span x-show="badges.{{ $badgeKey }} > 0" x-text="badges.{{ $badgeKey }}" @if ($badges[$badgeKey] === 0) x-cloak @endif
+                                          class="ml-auto min-w-5 rounded-full bg-red-500 px-1.5 text-center text-xs font-semibold leading-5 text-white lg:group-data-[collapsed=true]:absolute lg:group-data-[collapsed=true]:right-1 lg:group-data-[collapsed=true]:top-0.5 lg:group-data-[collapsed=true]:min-w-4 lg:group-data-[collapsed=true]:px-1 lg:group-data-[collapsed=true]:text-[10px] lg:group-data-[collapsed=true]:leading-4">{{ $badges[$badgeKey] }}</span>
+                                @endisset
                             </a>
                         @else
                             <span class="flex min-h-11 items-center gap-3 px-3 text-stone-400 lg:group-data-[collapsed=true]:justify-center lg:group-data-[collapsed=true]:px-0" title="{{ $text }}">
@@ -116,5 +126,25 @@
                 {{ $slot }}
             </div>
         </main>
+    </div>
+
+    {{-- Thông báo mới, tự hiện không cần F5 --}}
+    <div class="fixed bottom-4 right-4 z-[60] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 print:hidden" role="status" aria-live="polite">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-transition class="rounded-xl border border-emerald-200 bg-white p-3 text-sm shadow-lg">
+                <div class="flex items-start gap-2">
+                    <span class="mt-1.5 size-2 shrink-0 rounded-full bg-emerald-600" aria-hidden="true"></span>
+                    <p class="min-w-0 flex-1 leading-snug" x-text="toast.text"></p>
+                    <button type="button" @click="dismiss(toast.id)" class="-m-1 inline-flex size-8 shrink-0 items-center justify-center rounded-md text-stone-500 hover:bg-stone-100" aria-label="Đóng thông báo">
+                        {!! $icon('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', 'size-4') !!}
+                    </button>
+                </div>
+                <div class="mt-2 flex gap-2 pl-4">
+                    <a :href="toast.url" class="inline-flex min-h-9 items-center rounded-lg bg-emerald-700 px-3 font-semibold text-white hover:bg-emerald-800">Xem</a>
+                    <button type="button" @click="location.reload()" class="inline-flex min-h-9 items-center rounded-lg border border-stone-300 px-3 hover:bg-stone-100">Tải lại trang</button>
+                </div>
+            </div>
+        </template>
+    </div>
     </div>
 </x-layouts.base>

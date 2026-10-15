@@ -35,6 +35,10 @@ Hiện bán 5 loại rau: **Rau muống, Cải xanh, Cải ngọt, Xà lách, H�
 
 Trang quản trị có menu bên trái chia 2 nhóm *Vận hành* và *Danh mục*, thu gọn được thành cột icon. Trên điện thoại menu mở bằng nút ☰.
 
+**Thông báo không cần F5:** trang quản trị tự hỏi máy chủ mỗi 15 giây và hiện thông báo ở góc màn hình khi có đơn mới, đơn đổi trạng thái, nông hộ báo sản lượng hoặc xác nhận thu hoạch, phản hồi mới. Số đỏ cạnh *Đơn hàng* (đơn chờ xác nhận) và *Phản hồi* (chưa xử lý) tự cập nhật.
+
+**Cài như app (PWA):** trên HTTPS, điện thoại hiện "Cài đặt ứng dụng" (iPhone: *Chia sẻ → Thêm vào MH chính*). Một app chung cho mọi vai trò, mở ở `/app`: đã đăng nhập → quản trị; máy từng mở link nông hộ → trang nông hộ đó; còn lại → trang khách. Mất mạng thì hiện trang "Chưa có mạng".
+
 ## Nguyên tắc thiết kế
 
 - **Con người quyết định cuối cùng.** Hệ thống chỉ *gợi ý*; người điều phối luôn xem lại và chốt trước khi gửi gì cho nông hộ. Lưu cả số gợi ý (`suggested_kg`) và số chốt (`final_kg`), kèm lý do khi khác nhau.
@@ -84,7 +88,7 @@ Giải thích chi tiết (công thức, file, giới hạn khi thuyết trình):
 
 ## Điểm thành viên
 
-Khách được cộng 5 điểm mỗi đơn giao xong (tiền hàng từ 40.000đ) và 5 điểm mỗi lần trả bao bì. Đổi điểm ngay khi đặt hàng:
+Khách được cộng 5 điểm mỗi đơn giao xong (tiền hàng từ 50.000đ) và 5 điểm mỗi lần trả bao bì. Đổi điểm ngay khi đặt hàng:
 
 | Quà | Điểm |
 |---|---|
@@ -107,7 +111,7 @@ Dashboard `/admin`:
 | Nông hộ | Số nông hộ đang hợp tác, tỷ lệ sản lượng được xác nhận trước |
 | Môi trường | Kg rau dư theo tuần, tỷ lệ thu hồi và tái sử dụng bao bì |
 
-**Phạm vi pilot dự kiến:** 4 tuần tại Mỹ Tho · 2–3 nông hộ (Thân Cửu Nghĩa, Gò Công) · 20–30 hộ khách · 5 loại rau.
+**Phạm vi pilot dự kiến:** 4 tuần tại Mỹ Tho · 2–3 nông hộ (ưu tiên Châu Thành, Cai Lậy, Chợ Gạo và vùng lân cận) · 20–30 hộ khách · 5 loại rau.
 
 ## Công nghệ
 
@@ -217,7 +221,7 @@ Các bước deploy Railway (biến môi trường, lệnh build, volume cho fil
 
 ## Trạng thái
 
-Bản MVP đã có đủ luồng chính: đặt đơn → quản lý đơn → nông hộ báo sản lượng → dự báo và kế hoạch thu hoạch → lô và trang QR → phản hồi. Ngoài ra có dashboard KPI, giỏ định kỳ tự sinh đơn, thu hồi bao bì, điểm thành viên, chatbot và lịch dự báo. Ứng dụng chưa deploy và chưa chạy pilot thật.
+Bản MVP đã có đủ luồng chính: đặt đơn → quản lý đơn → nông hộ báo sản lượng → dự báo và kế hoạch thu hoạch → lô và trang QR → phản hồi. Ngoài ra có dashboard KPI, giỏ định kỳ tự sinh đơn, thu hồi bao bì, điểm thành viên, chatbot, lịch dự báo, thông báo không cần F5 và cài như app (PWA). Ứng dụng chưa deploy và chưa chạy pilot thật.
 
 Còn chờ nhóm quyết định trước khi chạy pilot:
 
@@ -227,4 +231,4 @@ Còn chờ nhóm quyết định trước khi chạy pilot:
 - Giờ chốt đơn (đang là 18:00), các khung giờ giao, cách tính biên gộp và chi phí giao mỗi đơn.
 - Có chuyển kế hoạch thu hoạch sang cách đoán "trung bình cùng thứ" không (trên dữ liệu mô phỏng nó đoán sát hơn trung bình trượt).
 
-Để sau MVP: gợi ý rau thay thế khi thiếu hàng, cá nhân hóa giỏ, tự động hóa qua Zalo OA, mô hình dự báo học máy, PWA.
+Để sau MVP: gợi ý rau thay thế khi thiếu hàng, cá nhân hóa giỏ, tự động hóa qua Zalo OA, mô hình dự báo học máy, thông báo đẩy khi app đang đóng.

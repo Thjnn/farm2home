@@ -74,7 +74,7 @@ class LoyaltyFoundationTest extends TestCase
     public function test_earning_rules_match_the_agreed_numbers(): void
     {
         $this->assertSame(
-            [5, 5, 40000],
+            [5, 5, 50000],
             [config('farm2home.loyalty.order_points'), config('farm2home.loyalty.packaging_points'), config('farm2home.loyalty.min_order_subtotal')],
         );
     }

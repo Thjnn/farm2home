@@ -28,7 +28,7 @@ Subscription baskets ───────────┘                       
 
 ## 2. Pilot scope (MVP target)
 - 4 weeks in Mỹ Tho area · 2–3 farmer households · 20–30 customer households · 5–7 vegetable types
-- Supply sources: Thân Cửu Nghĩa, Gò Công
+- Supply sources: prioritise farmers in Châu Thành, Cai Lậy, Chợ Gạo and nearby areas (sample data still uses Thân Cửu Nghĩa / Gò Công)
 - Revenue: subscription baskets + single orders + delivery fee. Target is 500k–700k VND/day (an assumption to validate, not a fact)
 
 ## 3. Tech stack & environment

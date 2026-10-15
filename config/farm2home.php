@@ -33,7 +33,7 @@ return [
         'order_points' => 5,
         'packaging_points' => 5,
         // Đơn có tiền hàng dưới ngưỡng này không được cộng điểm đơn (D27).
-        'min_order_subtotal' => 40000,
+        'min_order_subtotal' => 50000,
         'rewards' => [
             'small_bunch' => ['label' => 'Tặng bó rau nhỏ', 'points' => 20, 'type' => 'gift', 'packs' => 1],
             'free_shipping' => ['label' => 'Miễn phí 1 lần giao hàng', 'points' => 30, 'type' => 'free_shipping'],

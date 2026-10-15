@@ -36,7 +36,7 @@ class SmokeTest extends TestCase
             $this->get($url)->assertOk();
         }
 
-        $this->post('/tra-cuu', ['phone' => '0988000001'])->assertOk()->assertSee('DH26')->assertSee('Bạn đang có 20 điểm');
+        $this->post('/tra-cuu', ['phone' => '0988000001'])->assertOk()->assertSee('DH26')->assertSee('Bạn đang có 15 điểm');
     }
 
     public function test_every_admin_page_renders_with_sample_data(): void

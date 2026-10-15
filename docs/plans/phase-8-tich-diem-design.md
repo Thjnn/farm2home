@@ -69,7 +69,7 @@ Nếu kế hoạch thu hoạch của ngày giao đã `confirmed` trở đi, màn
 | D24 | Yêu cầu của khách | Cột mới `orders.requested_reward` (mã quà, nullable). Lúc đặt hàng không kiểm tra số dư và không trừ điểm; đơn không bao giờ bị từ chối vì thiếu điểm. |
 | D25 | Tra cứu bằng SĐT | Trang `/tra-cuu` hiện thêm **số dư** và bảng mốc quà; không hiện lịch sử giao dịch (giữ tinh thần D11). |
 | D26 ⚠ | Combo rau nhỏ | Hiểu là 3 gói rau do người điều phối chọn. Cần nhóm xác nhận. |
-| D27 ⚠ | Ngưỡng 40.000đ | Chặn việc tách nhiều đơn lẻ 12.000đ để gom điểm. Con số cần nhóm xác nhận. |
+| D27 | Ngưỡng 50.000đ | Chặn việc tách nhiều đơn lẻ để gom điểm. Nhóm đã chốt 50.000đ (15/10/2026, trước đó 40.000đ). |
 
 ## 5. Dữ liệu
 

@@ -135,7 +135,7 @@ class LoyaltyPublicPagesTest extends TestCase
         $this->post('/tra-cuu', ['phone' => '0988000001'])
             ->assertOk()
             ->assertSee('Bạn đang có 0 điểm')
-            ->assertSee('40.000đ')
+            ->assertSee('50.000đ')
             ->assertDontSee('đủ điểm');
     }
 

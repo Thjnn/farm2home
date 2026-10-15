@@ -39,7 +39,7 @@ Người mua rau ở Mỹ Tho và vùng lân cận.
 
 ### Được tích điểm khi
 
-- Đơn có tiền hàng từ 40.000đ được giao xong: **+5 điểm**.
+- Đơn có tiền hàng từ 50.000đ được giao xong: **+5 điểm**.
 - Trả bao bì: **+5 điểm** (mỗi đơn một lần).
 
 ### Không làm được
@@ -53,7 +53,7 @@ Người mua rau ở Mỹ Tho và vùng lân cận.
 
 ## 2. Nông hộ
 
-Hộ trồng rau ở Thân Cửu Nghĩa, Gò Công. Mỗi hộ có một link riêng, operator gửi qua Zalo.
+Hộ trồng rau ở Châu Thành, Cai Lậy, Chợ Gạo và vùng lân cận. Mỗi hộ có một link riêng, operator gửi qua Zalo.
 
 ### Làm được
 

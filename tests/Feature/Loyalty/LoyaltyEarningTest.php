@@ -28,6 +28,8 @@ class LoyaltyEarningTest extends TestCase
         parent::setUp();
         $this->travelTo('2026-10-03 20:00:00');
         $this->buildCatalog();
+        // Giỏ Mini (45.000đ) dưới ngưỡng cộng điểm 50.000đ; đơn mặc định của test cần đủ ngưỡng.
+        $this->basket->update(['price' => 70000]);
         $this->orders = app(OrderService::class);
         $this->loyalty = app(LoyaltyService::class);
     }
@@ -86,13 +88,17 @@ class LoyaltyEarningTest extends TestCase
 
     public function test_the_minimum_subtotal_is_inclusive(): void
     {
-        $atThreshold = $this->deliver($this->place([['product_id' => $this->hl->id, 'quantity' => 5]]));
+        $atThreshold = $this->deliver($this->place([
+            ['product_id' => $this->cn->id, 'quantity' => 2],
+            ['product_id' => $this->rm->id, 'quantity' => 1],
+            ['product_id' => $this->hl->id, 'quantity' => 1],
+        ]));
         $below = $this->deliver($this->place([
-            ['product_id' => $this->rm->id, 'quantity' => 2],
             ['product_id' => $this->cn->id, 'quantity' => 1],
+            ['product_id' => $this->hl->id, 'quantity' => 4],
         ], '0988000002'));
 
-        $this->assertSame([40000, 39000], [$atThreshold->subtotal, $below->subtotal]);
+        $this->assertSame([50000, 47000], [$atThreshold->subtotal, $below->subtotal]);
         $this->assertSame(5, $this->loyalty->balance($atThreshold->customer));
         $this->assertSame(0, $this->loyalty->balance($below->customer));
     }

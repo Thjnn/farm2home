@@ -69,6 +69,6 @@ class DemoShiftDatesTest extends TestCase
 
         // Bao bì trả ngày 19/09 → 07/11 (dịch 49 ngày), dòng điểm đi theo.
         $this->assertSame('2026-11-07 18:00:00', DB::table('point_transactions')->where('packaging_return_id', 1)->value('created_at'));
-        $this->assertSame(89, DB::table('point_transactions')->count());
+        $this->assertSame(59, DB::table('point_transactions')->count());
     }
 }

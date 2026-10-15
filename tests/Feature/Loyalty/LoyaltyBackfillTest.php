@@ -23,18 +23,18 @@ class LoyaltyBackfillTest extends TestCase
 
     public function test_backfill_awards_the_sample_data_and_is_safe_to_rerun(): void
     {
-        $this->artisan('loyalty:backfill')->expectsOutputToContain('Đã cộng 445 điểm trong 89 giao dịch.')->assertSuccessful();
+        $this->artisan('loyalty:backfill')->expectsOutputToContain('Đã cộng 295 điểm trong 59 giao dịch.')->assertSuccessful();
 
-        $this->assertSame(78, PointTransaction::where('reason', PointReason::OrderDelivered)->count());
+        $this->assertSame(48, PointTransaction::where('reason', PointReason::OrderDelivered)->count());
         $this->assertSame(11, PointTransaction::where('reason', PointReason::PackagingReturned)->count());
-        $this->assertSame(445, (int) PointTransaction::sum('points'));
-        $this->assertSame(20, app(LoyaltyService::class)->balance(Customer::where('phone', '0988000001')->firstOrFail()));
+        $this->assertSame(295, (int) PointTransaction::sum('points'));
+        $this->assertSame(15, app(LoyaltyService::class)->balance(Customer::where('phone', '0988000001')->firstOrFail()));
 
         // Dòng điểm mang thời điểm của sự kiện gốc, không phải lúc chạy lệnh.
         $this->assertSame('2026-09-19 18:00:00', PointTransaction::where('packaging_return_id', 1)->sole()->created_at->toDateTimeString());
         $this->assertSame(0, PointTransaction::where('created_at', '>=', '2026-10-02 10:00:00')->count());
 
         $this->artisan('loyalty:backfill')->expectsOutputToContain('Đã cộng 0 điểm trong 0 giao dịch.')->assertSuccessful();
-        $this->assertSame(89, PointTransaction::count());
+        $this->assertSame(59, PointTransaction::count());
     }
 }

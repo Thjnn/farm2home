@@ -2,7 +2,7 @@
     <section class="mb-8">
         <h1 class="text-2xl font-bold leading-tight tracking-tight text-stone-900">Điều phối nông sản theo nhu cầu, giảm dư thừa.</h1>
         <p class="mt-3 text-stone-700">
-            Bạn đặt rau trước, nông hộ ở Thân Cửu Nghĩa và Gò Công thu hoạch vừa đủ theo đơn.
+            Bạn đặt rau trước, nông hộ ở Châu Thành, Cai Lậy, Chợ Gạo và vùng lân cận thu hoạch vừa đủ theo đơn.
             Rau được sơ chế, đóng gói và giao trong ngày, mỗi gói có mã QR để xem thông tin lô hàng.
         </p>
         <div class="mt-5 flex flex-wrap gap-3">

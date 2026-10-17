@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FARM2HOME — Sơ đồ CSDL</title>
+<script>
+  (function () {
+    let saved = null;
+    try { saved = localStorage.getItem('f2h-erd-theme'); } catch (e) {}
+    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #F7F6F1; --surface: #FFFFFF; --surface2: #F0EEE6;
+    --ink: #161614; --body: #3D3D3A; --muted: #85847D;
+    --line: #D3D0C6; --line-soft: #E7E4DB;
+    --accent: #C8553D; --accent-soft: rgba(200,85,61,0.12);
+    --z-demand: #C8553D; --z-loyalty: #2E8B83; --z-master: #B8892E; --z-coord: #4F7894;
+    --z-sys: #85847D; --z-supply: #5F7F3A; --z-trace: #8A5A9E; --z-impact: #B5476B;
+    --zone-fill: rgba(22,22,20,0.022);
+    --shadow: 0 6px 24px rgba(0,0,0,0.08);
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  html.dark {
+    --bg: #131312; --surface: #1D1D1B; --surface2: #282826;
+    --ink: #F6F5EF; --body: #D3D0C6; --muted: #8E8D86;
+    --line: #3A3A37; --line-soft: #2A2A28;
+    --accent: #EC8A6F; --accent-soft: rgba(236,138,111,0.16);
+    --z-demand: #EC8A6F; --z-loyalty: #5CC2B8; --z-master: #DDB45E; --z-coord: #82AACB;
+    --z-sys: #9C9B94; --z-supply: #9DBE72; --z-trace: #C292D6; --z-impact: #E58AA8;
+    --zone-fill: rgba(246,245,239,0.025);
+    --shadow: 0 6px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--body); font-family: var(--sans); -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; overflow: hidden; }
+  button { font: inherit; }
+
+  /* ── thanh trên ─────────────────────────── */
+  .bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 1px solid var(--line-soft); flex: none; }
+  .bar h1 { font-size: 17px; font-weight: 650; color: var(--ink); letter-spacing: -0.01em; }
+  .bar .sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+  .spacer { flex: 1; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip, .tbtn {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.03em; padding: 6px 11px; min-height: 30px;
+    border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; transition: all .15s ease;
+  }
+  .tbtn { border-radius: 7px; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.07em; }
+  .chip:hover, .tbtn:hover { color: var(--ink); border-color: var(--muted); }
+  .chip.on, .tbtn.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+  /* ── sân khấu ───────────────────────────── */
+  .stage { flex: 1; position: relative; min-height: 0; overflow: hidden; }
+  .stage #svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; user-select: none; }
+  .stage.grabbing #svg { cursor: grabbing; }
+
+  .zone rect { fill: var(--zone-fill); stroke: var(--zc); stroke-opacity: .45; stroke-width: 1; stroke-dasharray: 5 5; }
+  .zone .ztitle { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; fill: var(--zc); }
+  .zone .zsub { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
+
+  .node { cursor: pointer; transition: opacity .2s ease; }
+  .node .bg { fill: var(--surface); stroke: var(--line); stroke-width: 1.3; transition: stroke .15s ease; }
+  .node .hd { fill: var(--z); fill-opacity: .13; }
+  .node .stripe { fill: var(--z); }
+  .node:hover .bg { stroke: var(--muted); }
+  .node.sel .bg { stroke: var(--accent); stroke-width: 2.4; }
+  .node.cur .bg { stroke: var(--z); stroke-width: 2.6; }
+  .node .tn { font-family: var(--mono); font-size: 13px; font-weight: 700; fill: var(--ink); pointer-events: none; }
+  .node .tv { font-family: var(--sans); font-size: 11px; fill: var(--muted); pointer-events: none; }
+  .row .hl { fill: transparent; }
+  .row:hover .hl, .row.lit .hl { fill: var(--accent-soft); }
+  .row .k { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.04em; pointer-events: none; }
+  .row .k.pk { fill: var(--z-master); } .row .k.fk { fill: var(--z-coord); } .row .k.uq { fill: var(--muted); }
+  .row .cn { font-family: var(--mono); font-size: 11.5px; fill: var(--body); pointer-events: none; }
+  .row.key .cn { fill: var(--ink); font-weight: 600; }
+  .row .ct { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); pointer-events: none; }
+  .row .more { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); font-style: italic; }
+
+  .edge { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-opacity: .55; marker-end: url(#arr); transition: opacity .2s ease, stroke .2s ease; }
+  .edge.nul { stroke-dasharray: 5 4; }
+  .edge.hov { stroke: var(--accent); stroke-opacity: 1; stroke-width: 2; marker-end: url(#arr-on); }
+  .dim .edge { opacity: .08; }
+  .dim .node { opacity: .22; }
+  .dim .zone { opacity: .5; }
+  .dim .node.lit { opacity: 1; }
+  .dim .edge.lit { opacity: 1; stroke: var(--accent); stroke-opacity: 1; stroke-width: 2.1; marker-end: url(#arr-on); stroke-dasharray: 7 5; animation: march .9s linear infinite; }
+  @keyframes march { to { stroke-dashoffset: -12; } }
+  @media (prefers-reduced-motion: reduce) { .dim .edge.lit { animation: none; } }
+
+  /* ── thẻ nổi ────────────────────────────── */
+  .card { position: absolute; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); z-index: 2; }
+  .card[hidden] { display: none; }
+  .x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; }
+  .x:hover { background: var(--surface2); color: var(--ink); }
+  #detail { right: 14px; top: 14px; width: 350px; max-height: calc(100% - 28px); overflow: auto; }
+  #detail h3 { font-family: var(--mono); font-size: 15px; color: var(--ink); padding-right: 28px; }
+  #detail .vi { font-size: 13px; font-weight: 600; color: var(--z, var(--accent)); margin-top: 2px; }
+  #detail .meta { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin: 4px 0 8px; text-transform: uppercase; letter-spacing: .06em; }
+  #detail p { font-size: 12.5px; line-height: 1.55; }
+  #detail h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 12px 0 5px; }
+  #detail ul { list-style: none; }
+  #detail li { font-family: var(--mono); font-size: 11.5px; line-height: 1.75; }
+  #detail li button { font-family: var(--mono); font-size: 11.5px; background: none; border: 0; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
+  #detail table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
+  #detail td { padding: 3px 4px 3px 0; border-top: 1px solid var(--line-soft); vertical-align: top; }
+  #detail td:last-child { color: var(--muted); word-break: break-word; }
+  #detail .tag { font-size: 9px; font-weight: 700; margin-right: 4px; }
+  #detail code { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+
+  #flowcap { left: 14px; top: 14px; width: 380px; }
+  #flowcap .fname { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; padding-right: 64px; }
+  #flowcap ol { list-style: none; counter-reset: s; }
+  #flowcap li { counter-increment: s; font-size: 12.5px; line-height: 1.5; padding: 5px 8px 5px 30px; border-radius: 7px; position: relative; cursor: pointer; }
+  #flowcap li::before { content: counter(s); position: absolute; left: 8px; top: 5px; font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--muted); }
+  #flowcap li:hover { background: var(--surface2); }
+  #flowcap li.cur { background: var(--accent-soft); color: var(--ink); }
+  #flowcap li.cur::before { color: var(--accent); }
+  #flowcap code { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+  #play { position: absolute; top: 8px; right: 40px; height: 28px; padding: 0 9px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: var(--mono); font-size: 10.5px; }
+  #play:hover { color: var(--ink); border-color: var(--muted); }
+
+  #legend { left: 14px; bottom: 14px; width: 270px; font-size: 12px; }
+  #legend h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  #legend .lr { display: flex; align-items: center; gap: 8px; line-height: 1.9; }
+  #legend .lk { font-family: var(--mono); font-size: 9.5px; font-weight: 700; width: 22px; }
+  #legend svg { width: 40px; height: 10px; flex: none; }
+  #legend .zl { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; margin-top: 8px; }
+  #legend .zl span { display: flex; align-items: center; gap: 6px; font-size: 11.5px; }
+  #legend .zl i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+
+  .zoom { position: absolute; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px; box-shadow: var(--shadow); z-index: 2; }
+  .zoom button { min-width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: var(--body); cursor: pointer; font-family: var(--mono); font-size: 12px; padding: 0 8px; }
+  .zoom button:hover { background: var(--surface2); color: var(--ink); }
+  .zoom #zlbl { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 44px; text-align: center; }
+  .hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-family: var(--mono); font-size: 10.5px; color: var(--muted); pointer-events: none; white-space: nowrap; }
+
+  @media (max-width: 880px) {
+    #detail { left: 10px; right: 10px; width: auto; top: auto; bottom: 60px; max-height: 50%; }
+    #flowcap { left: 10px; right: 10px; width: auto; }
+    #legend { display: none; }
+    .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div>
+    <h1>FARM2HOME — Sơ đồ cơ sở dữ liệu</h1>
+    <div class="sub" id="sub"></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="chips" id="chips">
+    <button class="chip on" data-flow="all">Tất cả</button>
+    <button class="chip" data-flow="order">Đặt hàng</button>
+    <button class="chip" data-flow="plan">Dự báo → thu hoạch</button>
+    <button class="chip" data-flow="trace">Lô hàng &amp; QR</button>
+    <button class="chip" data-flow="feedback">Phản hồi</button>
+    <button class="chip" data-flow="impact">Rau dư · bao bì · điểm</button>
+  </div>
+  <button class="tbtn" id="keysOnly" title="Ẩn các cột thường, chỉ giữ khóa">Chỉ cột khóa</button>
+  <button class="tbtn" id="legendBtn">Chú thích</button>
+  <button class="tbtn" id="themeToggle">Giao diện</button>
+</div>
+
+<div class="stage" id="stage">
+  <svg id="svg" role="img" aria-label="Sơ đồ quan hệ các bảng của cơ sở dữ liệu farm2home">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted)"/></marker>
+      <marker id="arr-on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--accent)"/></marker>
+    </defs>
+    <g id="svg-content"></g>
+  </svg>
+
+  <div class="card" id="flowcap" hidden>
+    <button class="x" data-close="flowcap" aria-label="Đóng">×</button>
+    <button id="play" aria-label="Tạm dừng / chạy tiếp">❚❚</button>
+    <div class="fname" id="f-name"></div>
+    <ol id="f-steps"></ol>
+  </div>
+
+  <div class="card" id="detail" hidden>
+    <button class="x" data-close="detail" aria-label="Đóng">×</button>
+    <div id="d-body"></div>
+  </div>
+
+  <div class="card" id="legend">
+    <button class="x" data-close="legend" aria-label="Đóng">×</button>
+    <h4>Chú thích</h4>
+    <div class="lr"><span class="lk" style="color:var(--z-master)">PK</span>khóa chính</div>
+    <div class="lr"><span class="lk" style="color:var(--z-coord)">FK</span>khóa ngoại (trỏ sang bảng khác)</div>
+    <div class="lr"><span class="lk" style="color:var(--muted)">UQ</span>không được trùng</div>
+    <div class="lr"><span class="lk" style="color:var(--muted)">?</span>có thể để trống (NULL)</div>
+    <div class="lr"><svg viewBox="0 0 40 10"><path d="M2,5 H34" style="stroke:var(--muted);stroke-width:1.5" marker-end="url(#arr)"/></svg>bảng con → bảng cha</div>
+    <div class="lr"><svg viewBox="0 0 40 10"><path d="M2,5 H34" style="stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4" marker-end="url(#arr)"/></svg>liên kết không bắt buộc</div>
+    <div class="zl" id="zl"></div>
+  </div>
+
+  <div class="zoom">
+    <button id="zout" aria-label="Thu nhỏ">−</button>
+    <span id="zlbl">100%</span>
+    <button id="zin" aria-label="Phóng to">+</button>
+    <button id="z100" title="Về 100%">100%</button>
+    <button id="zfit" title="Vừa khung">Vừa khung</button>
+  </div>
+  <div class="hint">kéo để di chuyển · cuộn để phóng to · bấm vào bảng để xem chi tiết</div>
+</div>
+
+<script>
+const SCHEMA = {"basket_items":{"cols":[["id","bigint unsigned","P"],["basket_id","bigint unsigned","U"],["product_id","bigint unsigned","U"],["quantity","smallint unsigned",""],["allow_substitute","tinyint(1)",""]],"uq":["basket_id,product_id"]},"baskets":{"cols":[["id","bigint unsigned","P"],["name","varchar(150)",""],["slug","varchar(160)","U"],["description","text","N"],["household_min","tinyint unsigned",""],["household_max","tinyint unsigned",""],["price","int unsigned",""],["is_active","tinyint(1)",""],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["slug"]},"batches":{"cols":[["id","bigint unsigned","P"],["code","varchar(40)","U"],["harvest_plan_item_id","bigint unsigned","N"],["farmer_id","bigint unsigned",""],["product_id","bigint unsigned",""],["quantity_kg","decimal(8,2)",""],["harvested_at","datetime",""],["received_at","datetime","N"],["processed_at","datetime","N"],["packed_at","datetime","N"],["processing_note","varchar(255)","N"],["storage_guide","text","N"],["best_before","date","N"],["quality_status","enum('pending','passed','rejected')",""],["qc_note","varchar(255)","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["code"]},"customers":{"cols":[["id","bigint unsigned","P"],["name","varchar(150)",""],["phone","varchar(20)","U"],["zalo_phone","varchar(20)","N"],["address","varchar(255)","N"],["delivery_zone_id","bigint unsigned","N"],["household_size","tinyint unsigned","N"],["budget_per_week","int unsigned","N"],["preferences","json","N"],["source","enum('zalo','form','website','phone','referral')",""],["data_consent","tinyint(1)",""],["note","text","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["phone"]},"delivery_zones":{"cols":[["id","bigint unsigned","P"],["name","varchar(100)",""],["description","varchar(255)","N"],["shipping_fee","int unsigned",""],["free_ship_from","int unsigned","N"],["pickup_point","varchar(255)","N"],["is_active","tinyint(1)",""],["created_at","timestamp","N"],["updated_at","timestamp","N"]]},"farmer_products":{"cols":[["farmer_id","bigint unsigned","P"],["product_id","bigint unsigned","P"],["typical_weekly_kg","decimal(8,2)","N"]]},"farmers":{"cols":[["id","bigint unsigned","P"],["code","varchar(20)","U"],["name","varchar(150)",""],["phone","varchar(20)",""],["zalo_phone","varchar(20)","N"],["address","varchar(255)","N"],["growing_area","varchar(255)","N"],["area_m2","int unsigned","N"],["farming_method","varchar(150)","N"],["certificate_name","varchar(150)","N"],["certificate_file","varchar(255)","N"],["certificate_expires_at","date","N"],["access_token","char(40)","U"],["status","enum('active','paused','inactive')",""],["note","text","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["access_token","code"]},"feedbacks":{"cols":[["id","bigint unsigned","P"],["batch_id","bigint unsigned",""],["order_id","bigint unsigned","N"],["customer_id","bigint unsigned","N"],["rating","tinyint unsigned",""],["freshness_rating","tinyint unsigned","N"],["comment","text","N"],["status","enum('new','processing','resolved')",""],["response","text","N"],["resolved_by","bigint unsigned","N"],["resolved_at","timestamp","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]]},"forecasts":{"cols":[["id","bigint unsigned","P"],["product_id","bigint unsigned","U"],["target_date","date","U"],["generated_on","date","U"],["method","enum('moving_average','exp_smoothing','tree_regression','manual','weekday_average')","U"],["confirmed_kg","decimal(8,2)",""],["predicted_extra_kg","decimal(8,2)",""],["predicted_total_kg","decimal(8,2)",""],["lower_kg","decimal(8,2)","N"],["upper_kg","decimal(8,2)","N"],["actual_kg","decimal(8,2)","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["product_id,target_date,generated_on,method"]},"harvest_plan_items":{"cols":[["id","bigint unsigned","P"],["harvest_plan_id","bigint unsigned",""],["product_id","bigint unsigned",""],["farmer_id","bigint unsigned","N"],["confirmed_order_kg","decimal(8,2)",""],["forecast_extra_kg","decimal(8,2)",""],["available_stock_kg","decimal(8,2)",""],["suggested_kg","decimal(8,2)",""],["final_kg","decimal(8,2)","N"],["received_kg","decimal(8,2)","N"],["adjust_reason","varchar(255)","N"],["farmer_confirmed_at","timestamp","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]]},"harvest_plans":{"cols":[["id","bigint unsigned","P"],["harvest_date","date",""],["delivery_date","date","U"],["safety_margin_pct","decimal(5,2)",""],["status","enum('draft','confirmed','sent','completed')",""],["created_by","bigint unsigned","N"],["confirmed_by","bigint unsigned","N"],["confirmed_at","timestamp","N"],["note","text","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["delivery_date"]},"order_item_batches":{"cols":[["order_item_id","bigint unsigned","P"],["batch_id","bigint unsigned","P"],["quantity","smallint unsigned",""]]},"order_items":{"cols":[["id","bigint unsigned","P"],["order_id","bigint unsigned",""],["product_id","bigint unsigned",""],["basket_id","bigint unsigned","N"],["quantity","smallint unsigned",""],["weight_kg","decimal(8,3)",""],["unit_price","int unsigned",""],["line_total","int unsigned",""],["fulfilled_quantity","smallint unsigned","N"],["is_gift","tinyint(1)",""],["created_at","timestamp","N"],["updated_at","timestamp","N"]]},"orders":{"cols":[["id","bigint unsigned","P"],["code","varchar(30)","U"],["customer_id","bigint unsigned",""],["subscription_id","bigint unsigned","N"],["delivery_zone_id","bigint unsigned","N"],["order_type","enum('basket','single')",""],["channel","enum('zalo','form','website','phone')",""],["delivery_date","date",""],["time_slot","varchar(20)",""],["delivery_method","enum('home','pickup')",""],["delivery_address","varchar(255)","N"],["subtotal","int unsigned",""],["shipping_fee","int unsigned",""],["discount","int unsigned",""],["total","int unsigned",""],["payment_method","enum('cod','bank_transfer')",""],["payment_status","enum('unpaid','paid','refunded')",""],["status","enum('pending','confirmed','packing','delivering','delivered','cancelled')",""],["confirmed_at","timestamp","N"],["delivered_at","timestamp","N"],["cancel_reason","varchar(255)","N"],["note","text","N"],["requested_reward","varchar(40)","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["code"]},"packaging_returns":{"cols":[["id","bigint unsigned","P"],["return_date","date",""],["customer_id","bigint unsigned","N"],["order_id","bigint unsigned","N"],["quantity_returned","smallint unsigned",""],["quantity_reused","smallint unsigned",""],["note","varchar(255)","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]]},"point_transactions":{"cols":[["id","bigint unsigned","P"],["customer_id","bigint unsigned",""],["points","int",""],["reason","enum('order_delivered','packaging_returned','redeemed','refunded')","U"],["order_id","bigint unsigned","NU"],["packaging_return_id","bigint unsigned","N"],["reward","varchar(40)","N"],["created_by","bigint unsigned","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["order_id,reason"]},"products":{"cols":[["id","bigint unsigned","P"],["code","varchar(10)","U"],["name","varchar(150)",""],["slug","varchar(160)","U"],["pack_weight_kg","decimal(6,3)",""],["price","int unsigned",""],["cost_price_per_kg","int unsigned",""],["shelf_life_days","tinyint unsigned",""],["storage_guide","text","N"],["image","varchar(255)","N"],["is_active","tinyint(1)",""],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["code","slug"]},"subscriptions":{"cols":[["id","bigint unsigned","P"],["customer_id","bigint unsigned",""],["basket_id","bigint unsigned",""],["frequency","enum('weekly','biweekly','monthly')",""],["delivery_weekday","tinyint unsigned",""],["time_slot","varchar(20)",""],["start_date","date",""],["end_date","date","N"],["status","enum('active','paused','cancelled')",""],["created_at","timestamp","N"],["updated_at","timestamp","N"]]},"supply_reports":{"cols":[["id","bigint unsigned","P"],["farmer_id","bigint unsigned","U"],["product_id","bigint unsigned","U"],["available_date","date","U"],["quantity_kg","decimal(8,2)",""],["source","enum('zalo','form','operator')",""],["note","varchar(255)","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["farmer_id,product_id,available_date"]},"users":{"cols":[["id","bigint unsigned","P"],["name","varchar(255)",""],["email","varchar(255)","U"],["phone","varchar(20)","N"],["role","enum('admin','operator')",""],["email_verified_at","timestamp","N"],["password","varchar(255)",""],["remember_token","varchar(100)","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]],"uq":["email"]},"waste_logs":{"cols":[["id","bigint unsigned","P"],["log_date","date",""],["product_id","bigint unsigned",""],["batch_id","bigint unsigned","N"],["quantity_kg","decimal(8,2)",""],["reason","enum('surplus','damaged','expired','discounted')",""],["note","varchar(255)","N"],["created_by","bigint unsigned","N"],["created_at","timestamp","N"],["updated_at","timestamp","N"]]}};
+const FKS = [["basket_items","basket_id","baskets"],["basket_items","product_id","products"],["batches","farmer_id","farmers"],["batches","harvest_plan_item_id","harvest_plan_items"],["batches","product_id","products"],["customers","delivery_zone_id","delivery_zones"],["farmer_products","farmer_id","farmers"],["farmer_products","product_id","products"],["feedbacks","batch_id","batches"],["feedbacks","customer_id","customers"],["feedbacks","order_id","orders"],["feedbacks","resolved_by","users"],["forecasts","product_id","products"],["harvest_plan_items","farmer_id","farmers"],["harvest_plan_items","harvest_plan_id","harvest_plans"],["harvest_plan_items","product_id","products"],["harvest_plans","confirmed_by","users"],["harvest_plans","created_by","users"],["order_item_batches","batch_id","batches"],["order_item_batches","order_item_id","order_items"],["order_items","basket_id","baskets"],["order_items","order_id","orders"],["order_items","product_id","products"],["orders","customer_id","customers"],["orders","delivery_zone_id","delivery_zones"],["orders","subscription_id","subscriptions"],["packaging_returns","customer_id","customers"],["packaging_returns","order_id","orders"],["point_transactions","created_by","users"],["point_transactions","customer_id","customers"],["point_transactions","order_id","orders"],["point_transactions","packaging_return_id","packaging_returns"],["subscriptions","basket_id","baskets"],["subscriptions","customer_id","customers"],["supply_reports","farmer_id","farmers"],["supply_reports","product_id","products"],["waste_logs","batch_id","batches"],["waste_logs","created_by","users"],["waste_logs","product_id","products"]];
+
+const ZONES = {
+  demand:  { name: 'Nhu cầu',              sub: 'khách · đơn · gói định kỳ' },
+  loyalty: { name: 'Điểm & bao bì',        sub: 'giữ chân khách' },
+  master:  { name: 'Danh mục',             sub: 'rau · giỏ · khu giao' },
+  coord:   { name: 'Điều phối',            sub: 'AI gợi ý · người chốt' },
+  sys:     { name: 'Tài khoản',            sub: 'admin · operator' },
+  supply:  { name: 'Nông hộ & nguồn cung', sub: 'link riêng, không cần app' },
+  trace:   { name: 'Truy xuất',            sub: 'mã lô = nội dung QR' },
+  impact:  { name: 'Phản hồi & rau dư',    sub: 'KPI chất lượng · lãng phí' },
+};
+
+const INFO = {
+  customers:          { vi: 'Khách hàng', z: 'demand', d: 'Nhận diện bằng <b>số điện thoại</b>, không cần tài khoản. <code>preferences</code> là JSON khẩu vị, <code>data_consent</code> ghi nhận đồng ý lưu dữ liệu.' },
+  subscriptions:      { vi: 'Gói giỏ định kỳ', z: 'demand', d: 'Khách đăng ký nhận giỏ theo tuần / 2 tuần / tháng vào một thứ cố định. Lệnh <code>subscriptions:generate</code> sinh đơn tự động.' },
+  orders:             { vi: 'Đơn hàng', z: 'demand', d: 'Mã <code>DH{yymmdd}-{stt}</code> theo <b>ngày giao</b>. Trạng thái: chờ xác nhận → đã xác nhận → đóng gói → đang giao → đã giao (hoặc huỷ). Tiền là số nguyên VND.' },
+  order_items:        { vi: 'Dòng đơn', z: 'demand', d: '<code>quantity</code> là số gói; <code>weight_kg = quantity × pack_weight_kg</code> — đây chính là <b>nhu cầu</b> mà dự báo học theo. Dòng thuộc giỏ có <code>basket_id</code> và đơn giá 0. <code>fulfilled_quantity</code> dùng cho KPI tỉ lệ giao đủ.' },
+  point_transactions: { vi: 'Điểm thưởng', z: 'loyalty', d: 'Sổ cộng / trừ điểm: cộng khi đơn ≥ 50.000đ được giao hoặc khi trả bao bì, trừ khi đổi quà. Mỗi đơn chỉ được cộng một lần cho mỗi lý do.' },
+  packaging_returns:  { vi: 'Trả bao bì', z: 'loyalty', d: 'Số bao bì khách trả lại và số được tái sử dụng — KPI môi trường.' },
+  delivery_zones:     { vi: 'Khu giao hàng', z: 'master', d: 'Phí giao, mức miễn phí giao (<code>free_ship_from</code>), và điểm nhận hàng nếu là khu tự đến lấy (phí 0).' },
+  baskets:            { vi: 'Giỏ rau', z: 'master', d: 'Giỏ Mini / Xanh Tiết Kiệm / Gia Đình — giá trọn gói, gợi ý theo số người trong nhà.' },
+  basket_items:       { vi: 'Thành phần giỏ', z: 'master', d: 'Mỗi giỏ gồm những rau nào, bao nhiêu gói, có được thay rau khác không.' },
+  products:           { vi: 'Loại rau', z: 'master', d: 'Mã RM, CN, CX, MT, RD, XL, HL. Khối lượng mỗi gói, giá bán, <code>cost_price_per_kg</code> để tính biên lợi nhuận, hạn dùng và cách bảo quản (in lên trang QR).' },
+  forecasts:          { vi: 'Dự báo nhu cầu', z: 'coord', d: 'Mỗi lần chạy × phương pháp × ngày giao một dòng: dự báo tổng, dải trên/dưới. Sau ngày giao điền <code>actual_kg</code> để đo MAE / MAPE và so các phương pháp.' },
+  harvest_plans:      { vi: 'Kế hoạch thu hoạch', z: 'coord', d: 'Một kế hoạch cho mỗi ngày giao. Nháp → đã chốt → đã gửi nông hộ → hoàn tất. Ghi ai tạo, ai chốt.' },
+  harvest_plan_items: { vi: 'Dòng kế hoạch', z: 'coord', d: 'Lưu <b>cả</b> số AI gợi ý (<code>suggested_kg</code>) <b>và</b> số người chốt (<code>final_kg</code>) kèm lý do — nguyên tắc người quyết định. Một loại rau có thể chia cho nhiều nông hộ. Sau đó ghi số thực nhận.' },
+  users:              { vi: 'Tài khoản quản trị', z: 'sys', d: 'Chỉ người vận hành mới đăng nhập (admin, operator). Khách và nông hộ không có tài khoản.' },
+  farmers:            { vi: 'Nông hộ', z: 'supply', d: '<code>access_token</code> tạo đường link riêng gửi qua Zalo. Chứng nhận chỉ hiện trên trang QR khi có file và còn hạn.' },
+  farmer_products:    { vi: 'Rau nông hộ trồng', z: 'supply', d: 'Nông hộ đăng ký trồng rau gì, sản lượng thường mỗi tuần. Dùng để lọc ô chọn nông hộ trong kế hoạch.' },
+  supply_reports:     { vi: 'Báo sản lượng', z: 'supply', d: 'Nông hộ báo số kg có thể giao cho từng ngày. Kế hoạch chia phần theo tỉ lệ số này. Mỗi nhà + rau + ngày chỉ một dòng.' },
+  batches:            { vi: 'Lô hàng', z: 'trace', d: 'Mã <code>F2H-{yymmdd}-{rau}-{nông hộ}</code> chính là nội dung QR. Ghi giờ thu hoạch, sơ chế, đóng gói, hạn dùng và kết quả kiểm tra chất lượng.' },
+  order_item_batches: { vi: 'Dòng đơn ↔ lô', z: 'trace', d: 'Bảng nối: gói rau trong đơn nào lấy từ lô nào — để khách quét QR thấy đúng lô của mình.' },
+  feedbacks:          { vi: 'Phản hồi', z: 'impact', d: 'Khách gửi từ trang QR của lô: điểm 1–5, độ tươi, nhận xét. Người vận hành xử lý: mới → đang xử lý → đã giải quyết.' },
+  waste_logs:         { vi: 'Rau dư / hư', z: 'impact', d: 'Số kg dư, dập, hết hạn hoặc bán giảm giá cuối ngày — KPI giảm lãng phí sau khi bắt đầu dự báo.' },
+};
+
+// Mỗi mảng là một cột trên sơ đồ, đọc trái → phải theo vòng dữ liệu.
+const LAYOUT = [
+  ['customers', 'subscriptions', 'point_transactions', 'packaging_returns'],
+  ['orders', 'order_items'],
+  ['delivery_zones', 'baskets', 'basket_items', 'products'],
+  ['forecasts', 'harvest_plans', 'harvest_plan_items', 'users'],
+  ['farmers', 'farmer_products', 'supply_reports'],
+  ['batches', 'order_item_batches'],
+  ['feedbacks', 'waste_logs'],
+];
+
+const FLOWS = {
+  order: { name: 'Đặt hàng — khách không cần tài khoản', steps: [
+    { s: 'Khách nhập SĐT → tìm hoặc tạo dòng <code>customers</code>', t: ['customers'] },
+    { s: 'Chọn khu giao để tính phí giao', t: ['customers', 'delivery_zones'] },
+    { s: 'Tạo <code>orders</code> theo ngày giao (có thể sinh từ gói định kỳ)', t: ['orders', 'customers', 'subscriptions', 'delivery_zones'] },
+    { s: 'Mỗi rau / giỏ thành một dòng <code>order_items</code>; giỏ được bung ra từng rau', t: ['order_items', 'orders', 'products', 'baskets', 'basket_items'] },
+  ]},
+  plan: { name: 'Dự báo → kế hoạch thu hoạch', steps: [
+    { s: 'Cộng <code>weight_kg</code> của đơn chưa huỷ theo ngày giao = lịch sử nhu cầu', t: ['order_items', 'orders', 'products'] },
+    { s: 'Chạy dự báo 3–7 ngày tới, lưu vào <code>forecasts</code>', t: ['forecasts', 'products'] },
+    { s: 'Nông hộ báo sản lượng qua link riêng', t: ['supply_reports', 'farmers', 'farmer_products', 'products'] },
+    { s: 'Tạo kế hoạch nháp: gợi ý kg, chia cho các nhà theo tỉ lệ đã báo', t: ['harvest_plans', 'harvest_plan_items', 'forecasts', 'supply_reports', 'farmers'] },
+    { s: 'Người vận hành sửa <code>final_kg</code> + lý do rồi chốt; gửi tin Zalo', t: ['harvest_plans', 'harvest_plan_items', 'users', 'farmers'] },
+  ]},
+  trace: { name: 'Nhận hàng → lô → QR', steps: [
+    { s: 'Nhập số thực nhận cho dòng kế hoạch', t: ['harvest_plan_items'] },
+    { s: 'Tạo <code>batches</code> với mã F2H-… (nội dung QR)', t: ['batches', 'harvest_plan_items', 'farmers', 'products'] },
+    { s: 'Gắn từng dòng đơn với lô đã dùng', t: ['order_item_batches', 'order_items', 'batches'] },
+    { s: 'Khách quét QR → xem nông hộ, giờ thu hoạch, cách bảo quản', t: ['batches', 'farmers', 'products'] },
+  ]},
+  feedback: { name: 'Phản hồi theo lô', steps: [
+    { s: 'Khách quét QR trên túi rau', t: ['batches'] },
+    { s: 'Gửi đánh giá, gắn với lô và (nếu có) đơn / khách', t: ['feedbacks', 'batches', 'orders', 'customers'] },
+    { s: 'Người vận hành trả lời và đánh dấu đã giải quyết', t: ['feedbacks', 'users'] },
+  ]},
+  impact: { name: 'Rau dư · bao bì · điểm thưởng', steps: [
+    { s: 'Cuối ngày ghi phần rau dư / hư theo lô', t: ['waste_logs', 'batches', 'products', 'users'] },
+    { s: 'Khách trả bao bì khi nhận đơn sau', t: ['packaging_returns', 'customers', 'orders'] },
+    { s: 'Cộng điểm khi đơn ≥ 50.000đ được giao hoặc khi trả bao bì', t: ['point_transactions', 'customers', 'orders', 'packaging_returns', 'users'] },
+  ]},
+};
+
+// ── hằng số bố cục ──
+const W = 270, HEAD = 34, ROW = 19, PADB = 8, GAP_X = 130, GAP_Y = 30, GAP_ZONE = 92, TOP = 70, LEFT = 40;
+const NS = 'http://www.w3.org/2000/svg';
+const content = document.getElementById('svg-content');
+const svg = document.getElementById('svg');
+const stage = document.getElementById('stage');
+
+const fkOf = {}, refBy = {};
+FKS.forEach(([child, col, parent]) => {
+  (fkOf[child] ??= {})[col] = parent;
+  (refBy[parent] ??= []).push([child, col]);
+});
+document.getElementById('sub').textContent = `${Object.keys(SCHEMA).length} bảng · ${FKS.length} khóa ngoại · MySQL farm2home`;
+
+let keysOnly = false, selected = null, flow = null, step = 0, timer = null;
+const pos = {};
+let extent = { w: 0, h: 0 };
+
+function el(tag, attrs, parent, text) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  parent?.appendChild(n);
+  return n;
+}
+
+function shortType(t) {
+  if (t.startsWith('enum(')) return `enum·${t.split(',').length}`;
+  if (t === 'tinyint(1)') return 'bool';
+  return t.replace(' unsigned', '');
+}
+
+function visibleCols(table) {
+  const cols = SCHEMA[table].cols;
+  if (!keysOnly) return { cols, hidden: 0 };
+  const keep = cols.filter(([name, , f]) => f.includes('P') || f.includes('U') || fkOf[table]?.[name]);
+  return { cols: keep, hidden: cols.length - keep.length };
+}
+
+function cardHeight(table) {
+  const { cols, hidden } = visibleCols(table);
+  return HEAD + (cols.length + (hidden ? 1 : 0)) * ROW + PADB;
+}
+
+function render() {
+  content.replaceChildren();
+  const zonesLayer = el('g', {}, content), edgesLayer = el('g', {}, content), nodesLayer = el('g', {}, content);
+  let maxY = 0;
+
+  LAYOUT.forEach((column, ci) => {
+    const x = LEFT + ci * (W + GAP_X);
+    let y = TOP, segment = null;
+    column.forEach((table, i) => {
+      const zone = INFO[table].z;
+      if (i > 0) y += zone === segment.zone ? GAP_Y : GAP_ZONE;
+      if (!segment || segment.zone !== zone) {
+        if (segment) drawZone(zonesLayer, segment, x);
+        segment = { zone, top: y, bottom: 0 };
+      }
+      const h = cardHeight(table);
+      pos[table] = { x, y, h };
+      segment.bottom = y + h;
+      y += h;
+    });
+    drawZone(zonesLayer, segment, x);
+    maxY = Math.max(maxY, y);
+  });
+  extent = { w: LEFT * 2 + LAYOUT.length * W + (LAYOUT.length - 1) * GAP_X, h: maxY + 40 };
+
+  FKS.forEach(([child, col, parent]) => drawEdge(edgesLayer, child, col, parent));
+  Object.keys(pos).forEach(table => drawNode(nodesLayer, table));
+  applyHighlight();
+}
+
+function drawZone(layer, seg, x) {
+  const g = el('g', { class: 'zone', style: `--zc: var(--z-${seg.zone})` }, layer);
+  el('rect', { x: x - 16, y: seg.top - 46, width: W + 32, height: seg.bottom - seg.top + 62, rx: 16 }, g);
+  el('text', { class: 'ztitle', x: x - 2, y: seg.top - 24 }, g, ZONES[seg.zone].name);
+  el('text', { class: 'zsub', x: x - 2, y: seg.top - 10 }, g, ZONES[seg.zone].sub);
+}
+
+function rowY(table, col) {
+  const idx = visibleCols(table).cols.findIndex(c => c[0] === col);
+  return pos[table].y + HEAD + Math.max(0, idx) * ROW + ROW / 2;
+}
+
+function drawEdge(layer, child, col, parent) {
+  const a = pos[child], b = pos[parent];
+  const y1 = rowY(child, col), y2 = rowY(parent, 'id');
+  const nullable = SCHEMA[child].cols.find(c => c[0] === col)[2].includes('N');
+  let d;
+  if (a.x === b.x) {
+    const sx = a.x + W, bulge = Math.min(110, 34 + Math.abs(y2 - y1) * 0.12);
+    d = `M${sx},${y1} C${sx + bulge},${y1} ${sx + bulge},${y2} ${sx + 2},${y2}`;
+  } else if (b.x > a.x) {
+    const sx = a.x + W, ex = b.x - 2, dx = Math.max(50, (ex - sx) * 0.45);
+    d = `M${sx},${y1} C${sx + dx},${y1} ${ex - dx},${y2} ${ex},${y2}`;
+  } else {
+    const sx = a.x, ex = b.x + W + 2, dx = Math.max(50, (sx - ex) * 0.45);
+    d = `M${sx},${y1} C${sx - dx},${y1} ${ex + dx},${y2} ${ex},${y2}`;
+  }
+  el('path', { class: 'edge' + (nullable ? ' nul' : ''), d, 'data-from': child, 'data-to': parent, 'data-col': col }, layer);
+}
+
+function drawNode(layer, table) {
+  const { x, y, h } = pos[table];
+  const g = el('g', { class: 'node', 'data-t': table, transform: `translate(${x},${y})`, style: `--z: var(--z-${INFO[table].z})` }, layer);
+  el('rect', { class: 'bg', width: W, height: h, rx: 10 }, g);
+  el('path', { class: 'hd', d: `M0,10 a10,10 0 0 1 10,-10 H${W - 10} a10,10 0 0 1 10,10 V${HEAD} H0 Z` }, g);
+  el('rect', { class: 'stripe', x: 0, y: HEAD - 2, width: W, height: 2 }, g);
+  el('text', { class: 'tn', x: 12, y: 22 }, g, table);
+  el('text', { class: 'tv', x: W - 12, y: 22, 'text-anchor': 'end' }, g, INFO[table].vi);
+
+  const { cols, hidden } = visibleCols(table);
+  cols.forEach(([name, type, f], i) => {
+    const ry = HEAD + i * ROW;
+    const fk = fkOf[table]?.[name];
+    const r = el('g', { class: 'row' + (f.includes('P') || fk ? ' key' : ''), 'data-c': name }, g);
+    el('rect', { class: 'hl', x: 1, y: ry, width: W - 2, height: ROW }, r);
+    const tag = f.includes('P') ? ['PK', 'pk'] : fk ? ['FK', 'fk'] : f.includes('U') ? ['UQ', 'uq'] : null;
+    if (tag) el('text', { class: 'k ' + tag[1], x: 11, y: ry + 13 }, r, tag[0]);
+    el('text', { class: 'cn', x: 36, y: ry + 13.5 }, r, name);
+    el('text', { class: 'ct', x: W - 10, y: ry + 13.5, 'text-anchor': 'end' }, r, shortType(type) + (f.includes('N') ? ' ?' : ''));
+    el('title', {}, r, `${name} — ${type}${f.includes('N') ? ' (có thể NULL)' : ''}${fk ? ` → ${fk}.id` : ''}`);
+  });
+  if (hidden) el('text', { class: 'more', x: 36, y: HEAD + cols.length * ROW + 13.5 }, el('g', { class: 'row' }, g), `+${hidden} cột khác`);
+}
+
+// ── làm nổi bật ──
+function litSet() {
+  if (selected) {
+    const tables = new Set([selected, ...Object.values(fkOf[selected] ?? {}), ...(refBy[selected] ?? []).map(r => r[0])]);
+    return { tables, edge: p => p.dataset.from === selected || p.dataset.to === selected, cur: new Set([selected]) };
+  }
+  if (flow) {
+    const steps = FLOWS[flow].steps;
+    const tables = new Set(steps.flatMap(s => s.t));
+    const cur = new Set(steps[step].t);
+    return { tables, edge: p => cur.has(p.dataset.from) && cur.has(p.dataset.to), cur };
+  }
+  return null;
+}
+
+function applyHighlight() {
+  const lit = litSet();
+  stage.classList.toggle('dim', !!lit);
+  content.querySelectorAll('.node').forEach(n => {
+    const t = n.dataset.t;
+    n.classList.toggle('lit', !!lit && lit.tables.has(t));
+    n.classList.toggle('sel', t === selected);
+    n.classList.toggle('cur', !!lit && !selected && lit.cur.has(t));
+  });
+  content.querySelectorAll('.edge').forEach(p => p.classList.toggle('lit', !!lit && lit.edge(p)));
+  content.querySelectorAll('.row').forEach(r => r.classList.remove('lit'));
+  if (selected) {
+    content.querySelectorAll('.edge.lit').forEach(p => {
+      content.querySelector(`.node[data-t="${p.dataset.from}"] .row[data-c="${p.dataset.col}"]`)?.classList.add('lit');
+    });
+  }
+}
+
+function hoverEdges(table, on) {
+  content.querySelectorAll('.edge').forEach(p => {
+    p.classList.toggle('hov', on && (p.dataset.from === table || p.dataset.to === table));
+  });
+}
+
+// ── chi tiết bảng ──
+function showDetail(table) {
+  const info = INFO[table], s = SCHEMA[table];
+  const out = Object.entries(fkOf[table] ?? {});
+  const inc = refBy[table] ?? [];
+  const link = t => `<button data-go="${t}">${t}</button>`;
+  const rows = s.cols.map(([n, t, f]) => {
+    const tag = f.includes('P') ? '<span class="tag" style="color:var(--z-master)">PK</span>' : fkOf[table]?.[n] ? '<span class="tag" style="color:var(--z-coord)">FK</span>' : f.includes('U') ? '<span class="tag">UQ</span>' : '';
+    return `<tr><td>${tag}${n}</td><td>${t}${f.includes('N') ? ' · null' : ''}</td></tr>`;
+  }).join('');
+  const box = document.getElementById('detail');
+  box.style.setProperty('--z', `var(--z-${info.z})`);
+  document.getElementById('d-body').innerHTML = `
+    <h3>${table}</h3>
+    <div class="vi">${info.vi}</div>
+    <div class="meta">${ZONES[info.z].name} · ${s.cols.length} cột</div>
+    <p>${info.d}</p>
+    ${out.length ? `<h4>Trỏ tới (${out.length})</h4><ul>${out.map(([c, p]) => `<li>${c} → ${link(p)}</li>`).join('')}</ul>` : ''}
+    ${inc.length ? `<h4>Được dùng bởi (${inc.length})</h4><ul>${inc.map(([c, col]) => `<li>${link(c)}.${col}</li>`).join('')}</ul>` : ''}
+    ${s.uq ? `<h4>Không được trùng</h4><ul>${s.uq.map(u => `<li>(${u.replace(/,/g, ', ')})</li>`).join('')}</ul>` : ''}
+    <h4>Các cột</h4><table>${rows}</table>`;
+  box.hidden = false;
+}
+
+function select(table, center) {
+  selected = table;
+  if (table) { stopFlow(); showDetail(table); if (center) centerOn(table); }
+  applyHighlight();
+}
+
+// ── luồng ──
+const chips = document.querySelectorAll('.chip');
+const fcap = document.getElementById('flowcap');
+const playBtn = document.getElementById('play');
+
+function setFlow(key) {
+  chips.forEach(c => c.classList.toggle('on', c.dataset.flow === key));
+  clearInterval(timer); timer = null;
+  selected = null;
+  if (key === 'all') { flow = null; fcap.hidden = true; applyHighlight(); return; }
+  flow = key; step = 0;
+  document.getElementById('f-name').textContent = FLOWS[key].name;
+  document.getElementById('f-steps').innerHTML = FLOWS[key].steps.map((s, i) => `<li data-i="${i}">${s.s}</li>`).join('');
+  fcap.hidden = false;
+  showStep();
+  play();
+}
+function showStep() {
+  fcap.querySelectorAll('li').forEach((li, i) => li.classList.toggle('cur', i === step));
+  applyHighlight();
+}
+function play() {
+  clearInterval(timer);
+  timer = setInterval(() => { step = (step + 1) % FLOWS[flow].steps.length; showStep(); }, 2600);
+  playBtn.textContent = '❚❚';
+}
+function pause() { clearInterval(timer); timer = null; playBtn.textContent = '▶'; }
+function stopFlow() {
+  if (!flow) return;
+  pause(); flow = null; fcap.hidden = true;
+  chips.forEach(c => c.classList.toggle('on', c.dataset.flow === 'all'));
+}
+chips.forEach(c => c.addEventListener('click', () => setFlow(c.dataset.flow)));
+playBtn.addEventListener('click', () => (timer ? pause() : play()));
+document.getElementById('f-steps').addEventListener('click', e => {
+  const li = e.target.closest('li');
+  if (!li) return;
+  pause(); step = +li.dataset.i; showStep();
+});
+
+// ── xoay, phóng to ──
+const view = { x: 0, y: 0, k: 1 };
+const zlbl = document.getElementById('zlbl');
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+function applyView() {
+  content.setAttribute('transform', `translate(${view.x},${view.y}) scale(${view.k})`);
+  zlbl.textContent = Math.round(view.k * 100) + '%';
+}
+function zoomAt(mx, my, k2) {
+  k2 = clamp(k2, 0.12, 3);
+  view.x = mx - (mx - view.x) * (k2 / view.k);
+  view.y = my - (my - view.y) * (k2 / view.k);
+  view.k = k2;
+  applyView();
+}
+function fit() {
+  const r = svg.getBoundingClientRect();
+  const k = Math.min((r.width - 20) / extent.w, (r.height - 20) / extent.h, 1);
+  view.k = k;
+  view.x = (r.width - extent.w * k) / 2;
+  view.y = Math.max(10, (r.height - extent.h * k) / 2);
+  applyView();
+}
+function centerOn(table) {
+  const r = svg.getBoundingClientRect(), p = pos[table];
+  if (view.k < 0.6) view.k = 0.8;
+  view.x = r.width / 2 - (p.x + W / 2) * view.k - (r.width > 880 ? 160 : 0);
+  view.y = r.height / 2 - (p.y + Math.min(p.h, 320) / 2) * view.k;
+  applyView();
+}
+
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = svg.getBoundingClientRect();
+  zoomAt(e.clientX - r.left, e.clientY - r.top, view.k * Math.exp(-e.deltaY * 0.0015));
+}, { passive: false });
+
+let drag = null;
+svg.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  drag = { sx: e.clientX, sy: e.clientY, x: view.x, y: view.y, moved: false };
+});
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+  if (!drag.moved && Math.hypot(dx, dy) > 5) { drag.moved = true; stage.classList.add('grabbing'); }
+  if (drag.moved) { view.x = drag.x + dx; view.y = drag.y + dy; applyView(); }
+});
+window.addEventListener('pointerup', () => {
+  if (drag?.moved) {
+    // Vừa kéo xong thì nuốt cú click kế tiếp, để không chọn nhầm bảng.
+    const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
+    window.addEventListener('click', swallow, { capture: true, once: true });
+    setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 0);
+  }
+  drag = null;
+  stage.classList.remove('grabbing');
+});
+
+svg.addEventListener('click', e => {
+  const node = e.target.closest('.node');
+  select(node ? node.dataset.t : null);
+  if (!node) document.getElementById('detail').hidden = true;
+});
+svg.addEventListener('pointerover', e => { const n = e.target.closest('.node'); if (n) hoverEdges(n.dataset.t, true); });
+svg.addEventListener('pointerout', e => { const n = e.target.closest('.node'); if (n) hoverEdges(n.dataset.t, false); });
+
+const mid = () => { const r = svg.getBoundingClientRect(); return [r.width / 2, r.height / 2]; };
+document.getElementById('zin').addEventListener('click', () => zoomAt(...mid(), view.k * 1.25));
+document.getElementById('zout').addEventListener('click', () => zoomAt(...mid(), view.k / 1.25));
+document.getElementById('z100').addEventListener('click', () => zoomAt(...mid(), 1));
+document.getElementById('zfit').addEventListener('click', fit);
+
+// ── thẻ nổi, nút bật tắt ──
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => {
+  const id = b.dataset.close;
+  document.getElementById(id).hidden = true;
+  if (id === 'flowcap') pause();
+  if (id === 'legend') document.getElementById('legendBtn').classList.remove('on');
+}));
+document.getElementById('detail').addEventListener('click', e => {
+  const go = e.target.closest('[data-go]');
+  if (go) select(go.dataset.go, true);
+});
+const legend = document.getElementById('legend');
+const legendBtn = document.getElementById('legendBtn');
+legendBtn.classList.add('on');
+legendBtn.addEventListener('click', () => { legend.hidden = !legend.hidden; legendBtn.classList.toggle('on', !legend.hidden); });
+document.getElementById('zl').innerHTML = Object.entries(ZONES).map(([k, z]) => `<span><i style="background:var(--z-${k})"></i>${z.name}</span>`).join('');
+
+const keysBtn = document.getElementById('keysOnly');
+keysBtn.addEventListener('click', () => { keysOnly = !keysOnly; keysBtn.classList.toggle('on', keysOnly); render(); });
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const dark = !document.documentElement.classList.contains('dark');
+  document.documentElement.classList.toggle('dark', dark);
+  try { localStorage.setItem('f2h-erd-theme', dark ? 'dark' : 'light'); } catch (e) {}
+});
+
+render();
+fit();
+window.addEventListener('resize', () => { if (!selected) fit(); });
+</script>
+</body>
+</html>

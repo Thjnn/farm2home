@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FARM2HOME — Kịch bản thuyết trình</title>
+<script>
+  (function () {
+    let saved = null;
+    try { saved = localStorage.getItem('f2h-doc-theme'); } catch (e) {}
+    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #F7F6F1; --surface: #FFFFFF; --surface2: #F0EEE6;
+    --ink: #161614; --body: #3A3A37; --muted: #7E7D76;
+    --line: #D6D3C9; --line-soft: #E8E5DC;
+    --accent: #047857; --accent-soft: rgba(4,120,87,0.10);
+    --say: #1F4E79; --say-soft: rgba(31,78,121,0.06);
+    --demo: #B45309; --demo-soft: rgba(180,83,9,0.08);
+    --warn: #B91C1C;
+    --shadow: 0 4px 18px rgba(0,0,0,0.06);
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  html.dark {
+    --bg: #131312; --surface: #1C1C1A; --surface2: #262624;
+    --ink: #F4F3EE; --body: #D0CDC3; --muted: #8F8E87;
+    --line: #3A3A37; --line-soft: #2A2A28;
+    --accent: #34D399; --accent-soft: rgba(52,211,153,0.12);
+    --say: #93C5FD; --say-soft: rgba(147,197,253,0.07);
+    --demo: #F5B465; --demo-soft: rgba(245,180,101,0.10);
+    --warn: #F87171;
+    --shadow: 0 4px 18px rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { background: var(--bg); color: var(--body); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  b, strong { color: var(--ink); font-weight: 650; }
+  code { font-family: var(--mono); font-size: .85em; background: var(--surface2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+  header.top { max-width: 980px; margin: 0 auto; padding: 32px 16px 12px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+  header.top h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.2; color: var(--ink); letter-spacing: -0.02em; margin: 6px 0 10px; }
+  header.top p { max-width: 760px; font-size: 15.5px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .facts span { font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+
+  /* thanh tập nói */
+  .rehearse { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line-soft); }
+  .rehearse .in { max-width: 980px; margin: 0 auto; padding: 8px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .clock { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--ink); min-width: 70px; font-variant-numeric: tabular-nums; }
+  .clock.over { color: var(--warn); }
+  .rehearse button { height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--body); cursor: pointer; font-family: var(--mono); font-size: 11.5px; }
+  .rehearse button:hover { color: var(--ink); border-color: var(--muted); }
+  .rehearse button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  html.dark .rehearse button.primary { color: #0B2A20; }
+  .rehearse button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .bar { flex: 1; min-width: 200px; display: flex; height: 26px; border-radius: 7px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); position: relative; }
+  .bar a { display: block; height: 100%; border-right: 1px solid var(--line); text-decoration: none; font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 5px 0 0 5px; overflow: hidden; white-space: nowrap; }
+  .bar a:last-child { border-right: 0; }
+  .bar a:hover { background: var(--surface2); color: var(--ink); }
+  .bar a.cur { background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+  .bar a.opt { background-image: repeating-linear-gradient(45deg, transparent 0 5px, var(--line-soft) 5px 7px); }
+  .bar .needle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); left: 0; pointer-events: none; transition: left .5s linear; }
+  #themeToggle { text-transform: uppercase; letter-spacing: .07em; font-size: 10.5px !important; }
+
+  main { max-width: 980px; margin: 0 auto; padding: 0 16px 80px; }
+  h2.part { font-size: 22px; color: var(--ink); margin: 44px 0 6px; letter-spacing: -0.01em; }
+  .part-lead { margin-bottom: 18px; max-width: 760px; }
+
+  /* đoạn */
+  .seg { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); margin-bottom: 16px; overflow: hidden; transition: border-color .2s ease, box-shadow .2s ease; }
+  .seg.cur { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow); }
+  .seg-h { display: flex; gap: 14px; align-items: baseline; padding: 14px 18px 10px; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; }
+  .seg-h .tm { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .seg-h h3 { font-size: 18px; color: var(--ink); flex: 1; min-width: 200px; }
+  .seg-h .tag { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px dashed var(--line); border-radius: 5px; padding: 1px 6px; }
+  .seg-b { display: grid; grid-template-columns: 1fr 250px; }
+  .say { padding: 14px 18px 16px; background: var(--say-soft); border-right: 1px solid var(--line-soft); }
+  .say .lbl, .side .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; display: block; }
+  .say .lbl { color: var(--say); }
+  .say p { font-size: 16px; line-height: 1.7; color: var(--ink); margin-bottom: 10px; }
+  .say p:last-child { margin-bottom: 0; }
+  .say em { font-style: normal; background: var(--accent-soft); padding: 0 3px; border-radius: 3px; }
+  .say .pause { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .side { padding: 14px 16px 16px; font-size: 13.5px; }
+  .side > div + div { margin-top: 14px; }
+  .side .show .lbl { color: var(--muted); }
+  .side .demo .lbl { color: var(--demo); }
+  .side .demo ol { margin-left: 18px; }
+  .side .demo li { margin: 2px 0; }
+  .side .key .lbl { color: var(--accent); }
+  .compact .side { display: none; }
+  .compact .seg-b { grid-template-columns: 1fr; }
+  .compact .say { border-right: 0; }
+
+  /* phần phụ */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .qa details { border-bottom: 1px solid var(--line-soft); padding: 10px 0; }
+  .qa details:last-child { border-bottom: 0; }
+  .qa summary { cursor: pointer; font-weight: 650; color: var(--ink); font-size: 15px; list-style: none; display: flex; gap: 8px; }
+  .qa summary::-webkit-details-marker { display: none; }
+  .qa summary::before { content: 'H'; flex: none; font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--surface); background: var(--say); border-radius: 5px; padding: 1px 6px; height: fit-content; margin-top: 3px; }
+  .qa .ans { margin: 8px 0 0 30px; font-size: 14.5px; }
+  .qa .ans .pt { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+  ul.chk { list-style: none; }
+  ul.chk li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+  ul.chk li:last-child { border-bottom: 0; }
+  ul.chk input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+  ul.chk label { cursor: pointer; }
+  .card h3 { font-size: 16px; color: var(--ink); margin-bottom: 8px; }
+  .dont li { margin: 4px 0 4px 18px; font-size: 14px; }
+  .dont li::marker { color: var(--warn); }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 16px 40px; font-size: 12.5px; color: var(--muted); }
+
+  @media (max-width: 800px) {
+    .seg-b, .grid2 { grid-template-columns: 1fr; }
+    .say { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+    .bar { order: 5; flex-basis: 100%; }
+  }
+  @media print {
+    .rehearse { display: none; }
+    .seg, .card { break-inside: avoid; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="eyebrow">Business Challenge 2026 · AI for Inclusive Growth and Sustainable Communities</div>
+  <h1>Kịch bản thuyết trình: công nghệ của FARM2HOME AI</h1>
+  <p>Phần trình bày về sản phẩm và công nghệ: web làm được gì, AI nằm ở đâu, vì sao thiết kế như vậy. Mỗi đoạn có <b>lời nói</b> (chữ to, đọc được), cột bên cạnh là <b>màn hình cần chiếu</b>, <b>thao tác demo</b> và <b>ý phải nhấn</b>.</p>
+  <div class="facts">
+    <span>⏱ khoảng 7 phút + hỏi đáp</span>
+    <span>🎤 1 người nói + 1 người bấm demo</span>
+    <span>📱 1 điện thoại + 1 laptop</span>
+    <span>đoạn có gạch chéo = bỏ được khi thiếu giờ</span>
+  </div>
+</header>
+
+<div class="rehearse" aria-label="Công cụ tập nói">
+  <div class="in">
+    <span class="clock" id="clock">0:00</span>
+    <button id="startBtn" class="primary" type="button">▶ Tập nói</button>
+    <button id="resetBtn" type="button">Đặt lại</button>
+    <div class="bar" id="bar"><div class="needle" id="needle"></div></div>
+    <button id="compactBtn" type="button" title="Chỉ hiện lời nói">Chỉ lời nói</button>
+    <button id="themeToggle" type="button">Giao diện</button>
+  </div>
+</div>
+
+<main>
+  <h2 class="part">Phần 1 · Lời thuyết trình</h2>
+  <p class="part-lead">Chữ <em>tô nền</em> là cụm từ khoá, nói chậm và rõ. Dòng <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">[ngừng]</span> là chỗ dừng một nhịp để giám khảo nhìn màn hình.</p>
+  <div id="segs"></div>
+
+  <h2 class="part" id="hoi-dap">Phần 2 · Câu hỏi giám khảo hay hỏi</h2>
+  <p class="part-lead">Trả lời ngắn, thật, có số. Nếu không biết thì nói "chúng em chưa đo, sẽ đo trong pilot", đừng đoán.</p>
+  <div class="card qa" id="qa"></div>
+
+  <h2 class="part" id="chuan-bi">Phần 3 · Chuẩn bị trước giờ thuyết trình</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Checklist (đánh dấu được, máy tự nhớ)</h3>
+      <ul class="chk" id="chk"></ul>
+    </div>
+    <div class="card">
+      <h3>Tab mở sẵn theo đúng thứ tự demo</h3>
+      <ol style="margin-left:18px;font-size:14px">
+        <li><b>Điện thoại:</b> trang chủ → <code>/dat-hang</code></li>
+        <li><b>Điện thoại hoặc tab 2:</b> link nông hộ NH01 <code>/nong-ho/{token}</code></li>
+        <li><b>Laptop:</b> <code>/admin/forecasts</code> (Dự báo)</li>
+        <li><b>Laptop:</b> kế hoạch thu hoạch đang <b>Nháp</b> của ngày mai</li>
+        <li><b>Laptop:</b> một lô đã <b>Đạt</b> → trang QR <code>/lo/F2H-…</code></li>
+        <li><b>Laptop:</b> <code>/admin</code> (Tổng quan, đã chọn sẵn khoảng ngày)</li>
+        <li><b>Dự phòng:</b> <code>docs/kich-ban-su-dung.html</code> (sơ đồ một ngày) và <code>docs/so-do-csdl.html</code></li>
+      </ol>
+      <h3 style="margin-top:16px">Nếu demo trục trặc</h3>
+      <ul class="dont">
+        <li>Mất mạng / link tạm thời chết → chạy trên <code>farm2home.test</code> ở laptop, chỉ chiếu màn hình laptop.</li>
+        <li>Lỗi "SQLSTATE … refused" → MySQL chưa bật: mở Laragon, <b>Start All</b>.</li>
+        <li>Chatbot không trả lời bằng Gemini → vẫn có câu trả lời soạn sẵn; nói "khi không có mạng, chatbot dùng câu trả lời dự phòng".</li>
+        <li>Bất cứ gì khác → chuyển sang ảnh chụp màn hình đã chuẩn bị, <b>không sửa lỗi trước mặt giám khảo</b>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>Những câu KHÔNG được nói</h3>
+    <ul class="dont">
+      <li>"AI tự quyết định thu hoạch" → sai. AI chỉ gợi ý, người vận hành chốt.</li>
+      <li>"Mô hình học máy / deep learning dự báo" → hiện là thống kê baseline có chủ đích; học máy là giai đoạn sau.</li>
+      <li>"Rau 100% sạch", "QR chứng nhận an toàn" → QR chỉ là thông tin lô; chứng nhận chỉ hiện khi có file còn hạn.</li>
+      <li>"Giảm X tấn CO₂" → chúng em không đo khí thải vận chuyển.</li>
+      <li>"Dự báo chính xác 96%" → con số đó từ dữ liệu mô phỏng, không phải bằng chứng.</li>
+      <li>"Doanh thu 500–700 nghìn/ngày" như sự thật → đây là giả định cần kiểm chứng trong pilot.</li>
+      <li>Lời khuyên sức khoẻ cho rau → chatbot chỉ gợi ý mua sắm.</li>
+    </ul>
+  </div>
+</main>
+
+<footer>Số liệu và tính năng khớp với code hiện tại (tháng 10/2026). Chi tiết AI: <code>docs/CHUC-NANG-AI.md</code> · kịch bản người dùng: <code>docs/kich-ban-su-dung.html</code>.</footer>
+
+<script>
+// t = giây bắt đầu; opt = bỏ được khi thiếu giờ
+const SEGS = [
+  { t: 0, title: 'Mở đầu: vấn đề không nằm ở chỗ bán rau', short: 'Mở đầu',
+    say: [
+      'Ở Mỹ Tho, nông hộ nhỏ thường <em>cắt rau theo cảm tính</em>: hôm nay cắt nhiều, khách mua ít, rau héo phải bỏ. Hôm khác khách cần thì lại không đủ. Người mua và người trồng <em>không nhìn thấy nhau</em>.',
+      'Vì vậy FARM2HOME AI <em>không phải một cửa hàng rau online</em>. Đây là một công cụ điều phối: biến đơn đặt trước thành một con số cụ thể, <em>ngày mai mỗi nhà nên thu bao nhiêu ký rau gì</em>. <span class="pause">[ngừng]</span>',
+      'Phần này em trình bày web làm được gì, AI nằm ở đâu, và vì sao chúng em thiết kế như vậy.',
+    ],
+    show: 'Slide tiêu đề + 1 câu: "Điều phối nông sản theo nhu cầu, giảm dư thừa".',
+    key: 'Câu "không phải cửa hàng online" phải nói rõ: đó là điểm khác biệt.' },
+  { t: 40, title: 'Một vòng dữ liệu khép kín, bốn người dùng', short: 'Kiến trúc',
+    say: [
+      'Hệ thống có <em>bốn người dùng</em>: khách hàng, nông hộ, người vận hành, và quản trị.',
+      'Dữ liệu chạy thành một vòng khép kín: khách đặt trước → hệ thống dự báo → gợi ý thu hoạch → người vận hành chốt → nông hộ thu đúng số → đóng gói có <em>mã QR theo lô</em> → khách phản hồi → dữ liệu đó quay lại làm dự báo tốt hơn.',
+      'Điều chúng em giữ chặt là <em>"công nghệ vừa đủ"</em>: khách và nông hộ <em>không cần cài app, không cần tạo tài khoản</em>. Khách chỉ cần số điện thoại. Nông hộ chỉ cần bấm một đường link gửi qua Zalo, thứ họ đang dùng hằng ngày.',
+    ],
+    show: 'Sơ đồ "Một ngày vận hành" trong docs/kich-ban-su-dung.html, bấm ▶ Chạy cho nó tự đi.',
+    demo: ['Mở sơ đồ làn bơi', 'Bấm ▶ Chạy, để nó chạy trong lúc nói'],
+    key: 'Không cần app, không cần tài khoản = bao trùm (inclusive). Đây là tiêu chí của cuộc thi.' },
+  { t: 90, title: 'Khách đặt hàng trên điện thoại', short: 'Khách',
+    say: [
+      'Đây là màn hình khách thấy trên điện thoại. Khách chọn <em>giỏ rau đóng sẵn</em> hoặc chọn lẻ, chọn ngày giao, khung giờ, khu vực. Phí giao tự tính theo khu, đủ mức thì miễn phí.',
+      'Không có đăng ký, không có mật khẩu: <em>số điện thoại chính là tài khoản</em>. Lần sau đặt lại, hệ thống tự nhận ra.',
+      'Nếu khách thắc mắc, có <em>chatbot hỏi đáp</em> dùng Gemini, trả lời dựa trên dữ liệu thật của hệ thống: giá, giỏ, giờ giao. Chatbot chỉ gợi ý mua sắm, không tư vấn sức khoẻ. <span class="pause">[ngừng]</span>',
+      'Đơn chốt lúc <em>18 giờ</em> cho ngày hôm sau, và đơn đó là nguyên liệu cho AI.',
+    ],
+    show: 'Điện thoại chiếu lên màn hình: /dat-hang.',
+    demo: ['Chọn Giỏ Gia Đình', 'Chọn ngày mai, khung 17–19h, Cụm 1', 'Mở chatbot, hỏi "phí ship bao nhiêu?"', 'Không cần bấm Gửi (tiết kiệm thời gian)'],
+    key: 'Ít gõ, nút to, chạy trên điện thoại: thiết kế cho người không rành công nghệ.' },
+  { t: 150, title: 'Nông hộ báo sản lượng bằng một đường link', short: 'Nông hộ', opt: true,
+    say: [
+      'Phía nông hộ, mỗi nhà có <em>một đường link riêng</em>. Bác nông dân bấm vào là thấy 7 ngày tới, gõ số ký rau mình có thể thu, bấm Lưu. Hết.',
+      'Không biết gõ thì nhắn Zalo, người vận hành nhập hộ. Con số này rất quan trọng: nó là <em>giới hạn</em> để hệ thống không bao giờ giao cho một nhà nhiều hơn số họ báo.',
+    ],
+    show: 'Link nông hộ NH01 trên điện thoại.',
+    demo: ['Gõ số kg cho ngày mai', 'Bấm Lưu sản lượng'],
+    key: 'Nông hộ nhỏ, lớn tuổi vẫn dùng được.' },
+  { t: 180, title: 'AI dự báo nhu cầu, và vì sao chưa dùng học máy', short: 'Dự báo',
+    say: [
+      'Đến phần AI. Mỗi tối lúc <em>18 giờ 15</em>, sau khi đóng đơn, hệ thống tự dự báo nhu cầu <em>7 ngày tới cho từng loại rau</em>.',
+      'Chúng em chạy song song <em>ba phương pháp</em>: trung bình 7 ngày, làm mượt hàm mũ, và trung bình cùng thứ trong tuần để bắt nhịp cuối tuần đông. Mỗi dự báo có <em>khoảng thấp – cao</em>, chứ không chỉ một con số. <span class="pause">[ngừng]</span>',
+      'Câu hỏi là: sao không dùng học máy? Vì pilot 4 tuần <em>chưa đủ dữ liệu</em> để huấn luyện, và chúng em đặt một luật: một mô hình chỉ được coi là tốt hơn khi nó <em>có sai số thực tế thấp hơn</em> các phương pháp đơn giản này.',
+      'Nên mỗi tối 21 giờ, hệ thống tự điền nhu cầu thật vào và đo sai số bằng <em>WAPE</em>, tức tổng ký đoán lệch chia tổng ký thật. Màn hình này cho thấy phương pháp nào đang thắng.',
+    ],
+    show: '/admin/forecasts: biểu đồ 28 ngày qua + 7 ngày tới, bảng độ chính xác.',
+    demo: ['Chỉ vào đường dự báo nét đứt và vùng thấp–cao', 'Bấm qua 3 nút phương pháp', 'Chỉ nhãn "Sai số thấp nhất"'],
+    key: 'Trung thực: thống kê là baseline có chủ đích, đo được, có kế hoạch nâng cấp. Giám khảo đánh giá cao sự trung thực hơn chữ "deep learning".' },
+  { t: 255, title: 'Gợi ý thu hoạch: AI gợi ý, con người quyết định', short: 'Kế hoạch',
+    say: [
+      'Dự báo chưa phải quyết định. Hệ thống đổi nó thành <em>số ký nên thu</em>: lấy đơn đã đặt, cộng phần dự báo khách còn đặt thêm, trừ rau tồn còn hạn, rồi cộng <em>10% dự phòng</em>.',
+      'Sau đó <em>chia cho các nông hộ theo tỉ lệ</em> sản lượng họ đã báo. Nhà nhỏ cũng có phần, không dồn hết cho nhà lớn, và không ai bị giao quá số mình báo. <span class="pause">[ngừng]</span>',
+      'Nhưng <em>AI không tự quyết</em>. Người vận hành xem lại, sửa số được, chia một loại rau cho nhiều nhà được, nhưng <em>sửa thì phải ghi lý do</em>: trời mưa, rau xấu… Hệ thống lưu <em>cả số AI gợi ý lẫn số người chốt</em>, để biết AI đúng ở đâu, sai ở đâu.',
+      'Chốt xong, hệ thống soạn sẵn tin nhắn cho từng nhà. Người vận hành bấm mở Zalo, gửi. Nông hộ bấm "Tôi sẽ thu hoạch" là xác nhận.',
+    ],
+    show: 'Kế hoạch thu hoạch đang Nháp của ngày mai.',
+    demo: ['Chỉ cột Gợi ý và cột Chốt', 'Sửa 1 dòng +0,5 kg, gõ lý do "trời mưa"', 'Bấm "+ Thêm nông hộ" cho 1 loại rau', 'Lưu tất cả → Chốt kế hoạch → chỉ khung tin nhắn Zalo'],
+    key: 'Human-in-the-loop là nguyên tắc cốt lõi. Nhấn: lưu cả suggested lẫn final + lý do.' },
+  { t: 330, title: 'Truy xuất theo lô bằng mã QR', short: 'QR',
+    say: [
+      'Sáng hôm sau rau về, người vận hành cân và nhập số thực nhận. Hệ thống tạo <em>một lô</em> cho mỗi loại rau của mỗi nhà, có mã riêng, in thành tem QR dán lên túi.',
+      'Khách quét là thấy: rau của nhà nào, trồng ở đâu, <em>thu hoạch lúc mấy giờ</em>, sơ chế, đóng gói lúc nào, bảo quản ra sao. Và khách chấm điểm ngay trên trang đó. <span class="pause">[ngừng]</span>',
+      'Một điều chúng em cố ý làm: <em>mã QR không phải chứng nhận</em>. Trang QR không ghi "100% sạch". Chứng nhận chỉ hiện khi nông hộ có giấy tờ thật và còn hạn. Chúng em chọn minh bạch thay vì quảng cáo.',
+    ],
+    show: 'Trang /lo/F2H-… trên điện thoại (hoặc tem QR in sẵn để giám khảo quét thử).',
+    demo: ['Quét tem QR in sẵn bằng điện thoại', 'Cuộn xuống form phản hồi'],
+    key: 'Phản hồi gắn với mã lô → biết chính xác rau nhà nào, ngày nào có vấn đề.' },
+  { t: 380, title: 'Đo được: mọi tính năng đều đổ về KPI', short: 'KPI', opt: true,
+    say: [
+      'Cuối cùng, mọi thao tác đều đổ về <em>một bảng KPI</em> để kiểm chứng mô hình kinh doanh trong pilot.',
+      'Quan trọng nhất là hai con số đi cùng nhau: <em>ký rau dư mỗi tuần</em> phải giảm, mà <em>tỉ lệ giao đủ cho khách</em> không được giảm. Thu ít đi mà để khách thiếu rau thì không phải thành công.',
+      'Bên cạnh đó là sai số dự báo, số lần người vận hành phải sửa gợi ý, khách mua lại, bao bì thu hồi. Chúng em <em>không tuyên bố giảm CO₂</em> vì chưa đo được khí thải vận chuyển.',
+    ],
+    show: '/admin: Tổng quan, đã chọn khoảng ngày.',
+    demo: ['Chỉ ô Rau dư và Tỷ lệ giao đủ', 'Chỉ bảng WAPE và Số lần điều chỉnh'],
+    key: 'Rau dư ↓ nhưng giao đủ không ↓. Không nói CO₂.' },
+  { t: 420, title: 'Kết: chi phí thấp, mở rộng được', short: 'Kết',
+    say: [
+      'Về kỹ thuật: web dựng bằng <em>Laravel, MySQL</em>, giao diện nhẹ thiết kế cho điện thoại trước, <em>cài được như một app</em> mà không qua kho ứng dụng. Có hơn <em>300 bài kiểm thử tự động</em> cho các luồng tiền, đơn và kế hoạch.',
+      'Lộ trình: <em>4 tuần pilot</em> với 2–3 nông hộ và 20–30 hộ gia đình ở Mỹ Tho để thu dữ liệu thật. Khi đủ dữ liệu, thêm mô hình học máy, và <em>chỉ đưa vào dùng nếu nó thắng</em> các phương pháp hiện tại. Sau đó mới gửi tin Zalo tự động, nhưng vẫn giữ bước người duyệt. <span class="pause">[ngừng]</span>',
+      'FARM2HOME AI không thay người nông dân hay người điều phối. Nó giúp họ <em>thu vừa đủ, bán hết, bớt bỏ phí</em>. Em xin cảm ơn.',
+    ],
+    show: 'Slide lộ trình 3 bước + câu kết.',
+    key: 'Câu kết nói chậm, nhìn giám khảo, không nhìn màn hình.' },
+];
+const TOTAL = 450;
+
+const QA = [
+  { q: 'AI của các bạn thực ra chỉ là trung bình cộng?',
+    a: 'Đúng là phần dự báo hiện là thống kê, và đó là chủ ý. Với 4 tuần dữ liệu, mô hình phức tạp dễ học thuộc nhiễu. Chúng em làm baseline trước, đo sai số mỗi ngày, và đặt luật: mô hình mới phải thắng baseline về WAPE trên đơn thật mới được dùng. Phần "AI" có giá trị là cả chuỗi: dự báo → gợi ý → chia cho nông hộ → đo lại.',
+    p: 'Đã có sẵn chỗ cho mô hình cây hồi quy (tree_regression) chạy thành service Python riêng.' },
+  { q: 'Dự báo chính xác bao nhiêu phần trăm?',
+    a: 'Chúng em chưa có con số trên đơn thật, sẽ đo trong pilot bằng WAPE. Trên dữ liệu mô phỏng có số, nhưng dữ liệu đó do chính chúng em sinh ra nên không dùng làm bằng chứng.',
+    p: 'Đừng nêu con số mô phỏng như thành tích.' },
+  { q: 'Nếu AI gợi ý sai thì sao?',
+    a: 'AI không tự quyết. Người vận hành duyệt từng dòng, sửa thì phải ghi lý do, và có 10% dự phòng. Hệ thống lưu cả số gợi ý lẫn số chốt nên mỗi lần sửa là một bài học: biết AI hay sai theo hướng nào.' },
+  { q: 'Ít dữ liệu lúc mới bắt đầu thì dự báo thế nào?',
+    a: 'Những ngày đầu dự báo gần 0, nên gợi ý thu hoạch chỉ bằng đơn đã đặt cộng 10%. Nghĩa là hệ thống vẫn an toàn: không bảo nông hộ thu dư. Khoảng một tuần sau dự báo mới bắt đầu có ý nghĩa.' },
+  { q: 'Nông dân lớn tuổi có dùng được không?',
+    a: 'Họ chỉ cần bấm một đường link trên Zalo và gõ số ký. Không tài khoản, không mật khẩu, không cài app. Không gõ được thì nhắn Zalo hoặc gọi, người vận hành nhập hộ. Tin nhắn thu hoạch gửi qua Zalo, kênh họ dùng hằng ngày.' },
+  { q: 'Sao không làm app di động?',
+    a: 'Bắt người dân tải app là rào cản lớn nhất. Web chạy được trên mọi điện thoại, và ai muốn thì cài lên màn hình chính như app, không qua kho ứng dụng. Một bộ code, chi phí thấp.' },
+  { q: 'Bảo mật dữ liệu khách hàng thế nào?',
+    a: 'Thu tối thiểu: tên, số điện thoại, địa chỉ giao, và khách phải đồng ý mới lưu. Trang tra cứu đơn cố ý không hiện tên và địa chỉ vì ai biết số điện thoại cũng tra được. Link nông hộ lộ thì quản trị cấp link mới, link cũ hết hiệu lực ngay. Trang quản trị phải đăng nhập và phân quyền admin / người vận hành.' },
+  { q: 'QR của các bạn có chứng minh rau sạch không?',
+    a: 'Không, và chúng em nói rõ điều đó. QR cho thấy sự thật về lô: nhà nào, thu lúc nào, sơ chế, bảo quản. Chứng nhận chỉ hiện khi có giấy tờ thật còn hạn. Chúng em không ghi "100% sạch".' },
+  { q: 'Chatbot Gemini có nói sai không?',
+    a: 'Chatbot được đưa dữ liệu thật của hệ thống (rau, giỏ, giá, giờ giao) và chỉ trả lời về mua sắm, không tư vấn sức khoẻ. Không có mạng hoặc Gemini lỗi thì nó dùng câu trả lời soạn sẵn. Chatbot không tham gia quyết định thu hoạch.' },
+  { q: 'Chi phí vận hành công nghệ bao nhiêu?',
+    a: 'Web và cơ sở dữ liệu chạy trên một máy chủ nhỏ; chatbot dùng bản Gemini nhẹ; không có phí kho ứng dụng hay phí tin nhắn vì gửi Zalo thủ công. Con số chính xác chúng em sẽ ghi lại trong pilot.',
+    p: 'Nếu nhóm đã có số chi phí hosting cụ thể thì thay câu này bằng số thật.' },
+  { q: 'Mở rộng ra nhiều xã, nhiều loại rau được không?',
+    a: 'Được. Rau, giỏ, khu giao, nông hộ đều do quản trị thêm trên giao diện, không cần sửa code. Dự báo và phân bổ chạy theo từng loại rau, từng ngày, nên thêm loại rau là tự có dự báo riêng.' },
+  { q: 'Làm sao biết hệ thống thật sự giảm lãng phí?',
+    a: 'Ghi rau dư mỗi ngày theo lô và lý do, so sánh theo tuần trước và sau khi dùng dự báo, đồng thời theo dõi tỉ lệ giao đủ. Rau dư giảm mà giao đủ không giảm thì mới là hiệu quả thật.' },
+];
+
+const CHECK = [
+  'Laragon: Start All (web server + MySQL đều xanh)',
+  'Có dữ liệu để demo: nạp lại bản sao lưu storage/app/backups/… rồi chạy php artisan migrate (thêm khoá QR, mã hoá địa chỉ), hoặc chạy php artisan demo:orders (DB đang trống từ 17/10)',
+  'Có một kế hoạch Nháp cho ngày mai, có ít nhất 2 nông hộ đã báo sản lượng',
+  'Có một lô đã Đạt kiểm tra; in sẵn 2–3 tem QR của lô đó để giám khảo quét',
+  'Đăng nhập admin sẵn trên laptop',
+  'Link tạm thời HTTPS chạy được trên điện thoại (thử mở trước 10 phút)',
+  'GEMINI_API_KEY có trong .env, hỏi thử chatbot 1 câu',
+  'Phóng to trình duyệt laptop 125–150% để giám khảo đọc được',
+  'Tắt thông báo điện thoại, sạc đầy, độ sáng tối đa',
+  'Ảnh chụp màn hình dự phòng cho từng bước demo',
+  'Tập nói ít nhất 2 lần với đồng hồ, không quá 7:30',
+];
+
+// ── dựng trang ──
+const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+document.getElementById('segs').innerHTML = SEGS.map((s, i) => {
+  const end = SEGS[i + 1]?.t ?? TOTAL;
+  return `
+  <article class="seg" id="seg-${i}">
+    <div class="seg-h"><span class="tm">${fmt(s.t)} – ${fmt(end)}</span><h3>${i + 1}. ${s.title}</h3>${s.opt ? '<span class="tag">bỏ được khi thiếu giờ</span>' : ''}</div>
+    <div class="seg-b">
+      <div class="say"><span class="lbl">Lời nói</span>${s.say.map(p => `<p>${p}</p>`).join('')}</div>
+      <div class="side">
+        <div class="show"><span class="lbl">Màn hình</span>${s.show}</div>
+        ${s.demo ? `<div class="demo"><span class="lbl">Thao tác demo</span><ol>${s.demo.map(d => `<li>${d}</li>`).join('')}</ol></div>` : ''}
+        <div class="key"><span class="lbl">Ý phải nhấn</span>${s.key}</div>
+      </div>
+    </div>
+  </article>`;
+}).join('');
+
+const bar = document.getElementById('bar');
+SEGS.forEach((s, i) => {
+  const end = SEGS[i + 1]?.t ?? TOTAL;
+  const a = document.createElement('a');
+  a.href = `#seg-${i}`;
+  a.style.width = ((end - s.t) / TOTAL * 100) + '%';
+  a.textContent = s.short;
+  a.title = `${fmt(s.t)} · ${s.title}`;
+  if (s.opt) a.classList.add('opt');
+  bar.appendChild(a);
+});
+
+document.getElementById('qa').innerHTML = QA.map(x => `
+  <details><summary>${x.q}</summary><div class="ans">${x.a}${x.p ? `<div class="pt">Ghi chú: ${x.p}</div>` : ''}</div></details>`).join('');
+
+let checked = {};
+try { checked = JSON.parse(localStorage.getItem('f2h-pitch-check') || '{}'); } catch (e) {}
+document.getElementById('chk').innerHTML = CHECK.map((c, i) => `
+  <li><input type="checkbox" id="c${i}" ${checked[i] ? 'checked' : ''}><label for="c${i}">${c}</label></li>`).join('');
+document.getElementById('chk').addEventListener('change', e => {
+  checked[e.target.id.slice(1)] = e.target.checked;
+  try { localStorage.setItem('f2h-pitch-check', JSON.stringify(checked)); } catch (err) {}
+});
+
+// ── đồng hồ tập nói ──
+const clock = document.getElementById('clock'), needle = document.getElementById('needle');
+const startBtn = document.getElementById('startBtn');
+let started = null, elapsed = 0, tick = null, lastSeg = -1;
+function render(sec) {
+  clock.textContent = fmt(sec);
+  clock.classList.toggle('over', sec > TOTAL);
+  needle.style.left = Math.min(100, sec / TOTAL * 100) + '%';
+  let idx = SEGS.findIndex((s, i) => sec >= s.t && sec < (SEGS[i + 1]?.t ?? Infinity));
+  if (idx !== lastSeg) {
+    lastSeg = idx;
+    document.querySelectorAll('.seg').forEach((el, i) => el.classList.toggle('cur', i === idx));
+    bar.querySelectorAll('a').forEach((el, i) => el.classList.toggle('cur', i === idx));
+    if (tick && idx >= 0) document.getElementById('seg-' + idx).scrollIntoView({ block: 'start' });
+  }
+}
+startBtn.addEventListener('click', () => {
+  if (tick) {
+    clearInterval(tick); tick = null; elapsed += (Date.now() - started) / 1000;
+    startBtn.textContent = '▶ Tiếp tục';
+  } else {
+    started = Date.now();
+    tick = setInterval(() => render(Math.floor(elapsed + (Date.now() - started) / 1000)), 250);
+    startBtn.textContent = '❚❚ Dừng';
+    render(Math.floor(elapsed));
+  }
+});
+document.getElementById('resetBtn').addEventListener('click', () => {
+  clearInterval(tick); tick = null; elapsed = 0; lastSeg = -2;
+  startBtn.textContent = '▶ Tập nói';
+  render(0);
+});
+const compactBtn = document.getElementById('compactBtn');
+compactBtn.addEventListener('click', () => {
+  const on = document.body.classList.toggle('compact');
+  compactBtn.classList.toggle('on', on);
+});
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const dark = !document.documentElement.classList.contains('dark');
+  document.documentElement.classList.toggle('dark', dark);
+  try { localStorage.setItem('f2h-doc-theme', dark ? 'dark' : 'light'); } catch (e) {}
+});
+render(0);
+</script>
+</body>
+</html>

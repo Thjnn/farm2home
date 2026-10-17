@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FARM2HOME — Kịch bản sử dụng</title>
+<script>
+  (function () {
+    let saved = null;
+    try { saved = localStorage.getItem('f2h-doc-theme'); } catch (e) {}
+    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #F7F6F1; --surface: #FFFFFF; --surface2: #F0EEE6;
+    --ink: #161614; --body: #3A3A37; --muted: #7E7D76;
+    --line: #D6D3C9; --line-soft: #E8E5DC;
+    --accent: #047857; --accent-soft: rgba(4,120,87,0.10);
+    --kh: #C8553D; --nh: #5F7F3A; --op: #2F6E9B; --ad: #8A5A9E; --ht: #8A7A55;
+    --warn: #B7791F; --warn-soft: rgba(183,121,31,0.10);
+    --alt: #2F6E9B; --alt-soft: rgba(47,110,155,0.08);
+    --shadow: 0 4px 18px rgba(0,0,0,0.06);
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  html.dark {
+    --bg: #131312; --surface: #1C1C1A; --surface2: #262624;
+    --ink: #F4F3EE; --body: #D0CDC3; --muted: #8F8E87;
+    --line: #3A3A37; --line-soft: #2A2A28;
+    --accent: #34D399; --accent-soft: rgba(52,211,153,0.12);
+    --kh: #EC8A6F; --nh: #9DBE72; --op: #7FB0D6; --ad: #C292D6; --ht: #C9B88A;
+    --warn: #E3B05C; --warn-soft: rgba(227,176,92,0.12);
+    --alt: #7FB0D6; --alt-soft: rgba(127,176,214,0.10);
+    --shadow: 0 4px 18px rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { background: var(--bg); color: var(--body); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  b, strong { color: var(--ink); font-weight: 650; }
+  code { font-family: var(--mono); font-size: .86em; background: var(--surface2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+  /* ── đầu trang, menu ─────────────────────── */
+  header.top { max-width: 1120px; margin: 0 auto; padding: 32px 16px 8px; }
+  header.top .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+  header.top h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.2; color: var(--ink); letter-spacing: -0.02em; margin: 6px 0 10px; }
+  header.top p { max-width: 760px; font-size: 15.5px; }
+  nav.tabs { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line-soft); }
+  nav.tabs .in { max-width: 1120px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 6px; overflow-x: auto; align-items: center; }
+  nav.tabs a { flex: none; font-size: 13px; text-decoration: none; color: var(--muted); padding: 7px 12px; border-radius: 999px; border: 1px solid transparent; white-space: nowrap; }
+  nav.tabs a:hover { color: var(--ink); border-color: var(--line); }
+  nav.tabs a.on { color: var(--bg); background: var(--ink); }
+  nav.tabs a i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  #themeToggle { margin-left: auto; flex: none; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; }
+  #themeToggle:hover { color: var(--ink); border-color: var(--muted); }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 0 16px 80px; }
+  section.role { padding-top: 44px; }
+  h2 { font-size: 24px; color: var(--ink); letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  h2 .dot { width: 12px; height: 12px; border-radius: 4px; background: var(--c); flex: none; }
+  .lead { margin: 6px 0 18px; max-width: 780px; }
+
+  /* ── sơ đồ một ngày ──────────────────────── */
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+  .lane-wrap { overflow-x: auto; border-radius: 14px 14px 0 0; }
+  .lane-wrap svg { display: block; min-width: 980px; width: 100%; height: auto; }
+  .ln-bg { fill: var(--surface); }
+  .ln-band { fill: var(--c); fill-opacity: .045; }
+  .ln-name { font-family: var(--sans); font-size: 14px; font-weight: 700; fill: var(--c); }
+  .ln-how { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+  .ln-sep { stroke: var(--line-soft); stroke-width: 1; }
+  .tcol { font-family: var(--mono); font-size: 11px; fill: var(--muted); letter-spacing: .04em; }
+  .tline { stroke: var(--line); stroke-dasharray: 2 5; }
+  .tday { font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .1em; fill: var(--accent); }
+  .sn { cursor: pointer; }
+  .sn rect { fill: var(--surface); stroke: var(--c); stroke-opacity: .55; stroke-width: 1.4; transition: all .2s ease; }
+  .sn:hover rect { stroke-opacity: 1; }
+  .sn text { font-family: var(--sans); font-size: 12px; fill: var(--ink); pointer-events: none; }
+  .sn .num circle { fill: var(--c); }
+  .sn .num text { fill: var(--surface); font-family: var(--mono); font-size: 10.5px; font-weight: 700; }
+  .se { fill: none; stroke: var(--muted); stroke-opacity: .5; stroke-width: 1.4; marker-end: url(#ar); transition: all .2s ease; }
+  .playing .sn { opacity: .35; transition: opacity .25s ease; }
+  .playing .sn.done { opacity: .75; }
+  .playing .sn.cur { opacity: 1; }
+  .sn.cur rect { fill: var(--c); fill-opacity: .14; stroke-opacity: 1; stroke-width: 2.4; }
+  .playing .se { stroke-opacity: .15; }
+  .playing .se.done { stroke-opacity: .5; }
+  .se.cur { stroke: var(--accent); stroke-opacity: 1 !important; stroke-width: 2.2; stroke-dasharray: 7 5; marker-end: url(#ar-on); animation: march .9s linear infinite; }
+  @keyframes march { to { stroke-dashoffset: -12; } }
+  @media (prefers-reduced-motion: reduce) { .se.cur { animation: none; } }
+  .lane-ctl { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line-soft); }
+  .lane-ctl .btns { display: flex; gap: 6px; }
+  .lane-ctl button { min-width: 40px; height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--body); cursor: pointer; font-family: var(--mono); font-size: 12px; }
+  .lane-ctl button:hover { color: var(--ink); border-color: var(--muted); }
+  .lane-ctl button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  html.dark .lane-ctl button.primary { color: #0B2A20; }
+  #cap { flex: 1; min-width: 260px; font-size: 14px; }
+  #cap .who { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--c, var(--muted)); }
+  #cap .scr { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+
+  /* ── vai trò ─────────────────────────────── */
+  .persona { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .persona > div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .persona h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .persona .who-card { border-top: 3px solid var(--c); }
+  .persona .who-card .nm { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .persona ul { list-style: none; font-size: 13.5px; }
+  .persona li { padding-left: 18px; position: relative; margin: 3px 0; }
+  .persona li::before { position: absolute; left: 0; top: 0; font-weight: 700; }
+  .can li::before { content: '✓'; color: var(--accent); }
+  .cant li::before { content: '✕'; color: var(--kh); }
+
+  .scn { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 16px; box-shadow: var(--shadow); overflow: hidden; }
+  .scn > summary { list-style: none; cursor: pointer; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; }
+  .scn > summary::-webkit-details-marker { display: none; }
+  .scn .sid { flex: none; font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--surface); background: var(--c); border-radius: 7px; padding: 3px 8px; margin-top: 2px; }
+  .scn .st { font-size: 17px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+  .scn .sg { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+  .scn .chev { margin-left: auto; flex: none; color: var(--muted); transition: transform .2s ease; font-size: 14px; margin-top: 4px; }
+  .scn[open] .chev { transform: rotate(90deg); }
+  .scn .body { padding: 0 18px 18px; }
+  .start { font-size: 13.5px; margin-bottom: 12px; }
+  .start b { color: var(--c); }
+
+  /* bản đồ màn hình (luồng gọn) */
+  .map { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px; padding: 12px; background: var(--surface2); border-radius: 10px; margin-bottom: 16px; }
+  .map .pill { font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border-radius: 999px; background: var(--surface); border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); color: var(--ink); white-space: nowrap; }
+  .map .pill.ext { border-style: dashed; color: var(--muted); }
+  .map .arr { color: var(--muted); font-size: 13px; }
+
+  /* các bước (luồng chi tiết) */
+  ol.steps { list-style: none; position: relative; margin-left: 4px; }
+  ol.steps::before { content: ''; position: absolute; left: 13px; top: 8px; bottom: 8px; width: 2px; background: color-mix(in srgb, var(--c) 30%, var(--line-soft)); border-radius: 2px; }
+  ol.steps > li { position: relative; padding: 0 0 14px 42px; }
+  ol.steps > li:last-child { padding-bottom: 0; }
+  ol.steps .n { position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--c); color: var(--c); font-family: var(--mono); font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  ol.steps .do { font-size: 14.5px; color: var(--body); padding-top: 2px; }
+  ol.steps .at { display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 6px; margin-left: 6px; white-space: nowrap; vertical-align: 1px; }
+  ol.steps .see { font-size: 13.5px; color: var(--muted); margin-top: 3px; }
+  ol.steps .see::before { content: '→ '; color: var(--accent); font-weight: 700; }
+  .br { margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: 13.5px; border-left: 3px solid; }
+  .br .k { font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+  .br.warn { background: var(--warn-soft); border-color: var(--warn); }
+  .br.warn .k { color: var(--warn); }
+  .br.alt { background: var(--alt-soft); border-color: var(--alt); }
+  .br.alt .k { color: var(--alt); }
+  .result { margin-top: 14px; padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); font-size: 14px; }
+  .result .k { font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-right: 6px; }
+
+  /* tự động */
+  .clock { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .clock > div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; border-top: 3px solid var(--ht); }
+  .clock .t { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--ink); }
+  .clock .c { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .clock p { font-size: 13.5px; margin-top: 6px; }
+  .auto { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+  .auto ul { margin-left: 18px; font-size: 14px; }
+
+  /* trạng thái */
+  .states { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .states .panel { padding: 14px 16px 10px; }
+  .states h3 { font-size: 15px; color: var(--ink); }
+  .states .sub { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+  .states svg { width: 100%; height: auto; display: block; }
+  .stn rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+  .stn.ok rect { stroke: var(--accent); fill: var(--accent-soft); }
+  .stn.bad rect { stroke: var(--kh); fill: color-mix(in srgb, var(--kh) 9%, transparent); }
+  .stn text { font-family: var(--sans); font-size: 12.5px; font-weight: 600; fill: var(--ink); }
+  .ste { fill: none; stroke: var(--muted); stroke-width: 1.4; marker-end: url(#ar); }
+  .ste.dash { stroke-dasharray: 4 4; }
+  .stnote { font-family: var(--sans); font-size: 11px; fill: var(--muted); }
+
+  footer { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; font-size: 12.5px; color: var(--muted); }
+
+  @media (max-width: 860px) {
+    .persona, .clock, .states { grid-template-columns: 1fr; }
+  }
+  @media print {
+    nav.tabs, .lane-ctl, #themeToggle { display: none; }
+    .scn { break-inside: avoid; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted)"/></marker>
+    <marker id="ar-on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--accent)"/></marker>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="eyebrow">FARM2HOME AI · điều phối nông sản theo nhu cầu</div>
+  <h1>Kịch bản sử dụng theo từng người dùng</h1>
+  <p>Ai dùng web app này, dùng lúc nào, bấm gì và thấy gì. Bắt đầu bằng <b>một ngày vận hành</b> nhìn từ trên xuống, sau đó là kịch bản chi tiết của <b>khách hàng</b>, <b>nông hộ</b>, <b>người vận hành</b>, <b>quản trị</b> và những việc <b>hệ thống tự làm</b>. Tên người trong kịch bản chỉ để minh hoạ.</p>
+</header>
+
+<nav class="tabs" aria-label="Mục lục">
+  <div class="in" id="tabs">
+    <a href="#mot-ngay">Một ngày</a>
+    <a href="#khach"><i style="background:var(--kh)"></i>Khách hàng</a>
+    <a href="#nong-ho"><i style="background:var(--nh)"></i>Nông hộ</a>
+    <a href="#van-hanh"><i style="background:var(--op)"></i>Người vận hành</a>
+    <a href="#quan-tri"><i style="background:var(--ad)"></i>Quản trị</a>
+    <a href="#tu-dong"><i style="background:var(--ht)"></i>Tự động</a>
+    <a href="#trang-thai">Trạng thái</a>
+    <button id="themeToggle" type="button">Giao diện</button>
+  </div>
+</nav>
+
+<main>
+  <section class="role" id="mot-ngay">
+    <h2>Một ngày vận hành: rau giao ngày mai</h2>
+    <p class="lead">Mỗi làn là một người dùng. Đi từ trái sang phải theo thời gian: khách đặt hôm nay, tối chốt kế hoạch, sáng mai nông hộ thu hoạch, trưa mai khách nhận rau. Bấm <b>▶ Chạy</b> để xem từng bước, hoặc bấm vào một ô bất kỳ.</p>
+    <div class="panel">
+      <div class="lane-wrap"><svg id="lane" role="img" aria-label="Sơ đồ làn bơi một ngày vận hành của FARM2HOME"></svg></div>
+      <div class="lane-ctl">
+        <div class="btns">
+          <button id="prev" type="button" aria-label="Bước trước">◀</button>
+          <button id="playBtn" type="button" class="primary">▶ Chạy</button>
+          <button id="next" type="button" aria-label="Bước sau">▶</button>
+        </div>
+        <div id="cap" aria-live="polite"><span class="who">16 bước · 4 người dùng</span><div>Bấm <b>Chạy</b> hoặc chọn một ô trên sơ đồ.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="roles"></div>
+
+  <section class="role" id="tu-dong" style="--c: var(--ht)">
+    <h2><span class="dot"></span>Hệ thống tự động</h2>
+    <p class="lead">Ba việc chạy theo giờ khi máy bật <code>php artisan schedule:work</code>. Không bật cũng không sao: mỗi việc đều có nút bấm tay, kết quả như nhau.</p>
+    <div class="clock">
+      <div><div class="t">12:00</div><div class="c">subscriptions:generate</div><p>Sinh đơn <b>Đã xác nhận</b> cho các giỏ định kỳ đến lịch giao. Bấm lại không tạo trùng.<br><span class="c">Bấm tay: Giỏ định kỳ → Sinh đơn cho ngày này</span></p></div>
+      <div><div class="t">18:15</div><div class="c">forecast:run</div><p>Sau giờ chốt đơn 18:00, dự báo nhu cầu 7 ngày giao kế tiếp cho từng loại rau.<br><span class="c">Bấm tay: Dự báo → Chạy dự báo hôm nay</span></p></div>
+      <div><div class="t">21:00</div><div class="c">forecast:backfill</div><p>Điền nhu cầu thực tế của những ngày đã qua để đo sai số MAE / MAPE / WAPE.<br><span class="c">Bấm tay: Dự báo → Cập nhật số thực tế</span></p></div>
+    </div>
+    <div class="auto">
+      <b>Tự làm khi có người thao tác</b>
+      <ul>
+        <li>Tạo mã đơn <code>DH{yymmdd}-{stt}</code> và mã lô <code>F2H-{yymmdd}-{mã rau}-{mã nông hộ}</code>.</li>
+        <li>Tính phí giao theo cụm, miễn phí khi tiền hàng đủ mức; điểm nhận tập trung không tính phí.</li>
+        <li>Nhận ra khách cũ theo số điện thoại, cập nhật tên và địa chỉ theo lần đặt mới nhất.</li>
+        <li>Cộng điểm khi đơn từ 50.000đ được giao và khi khách trả bao bì; hoàn điểm khi huỷ đơn đã đổi quà.</li>
+        <li>Huỷ đơn đã gán lô thì trả số gói về lại lô.</li>
+        <li>Báo cho người vận hành khi có đơn mới, nông hộ báo sản lượng hay xác nhận thu hoạch, hoặc khách gửi phản hồi (tự cập nhật khoảng 15 giây một lần).</li>
+      </ul>
+      <p style="margin-top:8px;font-size:13.5px"><b>Không tự làm:</b> không tự chốt kế hoạch, không tự gửi tin cho nông hộ (chưa có Zalo OA), không tự trừ điểm của khách.</p>
+    </div>
+  </section>
+
+  <section class="role" id="trang-thai">
+    <h2>Trạng thái của từng thứ</h2>
+    <p class="lead">Mọi thứ chỉ đi tới theo mũi tên, không nhảy cóc. Không có nút xoá: đơn thì huỷ, rau / giỏ / cụm giao thì tắt "Đang bán", nông hộ thì chuyển "Ngừng".</p>
+    <div class="states" id="states"></div>
+  </section>
+</main>
+
+<footer>Dựa trên tính năng đang có trong code (tháng 10/2026). Thao tác chi tiết từng màn hình: <code>docs/HUONG-DAN-SU-DUNG.md</code> · quyền từng vai trò: <code>docs/CHUC-NANG-THEO-VAI-TRO.md</code>.</footer>
+
+<script>
+// ═══════════════ SƠ ĐỒ MỘT NGÀY ═══════════════
+const LANES = [
+  { k: 'kh', name: 'Khách hàng', how: 'web · số điện thoại' },
+  { k: 'op', name: 'Người vận hành', how: 'đăng nhập /admin' },
+  { k: 'ht', name: 'Hệ thống', how: 'tự động theo giờ' },
+  { k: 'nh', name: 'Nông hộ', how: 'link riêng qua Zalo' },
+];
+const TIMES = [
+  { x: 210, t: 'trong ngày' }, { x: 380, t: '12:00' }, { x: 530, t: '18:00' }, { x: 680, t: '18:15' },
+  { x: 860, t: 'tối' }, { x: 1040, t: 'sáng sớm' }, { x: 1210, t: 'buổi sáng' }, { x: 1380, t: 'trưa · chiều' }, { x: 1550, t: 'cuối ngày' },
+];
+// x = tâm ô, l = làn, s = hai dòng chữ, scr = màn hình
+const STEPS = [
+  { x: 210,  l: 'kh', s: ['Đặt đơn cho', 'ngày mai'], d: 'Khách đặt giỏ rau hoặc chọn lẻ, chọn ngày giao, khung giờ, khu vực.', scr: '/dat-hang' },
+  { x: 210,  l: 'op', s: ['Xác nhận đơn,', 'nhập đơn Zalo'], d: 'Người vận hành xác nhận đơn mới, tạo đơn hộ khách nhắn Zalo / gọi điện.', scr: 'Đơn hàng' },
+  { x: 210,  l: 'nh', s: ['Báo sản lượng', '7 ngày tới'], d: 'Nông hộ nhập số kg có thể thu cho từng loại rau mình trồng.', scr: '/nong-ho/{link riêng}' },
+  { x: 380,  l: 'ht', s: ['Sinh đơn', 'giỏ định kỳ'], d: 'Hệ thống tạo đơn Đã xác nhận cho khách đặt giỏ lặp lại.', scr: 'subscriptions:generate' },
+  { x: 530,  l: 'ht', s: ['Đóng nhận đơn', 'cho ngày mai'], d: 'Sau 18:00 khách chỉ đặt được từ ngày kia; người vận hành vẫn nhập hộ được.', scr: 'giờ chốt 18:00' },
+  { x: 680,  l: 'ht', s: ['Chạy dự báo', 'nhu cầu'], d: 'Dự báo 7 ngày giao tới từ lịch sử đơn hàng (3 phương pháp).', scr: 'forecast:run' },
+  { x: 860,  l: 'op', s: ['Gợi ý → chỉnh', '→ chốt kế hoạch'], d: 'AI gợi ý số kg và chia cho nông hộ; người vận hành sửa, ghi lý do, rồi chốt.', scr: 'Kế hoạch thu hoạch' },
+  { x: 860,  l: 'ht', s: ['Lưu số gợi ý', '+ số chốt'], d: 'Cả số gợi ý lẫn số chốt đều được lưu để đo độ chính xác và số lần điều chỉnh.', scr: 'harvest_plan_items' },
+  { x: 860,  l: 'nh', s: ['Nhận tin Zalo,', 'bấm xác nhận'], d: 'Nông hộ nhận tin soạn sẵn, mở link, bấm "Tôi sẽ thu hoạch".', scr: '/nong-ho/{link riêng}' },
+  { x: 1040, l: 'nh', s: ['Thu hoạch,', 'mang tới điểm'], d: 'Thu đúng số kg đã chốt, mang tới điểm tập kết.', scr: 'ngoài đời' },
+  { x: 1040, l: 'op', s: ['Cân, nhập', 'thực nhận → lô'], d: 'Nhập kg thực nhận; hệ thống tạo lô F2H-… cho từng rau của từng nhà.', scr: 'Kế hoạch thu hoạch' },
+  { x: 1210, l: 'op', s: ['Kiểm chất lượng,', 'gán lô, in tem QR'], d: 'Đánh dấu Đạt, ghi giờ sơ chế / đóng gói, gán lô cho đơn, in tem QR dán lên túi.', scr: 'Lô hàng' },
+  { x: 1380, l: 'op', s: ['Giao hàng', '→ Đã giao'], d: 'Chuyển đơn: Đang đóng gói → Đang giao → Đã giao. Khách được cộng điểm.', scr: 'Đơn hàng' },
+  { x: 1380, l: 'kh', s: ['Nhận rau, quét', 'QR, phản hồi'], d: 'Khách quét tem, xem nông hộ và giờ thu hoạch, chấm điểm lô rau.', scr: '/lo/{mã lô}' },
+  { x: 1550, l: 'op', s: ['Phản hồi, rau dư,', 'bao bì, KPI'], d: 'Xử lý phản hồi, ghi rau dư và bao bì thu hồi, xem dashboard.', scr: 'Phản hồi · Rau dư · Bao bì' },
+  { x: 1550, l: 'ht', s: ['Điền số thực tế,', 'đo sai số'], d: '21:00 điền nhu cầu thật để so với dự báo.', scr: 'forecast:backfill' },
+];
+const LINKS = [[1,2],[2,5],[4,7],[5,6],[6,7],[3,7],[7,8],[7,9],[9,10],[10,11],[11,12],[12,13],[13,14],[14,15],[13,16]];
+
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent, text) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  parent?.appendChild(n);
+  return n;
+}
+
+const lane = document.getElementById('lane');
+const LW = 1660, TOPH = 54, LH = 112, NW = 150, NH = 54;
+const laneY = k => TOPH + LANES.findIndex(l => l.k === k) * LH + LH / 2;
+lane.setAttribute('viewBox', `0 0 ${LW} ${TOPH + LANES.length * LH + 6}`);
+
+el('rect', { class: 'ln-bg', x: 0, y: 0, width: LW, height: TOPH + LANES.length * LH + 6 }, lane);
+LANES.forEach((l, i) => {
+  const y = TOPH + i * LH;
+  const g = el('g', { style: `--c: var(--${l.k})` }, lane);
+  el('rect', { class: 'ln-band', x: 0, y, width: LW, height: LH }, g);
+  el('text', { class: 'ln-name', x: 18, y: y + LH / 2 - 2 }, g, l.name);
+  el('text', { class: 'ln-how', x: 18, y: y + LH / 2 + 15 }, g, l.how);
+  if (i) el('line', { class: 'ln-sep', x1: 0, x2: LW, y1: y, y2: y }, lane);
+});
+TIMES.forEach(t => {
+  el('text', { class: 'tcol', x: t.x, y: 40, 'text-anchor': 'middle' }, lane, t.t);
+});
+el('line', { class: 'tline', x1: 950, x2: 950, y1: 14, y2: TOPH + LANES.length * LH }, lane);
+el('text', { class: 'tday', x: 940, y: 20, 'text-anchor': 'end' }, lane, 'HÔM NAY');
+el('text', { class: 'tday', x: 960, y: 20 }, lane, 'NGÀY GIAO →');
+
+const edgeEls = LINKS.map(([a, b]) => {
+  const A = STEPS[a - 1], B = STEPS[b - 1];
+  const ya = laneY(A.l), yb = laneY(B.l);
+  let d;
+  if (A.x === B.x) {
+    const down = yb > ya;
+    d = `M${A.x},${ya + (down ? NH / 2 : -NH / 2)} L${B.x},${yb + (down ? -NH / 2 - 2 : NH / 2 + 2)}`;
+  } else {
+    const sx = A.x + NW / 2, ex = B.x - NW / 2 - 2, dx = Math.max(30, (ex - sx) / 2);
+    d = `M${sx},${ya} C${sx + dx},${ya} ${ex - dx},${yb} ${ex},${yb}`;
+  }
+  return { a, b, p: el('path', { class: 'se', d }, lane) };
+});
+
+const nodeEls = STEPS.map((s, i) => {
+  const y = laneY(s.l);
+  const g = el('g', { class: 'sn', style: `--c: var(--${s.l})`, tabindex: 0, role: 'button', 'aria-label': `Bước ${i + 1}: ${s.s.join(' ')}` }, lane);
+  el('rect', { x: s.x - NW / 2, y: y - NH / 2, width: NW, height: NH, rx: 10 }, g);
+  el('text', { x: s.x + 6, y: y - 3, 'text-anchor': 'middle' }, g, s.s[0]);
+  el('text', { x: s.x + 6, y: y + 13, 'text-anchor': 'middle' }, g, s.s[1]);
+  const num = el('g', { class: 'num' }, g);
+  el('circle', { cx: s.x - NW / 2 + 2, cy: y - NH / 2 + 2, r: 11 }, num);
+  el('text', { x: s.x - NW / 2 + 2, y: y - NH / 2 + 6, 'text-anchor': 'middle' }, num, i + 1);
+  g.addEventListener('click', () => { stop(); go(i); });
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stop(); go(i); } });
+  return g;
+});
+
+let cur = -1, timer = null;
+const cap = document.getElementById('cap');
+const playBtn = document.getElementById('playBtn');
+function go(i) {
+  cur = (i + STEPS.length) % STEPS.length;
+  lane.classList.add('playing');
+  nodeEls.forEach((n, j) => { n.classList.toggle('cur', j === cur); n.classList.toggle('done', j < cur); });
+  edgeEls.forEach(e => { e.p.classList.toggle('cur', e.b - 1 === cur); e.p.classList.toggle('done', e.b - 1 < cur); });
+  const s = STEPS[cur], ln = LANES.find(l => l.k === s.l);
+  cap.style.setProperty('--c', `var(--${s.l})`);
+  cap.innerHTML = `<span class="who">Bước ${cur + 1}/${STEPS.length} · ${ln.name}</span><div><b>${s.s.join(' ')}</b> — ${s.d}</div><div class="scr">${s.scr}</div>`;
+}
+function play() { timer = setInterval(() => go(cur + 1), 2400); playBtn.textContent = '❚❚ Dừng'; if (cur < 0) go(0); }
+function stop() { clearInterval(timer); timer = null; playBtn.textContent = '▶ Chạy'; }
+playBtn.addEventListener('click', () => (timer ? stop() : play()));
+document.getElementById('next').addEventListener('click', () => { stop(); go(cur + 1); });
+document.getElementById('prev').addEventListener('click', () => { stop(); go(cur - 1); });
+
+// ═══════════════ KỊCH BẢN THEO VAI TRÒ ═══════════════
+// Mỗi bước: do (việc làm), at (màn hình), see (kết quả), br (nhánh: [loại, chữ]) — loại 'alt' = cách khác, 'warn' = nếu có trục trặc
+const ROLES = [
+  {
+    id: 'khach', k: 'kh', title: 'Khách hàng',
+    lead: 'Người mua rau ở Mỹ Tho và vùng lân cận. Không cần tài khoản, không bắt buộc cài app: số điện thoại chính là "tài khoản".',
+    who: { nm: 'Chị Lan, nhà 4 người ở phường Mỹ Tho', d: 'Dùng điện thoại, quen Zalo. Muốn rau sạch giao tận nhà, đúng giờ, biết rau của ai.' },
+    can: ['Đặt giỏ rau hoặc chọn lẻ', 'Tra cứu 5 đơn gần nhất và số điểm', 'Quét QR xem nguồn gốc lô rau', 'Chấm điểm, nhận xét lô rau', 'Xin đổi điểm lấy quà khi đặt đơn', 'Cài web thành app trên điện thoại'],
+    cant: ['Tự sửa hay huỷ đơn đã gửi', 'Tự trừ điểm (người vận hành duyệt)', 'Xem tên, địa chỉ khi tra cứu', 'Mở trang QR của lô chưa kiểm định'],
+    scn: [
+      { t: 'Đặt giỏ rau lần đầu', g: 'Từ lúc thấy link tới khi có mã đơn, khoảng 2 phút.',
+        start: 'Chị Lan thấy link FARM2HOME trong nhóm Zalo khu phố, bấm mở trên điện thoại.',
+        map: ['Link Zalo*', 'Trang chủ', 'Đặt hàng', 'Đã nhận đơn'],
+        steps: [
+          { do: 'Xem phần giới thiệu, giá từng loại rau và 3 giỏ: <b>Giỏ Mini 50.000đ</b>, <b>Giỏ Xanh Tiết Kiệm 70.000đ</b>, <b>Giỏ Gia Đình 115.000đ</b>.', at: '/',
+            br: [['alt', 'Cuối màn hình hiện "Bạn có muốn cài ứng dụng Farm2Home?". Bấm <b>Cài đặt</b> để có biểu tượng trên màn hình chính, hoặc <b>Để sau</b>. Trên iPhone: nút Chia sẻ của Safari → <b>Thêm vào MH chính</b>.']] },
+          { do: 'Bấm <b>Đặt hàng</b>. Chọn <b>Giỏ rau</b> → Giỏ Gia Đình. (Hoặc <b>Chọn lẻ</b>: bấm + / − từng loại, tối đa 20 gói mỗi loại.)', at: '/dat-hang' },
+          { do: 'Chọn <b>Ngày giao</b> và <b>Khung giờ</b> (06:00-08:00, 10:00-12:00, 17:00-19:00).', see: 'Chỉ hiện những ngày còn nhận đơn: sớm nhất ngày mai (sau 18:00 thì ngày kia), xa nhất 7 ngày.' },
+          { do: 'Chọn <b>Khu vực giao</b>.', see: 'Mỗi cụm có phí riêng, miễn phí khi tiền hàng đủ mức. Chọn <b>Điểm nhận tập trung</b> thì phí 0đ và không cần nhập địa chỉ.' },
+          { do: 'Nhập <b>Họ tên</b>, <b>Số điện thoại</b> (10 số, bắt đầu bằng 0), <b>Địa chỉ giao</b>; chọn <b>Tiền mặt khi nhận</b> hoặc <b>Chuyển khoản</b>; đánh dấu ô đồng ý cho dùng thông tin.',
+            br: [['alt', 'Có thắc mắc (phí ship, giờ giao, giỏ có gì…)? Mở khung <b>hỏi đáp</b> ở góc màn hình và gõ câu hỏi, chatbot trả lời ngay.']] },
+          { do: 'Xem khung <b>Tiền hàng / Phí giao / Tạm tính</b>, bấm <b>Gửi đơn</b>.', see: 'Trang "Đã nhận đơn của bạn" với mã đơn, ví dụ DH261018-001. Đơn ở trạng thái Chờ xác nhận.',
+            br: [['warn', 'Báo lỗi số điện thoại hoặc ngày giao → sửa theo dòng chữ đỏ. Lỡ giờ chốt 18:00 mà vẫn cần rau ngày mai → nhắn Zalo, người vận hành nhập hộ.']] },
+        ],
+        result: 'Đơn hiện ngay trong mục Đơn hàng của người vận hành (có thông báo nổi). Lần sau chị Lan đặt bằng số cũ, hệ thống tự nhận ra, không tạo khách mới.' },
+      { t: 'Theo dõi đơn và xem điểm', g: 'Không cần đăng nhập, chỉ cần số điện thoại.',
+        start: 'Chị Lan muốn biết đơn đã được xác nhận chưa và mình có bao nhiêu điểm.',
+        map: ['Trang chủ', 'Tra cứu đơn'],
+        steps: [
+          { do: 'Bấm <b>Tra cứu đơn</b>, nhập số điện thoại đã đặt hàng, bấm <b>Tra cứu</b>.', at: '/tra-cuu', see: '5 đơn gần nhất: mã đơn, trạng thái, ngày giao, khung giờ, tổng tiền. Không hiện tên và địa chỉ (ai biết số điện thoại cũng tra được).' },
+          { do: 'Xem số điểm đang có trên cùng trang.', see: 'Điểm cộng sau mỗi đơn từ 50.000đ được giao và mỗi lần trả bao bì.',
+            br: [['warn', 'Muốn đổi ngày giao hay huỷ đơn → khách không tự làm được. Nhắn Zalo hoặc gọi, người vận hành xử lý.']] },
+        ],
+        result: 'Khách tự theo dõi được, người vận hành bớt phải trả lời tin nhắn hỏi đơn.' },
+      { t: 'Nhận rau, quét QR và phản hồi', g: 'Biết rau của nhà nào, thu lúc nào, và nói lại cảm nhận.',
+        start: 'Rau được giao tới, trên túi có tem QR.',
+        map: ['Tem QR*', 'Trang lô rau', 'Gửi phản hồi'],
+        steps: [
+          { do: 'Quét mã QR trên tem bằng camera hoặc Zalo.', at: '/lo/F2H-…', see: 'Trang của đúng lô rau: nông hộ, khu vực trồng, cách canh tác (theo nông hộ khai), giờ thu hoạch, sơ chế, đóng gói, nên dùng trước, cách bảo quản.' },
+          { do: 'Xem khung chứng nhận.', see: 'Chỉ hiện tên chứng nhận khi nông hộ có file chứng nhận còn hạn; nếu không, ghi "Chưa có chứng nhận được xác thực". Không có quảng cáo kiểu "100% sạch".' },
+          { do: 'Chấm điểm lô rau 1–5 (bắt buộc), <b>Độ tươi</b>, viết <b>Nhận xét</b>, nhập số điện thoại nếu muốn, bấm <b>Gửi phản hồi</b>.',
+            br: [['alt', 'Có nhập số điện thoại thì phản hồi được gắn với khách và đơn, người vận hành dễ liên hệ lại.']] },
+        ],
+        result: 'Phản hồi vào mục Phản hồi của người vận hành, gắn với mã lô → biết chính xác rau của nhà nào, ngày nào có vấn đề.' },
+      { t: 'Tích điểm và đổi quà', g: 'Khách quay lại mua nhiều lần thì có thưởng.',
+        start: 'Chị Lan đã mua vài lần và trả bao bì đều.',
+        map: ['Đã giao', 'Tra cứu đơn', 'Đặt hàng (chọn quà)', 'Người vận hành duyệt'],
+        steps: [
+          { do: 'Mỗi đơn có tiền hàng từ 50.000đ được giao xong: <b>+5 điểm</b>. Mỗi lần trả bao bì: <b>+5 điểm</b>.' },
+          { do: 'Xem điểm ở <b>Tra cứu đơn</b>.', at: '/tra-cuu' },
+          { do: 'Lần đặt sau, chọn quà muốn đổi: <b>Tặng bó rau nhỏ</b> (20 điểm) · <b>Miễn phí 1 lần giao</b> (30) · <b>Giảm 20.000đ</b> (50) · <b>Tặng combo rau nhỏ</b> (100). Nhập số điện thoại là form hiện ngay số điểm đang có.', at: '/dat-hang' },
+          { do: 'Người vận hành duyệt quà trong đơn, khi đó mới trừ điểm.',
+            br: [['warn', 'Quà chỉ được duyệt khi đơn còn Chờ xác nhận / Đã xác nhận và khách đủ điểm. Huỷ đơn đã đổi quà thì điểm được hoàn lại.']] },
+        ],
+        result: 'Điểm thưởng gắn với việc trả bao bì → khuyến khích tái sử dụng, đo được ở KPI môi trường.' },
+    ],
+  },
+  {
+    id: 'nong-ho', k: 'nh', title: 'Nông hộ',
+    lead: 'Hộ trồng rau ở Châu Thành, Cai Lậy, Chợ Gạo và vùng lân cận. Không cần tài khoản hay mật khẩu: mỗi hộ có một link riêng, người vận hành gửi qua Zalo.',
+    who: { nm: 'Chú Tâm (NH01), trồng rau muống và hành lá', d: 'Quen Zalo, ít gõ chữ. Muốn biết trước cần thu bao nhiêu để không cắt dư rồi bỏ.' },
+    can: ['Báo số kg có thể thu cho 7 ngày tới', 'Sửa số đã báo tới khi kế hoạch chốt', 'Xem danh sách cần thu hoạch', 'Bấm "Tôi sẽ thu hoạch" để xác nhận', 'Cài link thành app trên điện thoại'],
+    cant: ['Sửa số kg sau khi kế hoạch đã chốt', 'Xem đơn hàng, giá bán, thông tin khách', 'Xem số liệu của nông hộ khác', 'Dùng link cũ sau khi được cấp link mới'],
+    scn: [
+      { t: 'Nhận link và báo sản lượng', g: 'Vài phút mỗi ngày, chỉ gõ số.',
+        start: 'Người vận hành gửi link riêng của chú Tâm qua Zalo.',
+        map: ['Tin Zalo*', 'Trang nông hộ', 'Lưu sản lượng'],
+        steps: [
+          { do: 'Bấm vào link trong tin Zalo.', at: '/nong-ho/{link riêng}', see: 'Trang của riêng nhà mình, không cần mật khẩu. Ai có link là vào được, nên đừng chuyển link cho người khác.',
+            br: [['alt', 'Cài trang này lên màn hình chính → lần sau bấm biểu tượng Farm2Home là vào thẳng trang nông hộ.']] },
+          { do: 'Ở mục <b>Báo sản lượng</b>: mỗi ngày trong 7 ngày tới có một hàng ô cho từng loại rau nhà mình trồng.' },
+          { do: 'Nhập số kg có thể thu (bước 0,5 kg; để trống nếu không có), bấm <b>Lưu sản lượng</b>.',
+            br: [['alt', 'Không tiện gõ? Nhắn Zalo hoặc gọi, người vận hành nhập hộ ở mục Sản lượng.'], ['warn', 'Ngày nào kế hoạch đã chốt thì hiện "Đã chốt" và không sửa được nữa.']] },
+        ],
+        result: 'Số kg đã báo là căn cứ để chia phần thu hoạch: phần của mỗi nhà theo tỉ lệ số đã báo, không ai bị giao quá số mình báo.' },
+      { t: 'Nhận danh sách thu hoạch và giao hàng', g: 'Thu đúng số cần, không thu dư.',
+        start: 'Buổi tối, người vận hành đã chốt kế hoạch cho ngày mai.',
+        map: ['Tin Zalo*', 'Danh sách thu hoạch', 'Tôi sẽ thu hoạch', 'Giao tới điểm*'],
+        steps: [
+          { do: 'Nhận tin Zalo soạn sẵn: "FARM2HOME gửi … danh sách thu hoạch ngày …", từng loại rau và số kg, kèm link xác nhận.' },
+          { do: 'Mở link, xem <b>Danh sách thu hoạch</b>, bấm <b>Tôi sẽ thu hoạch</b>.', at: '/nong-ho/{link riêng}', see: 'Nút đổi thành "Đã xác nhận"; người vận hành thấy giờ xác nhận trong kế hoạch.' },
+          { do: 'Sáng sớm thu hoạch đúng số kg, mang tới điểm tập kết.' },
+          { do: 'Người vận hành cân và ghi số thực nhận.', see: 'Mỗi loại rau của nhà mình thành một lô có mã riêng, ví dụ F2H-261019-RM-NH01, in trên tem QR.',
+            br: [['warn', 'Không thu đủ (mưa, sâu bệnh…) → báo ngay qua Zalo. Người vận hành ghi đúng số thực nhận và xoay rau từ nhà khác nếu cần.']] },
+        ],
+        result: 'Nông hộ thu theo nhu cầu thật thay vì đoán. Khách quét QR thấy tên nhà mình, phản hồi về lô rau được ghi theo mã lô.' },
+    ],
+  },
+  {
+    id: 'van-hanh', k: 'op', title: 'Người vận hành (operator)',
+    lead: 'Người điều phối hằng ngày ở điểm tập kết: nhận đơn, làm việc với nông hộ, chốt kế hoạch, nhận hàng, đóng gói, giao. Đăng nhập rồi đi theo thanh menu, thứ tự menu đúng thứ tự công việc.',
+    who: { nm: 'Bạn Vy, điều phối ở điểm tập kết Mỹ Tho', d: 'Dùng máy tính ở điểm tập kết và điện thoại khi đi giao. Là người quyết định cuối cùng, AI chỉ gợi ý.' },
+    can: ['Xác nhận, tạo hộ, chuyển trạng thái đơn', 'Nhập hộ sản lượng, chạy dự báo', 'Tạo, chỉnh, chốt kế hoạch thu hoạch', 'Nhận hàng, kiểm chất lượng, gán lô, in tem', 'Xử lý phản hồi, ghi rau dư, bao bì', 'Duyệt đổi quà, xem điểm, xem KPI'],
+    cant: ['Sửa số chốt sau khi kế hoạch đã chốt', 'Gán lô chưa Đạt, hoặc cho đơn chưa xác nhận', 'Ghi rau dư nhiều hơn số lô còn lại', 'Quản lý sản phẩm, giỏ, nông hộ, cụm giao, tài khoản'],
+    scn: [
+      { t: 'Nhận và xử lý đơn trong ngày', g: 'Từ sáng tới 18:00.',
+        start: 'Vy đăng nhập ở /login (hoặc mở app đã cài, vào thẳng Tổng quan).',
+        map: ['Thông báo', 'Đơn hàng', 'Chi tiết đơn', 'Giỏ định kỳ'],
+        steps: [
+          { do: 'Để trang admin mở. Khi có đơn mới, đơn đổi trạng thái, nông hộ báo sản lượng hay xác nhận thu hoạch, hoặc khách gửi phản hồi, một thông báo nổi hiện ở góc và số trên menu tăng, không cần F5.' },
+          { do: 'Vào <b>Đơn hàng</b>, chọn ngày giao, bấm <b>Lọc</b>, mở đơn mới, bấm <b>Đã xác nhận</b>.', at: 'Đơn hàng', see: 'Dòng "Nhu cầu trong ngày" cho biết tổng kg từng loại rau của ngày đó.',
+            br: [['alt', 'Khách nhắn Zalo / gọi điện → bấm <b>Tạo đơn</b>, chọn <b>Kênh nhận đơn</b>. Không bị chặn giờ 18:00, tối đa 50 gói mỗi loại.'], ['alt', 'Đơn có xin đổi quà → duyệt quà, chọn loại rau tặng nếu là quà rau.']] },
+          { do: 'Khi cần huỷ: chọn <b>Đã hủy</b> và ghi <b>Lý do hủy</b>.',
+            br: [['warn', 'Bắt buộc có lý do. Đơn đã gán lô thì số gói tự trả về lô; đơn đã đổi quà thì hoàn điểm.']] },
+          { do: '12:00 hệ thống tự sinh đơn cho giỏ định kỳ đến lịch. Không bật lịch tự động thì vào <b>Giỏ định kỳ</b>, bấm <b>Sinh đơn cho ngày này</b>.', at: 'Giỏ định kỳ' },
+        ],
+        result: 'Tới 18:00 có danh sách đơn đã xác nhận cho ngày mai, làm đầu vào cho dự báo và kế hoạch.' },
+      { t: 'Lập kế hoạch thu hoạch buổi tối', g: 'Màn hình quan trọng nhất: AI gợi ý, người quyết định.',
+        start: 'Sau 18:00, đơn cho ngày mai đã đóng.',
+        map: ['Sản lượng', 'Dự báo', 'Kế hoạch thu hoạch', 'Tin Zalo*'],
+        steps: [
+          { do: 'Vào <b>Sản lượng</b>, chọn ngày, xem nông hộ đã báo gì. Nhập hộ cho nhà báo miệng.', at: 'Sản lượng' },
+          { do: '18:15 dự báo tự chạy (hoặc bấm <b>Chạy dự báo hôm nay</b>). Xem tổng dự báo và khoảng thấp – cao.', at: 'Dự báo',
+            br: [['warn', 'Mới bắt đầu, ít ngày có đơn → dự báo gần 0, gợi ý chỉ bằng đơn đã đặt + 10%. Tự cân nhắc số chốt; khoảng 1 tuần sau dự báo mới có ý nghĩa.']] },
+          { do: 'Vào <b>Kế hoạch thu hoạch</b>, chọn ngày giao, bấm <b>Tạo gợi ý thu hoạch</b>.', at: 'Kế hoạch thu hoạch', see: 'Kế hoạch Nháp. Gợi ý = (Đã đặt + Dự báo thêm − Tồn) × 1,1, làm tròn lên 0,5 kg, chia cho các nhà theo tỉ lệ sản lượng đã báo.' },
+          { do: 'Sửa số <b>Chốt</b> từng dòng, ghi lý do khi khác gợi ý; đổi nông hộ (ô chọn chỉ hiện nhà đã đăng ký trồng rau đó); bấm <b>+ Thêm nông hộ</b> để chia một loại rau cho thêm nhà. Xong bấm <b>Lưu tất cả</b>.',
+            br: [['warn', 'Dòng "Chưa có nguồn" phải chọn nông hộ hoặc đặt số chốt về 0. Bấm <b>Tính lại gợi ý</b> sẽ tạo lại bảng từ đầu, mất mọi chỉnh sửa.']] },
+          { do: 'Bấm <b>Chốt kế hoạch</b>. Ở khung <b>Tin nhắn cho nông hộ</b>, bấm <b>Sao chép</b> hoặc <b>Mở Zalo</b> gửi cho từng nhà, rồi bấm <b>Đánh dấu đã gửi</b>.',
+            br: [['warn', 'Nhớ bấm <b>Lưu tất cả</b> trước khi chốt: số đang sửa dở chưa lưu sẽ không được tính.']] },
+          { do: 'Theo dõi cột chốt: dòng nào nông hộ đã bấm xác nhận sẽ hiện "Nông hộ xác nhận" kèm giờ.' },
+        ],
+        result: 'Cả số AI gợi ý và số người chốt đều được lưu. Dashboard đếm số lần điều chỉnh và đo sai số để biết gợi ý có đáng tin không.' },
+      { t: 'Nhận hàng, tạo lô, in tem và giao', g: 'Sáng ngày giao.',
+        start: 'Nông hộ mang rau tới điểm tập kết.',
+        map: ['Kế hoạch (Thực nhận)', 'Lô hàng', 'Tem QR', 'Đơn hàng'],
+        steps: [
+          { do: 'Trong kế hoạch, cột <b>Thực nhận</b>: nhập số kg cân được, bấm <b>Nhận</b>.', at: 'Kế hoạch thu hoạch', see: 'Tạo một lô mã F2H-yymmdd-{rau}-{nông hộ}. Nhập sai thì sửa số, bấm Sửa.' },
+          { do: 'Mở lô, chọn <b>Kết quả kiểm tra</b> Đạt / Không đạt, ghi thời điểm sơ chế, đóng gói, cách sơ chế, bấm <b>Lưu</b>.', at: 'Lô hàng',
+            br: [['warn', 'Lô Không đạt: không gán được cho đơn, không in tem, trang QR không mở.']] },
+          { do: 'Ở danh sách lô, bấm <b>Gán lô cho đơn ngày này</b>.', see: 'Lô hết hạn sớm dùng trước, đơn giỏ định kỳ được ưu tiên. Chỉ gán cho đơn Đã xác nhận / Đang đóng gói. Bấm lại không gán trùng.' },
+          { do: 'Trong lô, nhập <b>Số tem</b>, bấm <b>In tem QR</b>, dán tem lên túi.', see: 'Mỗi tem có QR, tên rau, mã lô, nông hộ, ngày đóng gói, hạn dùng.' },
+          { do: 'Chuyển đơn: <b>Đang đóng gói</b> → <b>Đang giao</b> → <b>Đã giao</b>.', at: 'Đơn hàng', see: 'Khách được +5 điểm nếu tiền hàng từ 50.000đ.' },
+          { do: 'Nhận đủ mọi dòng thì bấm <b>Hoàn tất kế hoạch</b>.', at: 'Kế hoạch thu hoạch' },
+        ],
+        result: 'Mỗi túi rau truy được về lô, nông hộ và giờ thu hoạch. Tỉ lệ giao đủ được tính từ số gói thực giao.' },
+      { t: 'Cuối ngày và xem KPI', g: '10–15 phút trước khi nghỉ.',
+        start: 'Đã giao xong đơn trong ngày.',
+        map: ['Phản hồi', 'Rau dư', 'Bao bì', 'Tổng quan'],
+        steps: [
+          { do: '<b>Phản hồi</b> → lọc <b>Mới</b>, ghi <b>Cách xử lý</b>, chọn <b>Đã xử lý</b>, bấm <b>Lưu</b>.', at: 'Phản hồi',
+            br: [['warn', 'Muốn đóng phản hồi thì bắt buộc ghi cách xử lý.']] },
+          { do: '<b>Rau dư</b> → chọn ngày, xem lô còn tồn, ghi kg Dư thừa / Hư hỏng / Hết hạn / Bán giảm giá.', at: 'Rau dư', see: 'Lô còn hạn có thể bán tiếp ngày mai, không cần ghi dư. Không ghi được quá số kg lô còn lại.' },
+          { do: '<b>Bao bì</b> → ghi số bao bì thu hồi và số tái sử dụng được (kèm số điện thoại / mã đơn để cộng điểm cho khách).', at: 'Bao bì' },
+          { do: '21:00 hệ thống điền số thực tế cho dự báo (hoặc <b>Cập nhật số thực tế</b> ở Dự báo).' },
+          { do: '<b>Tổng quan</b> → chọn khoảng ngày → <b>Xem</b>.', at: 'Tổng quan', see: 'Doanh thu, giá trị đơn trung bình, biên gộp, tỉ lệ giao đủ, khách mua lại, điểm đánh giá, rau dư, bao bì, sai số dự báo, số lần chỉnh gợi ý.' },
+        ],
+        result: 'Số liệu cho các KPI thí điểm: rau dư mỗi tuần nên giảm dần kể từ khi bắt đầu dự báo.' },
+    ],
+  },
+  {
+    id: 'quan-tri', k: 'ad', title: 'Quản trị (admin)',
+    lead: 'Người cài đặt dữ liệu gốc cho cả hệ thống. Admin làm được mọi việc của người vận hành, cộng thêm 5 menu riêng.',
+    who: { nm: 'Trưởng nhóm dự án', d: 'Thiết lập trước khi chạy thí điểm, sau đó chỉ vào khi cần đổi giá, thêm nông hộ hay xử lý sự cố.' },
+    can: ['Mọi việc của người vận hành', 'Quản lý sản phẩm, giỏ rau, cụm giao', 'Quản lý nông hộ, rau trồng, chứng nhận', 'Cấp link mới cho nông hộ', 'Tạo tài khoản, đặt lại mật khẩu'],
+    cant: ['Xoá dữ liệu (chỉ tắt / ngừng)', 'Tự đổi vai trò của chính mình', 'Cho QR hiện chứng nhận khi không có file còn hạn', 'Tải ảnh rau lên từ giao diện'],
+    scn: [
+      { t: 'Thiết lập trước khi chạy thí điểm', g: 'Làm một lần, theo thứ tự.',
+        start: 'Đã thống nhất danh sách rau, giá, giỏ, khu giao và các nông hộ tham gia.',
+        map: ['Cụm giao', 'Sản phẩm', 'Giỏ rau', 'Nông hộ', 'Tài khoản'],
+        steps: [
+          { do: '<b>Cụm giao</b>: tên, phường/xã, phí giao, mức miễn phí giao. Điền điểm nhận tập trung thì cụm đó là tự đến lấy, phí 0.', at: 'Cụm giao' },
+          { do: '<b>Sản phẩm</b>: mã (RM, CN… dùng trong mã lô), tên, khối lượng 1 gói, giá bán / gói, giá thu mua / kg, hạn dùng, hướng dẫn bảo quản (hiện trên trang QR), đánh dấu <b>Đang bán</b>.', at: 'Sản phẩm' },
+          { do: '<b>Giỏ rau</b>: tên, giá, số người phù hợp, thành phần (số gói từng loại), có cho đổi rau tương đương không.', at: 'Giỏ rau' },
+          { do: '<b>Nông hộ</b>: mã NHxx, liên hệ, khu vực trồng, cách canh tác, <b>loại rau trồng + kg/tuần</b>, chứng nhận.', at: 'Nông hộ',
+            br: [['warn', 'Loại rau trồng quyết định nhà nào hiện trong ô chọn nông hộ của kế hoạch. Chứng nhận chỉ điền khi có giấy tờ thật (file PDF/JPG/PNG, còn hạn).']] },
+          { do: 'Sao chép link riêng của từng nông hộ, gửi qua Zalo.', at: 'Sản lượng / Nông hộ' },
+          { do: '<b>Tài khoản</b>: tạo tài khoản cho người vận hành (mật khẩu tối thiểu 8 ký tự).', at: 'Tài khoản' },
+        ],
+        result: 'Khách đặt được hàng, nông hộ báo được sản lượng, người vận hành bắt đầu vòng điều phối hằng ngày.' },
+      { t: 'Thay đổi và xử lý sự cố', g: 'Không xoá gì, chỉ tắt hoặc chuyển trạng thái.',
+        start: 'Có việc cần đổi giữa chừng thí điểm.',
+        map: ['Nông hộ', 'Cấp link mới', 'Tin Zalo*'],
+        steps: [
+          { do: 'Link của nông hộ bị lộ → mở nông hộ, bấm <b>Cấp link mới</b>.', at: 'Nông hộ', see: 'Link cũ hết hiệu lực ngay. Gửi link mới cho nông hộ qua Zalo.' },
+          { do: 'Ngưng bán một loại rau, giỏ hay cụm giao → bỏ đánh dấu <b>Đang bán</b> / <b>Đang dùng</b>.', see: 'Biến khỏi form đặt hàng, nhưng đơn cũ và số liệu báo cáo vẫn giữ nguyên.' },
+          { do: 'Nông hộ tạm nghỉ hay ngừng hợp tác → chuyển trạng thái <b>Tạm nghỉ</b> hoặc <b>Ngừng</b>.', see: 'Ngừng thì link của họ không mở được nữa.' },
+          { do: 'Người vận hành quên mật khẩu → <b>Tài khoản</b> → <b>Sửa</b>, đặt mật khẩu mới.', at: 'Tài khoản' },
+        ],
+        result: 'Lịch sử luôn đầy đủ để tính KPI cho cả đợt thí điểm.' },
+    ],
+  },
+];
+
+const roleBox = document.getElementById('roles');
+const mapHtml = list => list.map(p => {
+  const ext = p.endsWith('*');
+  return `<span class="pill${ext ? ' ext' : ''}">${ext ? p.slice(0, -1) : p}</span>`;
+}).join('<span class="arr">→</span>');
+const brHtml = br => (br ?? []).map(([kind, t]) => `<div class="br ${kind}"><span class="k">${kind === 'warn' ? 'Nếu' : 'Cách khác'}</span>${t}</div>`).join('');
+const PREFIX = { kh: 'K', nh: 'N', op: 'V', ad: 'A' };
+
+roleBox.innerHTML = ROLES.map(r => `
+  <section class="role" id="${r.id}" style="--c: var(--${r.k})">
+    <h2><span class="dot"></span>${r.title}</h2>
+    <p class="lead">${r.lead}</p>
+    <div class="persona">
+      <div class="who-card"><h4>Nhân vật</h4><div class="nm">${r.who.nm}</div><p style="font-size:13.5px;margin-top:4px">${r.who.d}</p></div>
+      <div class="can"><h4>Làm được</h4><ul>${r.can.map(x => `<li>${x}</li>`).join('')}</ul></div>
+      <div class="cant"><h4>Không làm được</h4><ul>${r.cant.map(x => `<li>${x}</li>`).join('')}</ul></div>
+    </div>
+    ${r.scn.map((s, i) => `
+      <details class="scn" ${i === 0 ? 'open' : ''}>
+        <summary><span class="sid">${PREFIX[r.k]}${i + 1}</span><div><div class="st">${s.t}</div><div class="sg">${s.g}</div></div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="start"><b>Bắt đầu khi:</b> ${s.start}</p>
+          <div class="map" aria-label="Luồng màn hình">${mapHtml(s.map)}</div>
+          <ol class="steps">${s.steps.map((st, j) => `
+            <li><span class="n">${j + 1}</span>
+              <div class="do">${st.do}${st.at ? `<span class="at">${st.at}</span>` : ''}</div>
+              ${st.see ? `<div class="see">${st.see}</div>` : ''}
+              ${brHtml(st.br)}
+            </li>`).join('')}
+          </ol>
+          <div class="result"><span class="k">Kết quả</span>${s.result}</div>
+        </div>
+      </details>`).join('')}
+  </section>`).join('');
+
+// ═══════════════ SƠ ĐỒ TRẠNG THÁI ═══════════════
+// n: [id, chữ, x, y, w, loại]; e: [từ, tới, nét đứt?]; notes: [x, y, chữ]
+const STATES = [
+  { t: 'Đơn hàng', sub: 'Người vận hành chuyển từng bước; huỷ phải ghi lý do.', h: 190,
+    n: [['p', 'Chờ xác nhận', 10, 20, 112], ['c', 'Đã xác nhận', 150, 20, 104], ['k', 'Đang đóng gói', 282, 20, 112], ['g', 'Đang giao', 422, 20, 92], ['d', 'Đã giao', 290, 110, 90, 'ok'], ['x', 'Đã hủy', 10, 110, 90, 'bad']],
+    e: [['p', 'c'], ['c', 'k'], ['k', 'g'], ['g', 'd'], ['p', 'x', 1], ['c', 'x', 1], ['k', 'x', 1], ['g', 'x', 1]],
+    notes: [[390, 140, '+5 điểm nếu ≥ 50.000đ'], [150, 74, 'gán lô được từ đây'], [106, 165, 'trả gói về lô, hoàn điểm']] },
+  { t: 'Kế hoạch thu hoạch', sub: 'Chỉ sửa được khi còn Nháp; nông hộ chỉ thấy sau khi chốt.', h: 190,
+    n: [['dr', 'Nháp', 10, 30, 80], ['cf', 'Đã chốt', 130, 30, 92], ['st', 'Đã gửi nông hộ', 262, 30, 124], ['dn', 'Hoàn tất', 426, 30, 88, 'ok']],
+    e: [['dr', 'cf'], ['cf', 'st'], ['st', 'dn'], ['cf', 'dn', 1]],
+    notes: [[10, 84, 'sửa số chốt, thêm nông hộ,'], [10, 100, 'Lưu tất cả, Tính lại gợi ý'], [130, 128, 'từ Đã chốt: nhận hàng, tạo lô,'], [130, 144, 'nông hộ bấm "Tôi sẽ thu hoạch"'], [330, 84, 'cần nhập đủ thực nhận']] },
+  { t: 'Lô hàng (kiểm chất lượng)', sub: 'Chỉ lô Đạt mới gán đơn, in tem và mở trang QR.', h: 170,
+    n: [['w', 'Chờ kiểm', 10, 60, 96], ['ok', 'Đạt', 200, 16, 80, 'ok'], ['no', 'Không đạt', 200, 104, 96, 'bad']],
+    e: [['w', 'ok'], ['w', 'no']],
+    notes: [[300, 32, 'gán đơn · in tem QR · trang /lo/…'], [310, 120, 'không dùng; ghi vào Rau dư']] },
+  { t: 'Phản hồi của khách', sub: 'Đóng phản hồi bắt buộc ghi cách xử lý.', h: 150,
+    n: [['nw', 'Mới', 10, 30, 70], ['pr', 'Đang xử lý', 120, 30, 104], ['rs', 'Đã xử lý', 264, 30, 92, 'ok']],
+    e: [['nw', 'pr'], ['pr', 'rs'], ['nw', 'rs', 1]],
+    notes: [[10, 110, 'khách gửi từ trang QR của lô; gắn với lô, đơn và khách (nếu có số điện thoại)']] },
+];
+
+const statesBox = document.getElementById('states');
+STATES.forEach(st => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<h3>${st.t}</h3><div class="sub">${st.sub}</div>`;
+  const svg = el('svg', { viewBox: `0 0 530 ${st.h}`, role: 'img', 'aria-label': `Sơ đồ trạng thái: ${st.t}` }, panel);
+  const H = 34, box = {};
+  st.n.forEach(([id, , x, y, w]) => { box[id] = { x, y, w, cx: x + w / 2, cy: y + H / 2 }; });
+  st.e.forEach(([a, b, dash]) => {
+    const A = box[a], B = box[b];
+    let d;
+    if (Math.abs(A.cy - B.cy) < 2) {
+      const forward = B.x > A.x;
+      if (forward && !dash && B.x - (A.x + A.w) > 4) d = `M${A.x + A.w},${A.cy} L${B.x - 2},${B.cy}`;
+      else d = `M${A.cx},${A.y} C${A.cx},${A.y - 22} ${B.cx},${B.y - 22} ${B.cx},${B.y - 2}`;
+    } else {
+      const down = B.cy > A.cy;
+      const sy = down ? A.y + H : A.y, ey = down ? B.y - 2 : B.y + H + 2;
+      if (Math.abs(A.cx - B.cx) < B.w) d = `M${A.cx},${sy} L${B.cx},${ey}`;
+      else {
+        const sx = B.cx > A.cx ? A.x + A.w : A.x, ex = B.cx > A.cx ? B.x - 2 : B.x + B.w + 2;
+        d = `M${sx},${A.cy} C${(sx + ex) / 2},${A.cy} ${(sx + ex) / 2},${B.cy} ${ex},${B.cy}`;
+      }
+    }
+    el('path', { class: 'ste' + (dash ? ' dash' : ''), d }, svg);
+  });
+  st.n.forEach(([id, label, x, y, w, kind]) => {
+    const g = el('g', { class: 'stn' + (kind ? ' ' + kind : '') }, svg);
+    el('rect', { x, y, width: w, height: H, rx: 17 }, g);
+    el('text', { x: x + w / 2, y: y + 21.5, 'text-anchor': 'middle' }, g, label);
+  });
+  st.notes.forEach(([x, y, t]) => el('text', { class: 'stnote', x, y }, svg, t));
+  statesBox.appendChild(panel);
+});
+
+// ═══════════════ MENU, GIAO DIỆN ═══════════════
+const tabLinks = [...document.querySelectorAll('#tabs a')];
+const sections = tabLinks.map(a => document.querySelector(a.getAttribute('href')));
+const spy = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (en.isIntersecting) {
+      tabLinks.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id));
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+sections.forEach(s => s && spy.observe(s));
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const dark = !document.documentElement.classList.contains('dark');
+  document.documentElement.classList.toggle('dark', dark);
+  try { localStorage.setItem('f2h-doc-theme', dark ? 'dark' : 'light'); } catch (e) {}
+});
+</script>
+</body>
+</html>

@@ -60,5 +60,47 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
     window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 }
 
+// Trang khách: mời "cài ứng dụng". Chrome/Android có sự kiện beforeinstallprompt; iPhone thì chỉ hướng dẫn tay.
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstall = event;
+    window.dispatchEvent(new Event('f2h-installable'));
+});
+
+Alpine.data('installPrompt', () => ({
+    show: false,
+    ios: false,
+    init() {
+        const installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+        let dismissed = false;
+        try {
+            dismissed = localStorage.getItem('f2h-install-dismissed') === '1';
+        } catch (e) {}
+        if (installed || dismissed) {
+            return;
+        }
+        this.ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        this.show = this.ios || deferredInstall !== null;
+        window.addEventListener('f2h-installable', () => (this.show = true));
+        window.addEventListener('appinstalled', () => (this.show = false));
+    },
+    async install() {
+        if (!deferredInstall) {
+            return;
+        }
+        deferredInstall.prompt();
+        await deferredInstall.userChoice;
+        deferredInstall = null;
+        this.show = false;
+    },
+    dismiss() {
+        this.show = false;
+        try {
+            localStorage.setItem('f2h-install-dismissed', '1');
+        } catch (e) {}
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

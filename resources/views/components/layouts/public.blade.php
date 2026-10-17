@@ -23,7 +23,21 @@
         {{ $slot }}
     </main>
 
-    <footer class="mx-auto max-w-xl px-4 pb-8 pt-2 text-center text-sm text-stone-500">
+    <footer class="mx-auto max-w-xl px-4 pb-24 pt-2 text-center text-sm text-stone-500">
         Điều phối nông sản theo nhu cầu, giảm dư thừa.
     </footer>
+
+    <div x-data="installPrompt" x-show="show" x-cloak role="dialog" aria-label="Cài đặt ứng dụng"
+        class="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white px-4 py-3 shadow-lg">
+        <div class="mx-auto flex max-w-xl items-center gap-3">
+            <img src="{{ asset('favicon.png') }}" alt="" class="size-10 shrink-0 rounded-lg">
+            <p class="flex-1 text-sm">
+                <span class="block font-semibold">Bạn có muốn cài ứng dụng Farm2Home?</span>
+                <span x-show="!ios" class="text-stone-600">Mở nhanh từ màn hình chính, không cần tải trên kho ứng dụng.</span>
+                <span x-show="ios" class="text-stone-600">Bấm nút Chia sẻ của Safari rồi chọn “Thêm vào MH chính”.</span>
+            </p>
+            <button type="button" x-show="!ios" @click="install()" class="min-h-11 shrink-0 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Cài đặt</button>
+            <button type="button" @click="dismiss()" class="min-h-11 shrink-0 rounded-lg px-3 text-stone-600 hover:bg-stone-100">Để sau</button>
+        </div>
+    </div>
 </x-layouts.base>

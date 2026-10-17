@@ -21,7 +21,7 @@
                 <button class="min-h-11 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">In tem QR</button>
             </form>
             @if ($batch->quality_status === \App\Enums\QualityStatus::Passed)
-                <p class="mt-3"><a href="{{ route('batches.public', $batch->code) }}" target="_blank" rel="noopener" class="text-emerald-800 underline">Xem trang QR công khai</a></p>
+                <p class="mt-3"><a href="{{ $batch->publicUrl() }}" target="_blank" rel="noopener" class="text-emerald-800 underline">Xem trang QR công khai</a></p>
             @else
                 <p class="mt-3 text-xs text-stone-500">Trang QR và tem chỉ dùng được khi lô đã đạt kiểm tra.</p>
             @endif

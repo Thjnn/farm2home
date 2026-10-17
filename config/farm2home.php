@@ -7,6 +7,12 @@ return [
     // Chia thu hoạch theo tỉ lệ sản lượng đã báo; nhà được chia dưới mức này (kg) thì nhường phần cho nhà khác.
     'min_allocation_kg' => 2,
 
+    // Sản lượng báo cho một ngày cao hơn (kg/tuần thường có ÷ 7) × hệ số này thì đánh dấu để người vận hành hỏi lại.
+    'supply_unusual_factor' => 3,
+
+    // Báo trước bao nhiêu ngày khi chứng nhận của nông hộ sắp hết hạn.
+    'certificate_warning_days' => 15,
+
     'forecast' => [
         'default_method' => 'moving_average',
         'window_days' => 7,

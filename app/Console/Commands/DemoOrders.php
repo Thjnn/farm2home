@@ -10,6 +10,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 #[Signature('demo:orders
@@ -122,7 +123,8 @@ class DemoOrders extends Command
         for ($i = 1; $i <= $count; $i++) {
             $zone = $zones[mt_rand(0, $zones->count() - 1)];
             $number = str_pad((string) $i, 3, '0', STR_PAD_LEFT);
-            $address = $zone->pickup_point === null ? "Số {$i} đường mô phỏng" : null;
+            // Ghi thẳng bằng DB::table nên phải tự mã hoá như cast "encrypted" của model.
+            $address = $zone->pickup_point === null ? Crypt::encryptString("Số {$i} đường mô phỏng") : null;
 
             $id = DB::table('customers')->insertGetId([
                 'name' => "Khách mô phỏng {$number}",

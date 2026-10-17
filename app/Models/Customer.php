@@ -25,6 +25,7 @@ class Customer extends Model
     protected function casts(): array
     {
         return [
+            'address' => 'encrypted',
             'household_size' => 'integer',
             'budget_per_week' => 'integer',
             'preferences' => 'array',

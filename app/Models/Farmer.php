@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\FarmerStatus;
 use Database\Factories\FarmerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -58,6 +59,33 @@ class Farmer extends Model
     {
         return filled($this->certificate_file)
             && ($this->certificate_expires_at === null || today()->lte($this->certificate_expires_at));
+    }
+
+    /**
+     * Số ngày tới khi chứng nhận hết hạn (âm = đã hết hạn); null khi không có file hoặc không ghi hạn.
+     */
+    public function certificateDaysLeft(): ?int
+    {
+        if (blank($this->certificate_file) || $this->certificate_expires_at === null) {
+            return null;
+        }
+
+        return (int) today()->diffInDays($this->certificate_expires_at, false);
+    }
+
+    /**
+     * Nông hộ đang hợp tác có chứng nhận sắp hết hạn hoặc đã hết hạn, cần nhắc gia hạn.
+     *
+     * @return Collection<int, Farmer>
+     */
+    public static function certificatesNeedingRenewal(): Collection
+    {
+        return static::query()
+            ->where('status', '!=', FarmerStatus::Inactive)
+            ->whereNotNull('certificate_file')
+            ->whereDate('certificate_expires_at', '<=', today()->addDays((int) config('farm2home.certificate_warning_days')))
+            ->orderBy('certificate_expires_at')
+            ->get();
     }
 
     public function zaloLink(): string

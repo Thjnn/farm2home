@@ -9,8 +9,11 @@ use App\Enums\PaymentStatus;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Services\OrderService;
+use App\Support\AddressEncryption;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\BuildsCatalog;
 use Tests\TestCase;
@@ -119,6 +122,29 @@ class OrderServiceTest extends TestCase
         $this->assertSame('zalo', $customer->source->value);
         $this->assertTrue($customer->data_consent);
         $this->assertSame(2, $customer->orders()->count());
+    }
+
+    public function test_addresses_are_encrypted_in_the_database_and_plain_in_the_app(): void
+    {
+        $order = $this->orders->place($this->payload(['address' => '129 Rạch Gầm']), OrderChannel::Zalo);
+
+        $rawCustomer = DB::table('customers')->value('address');
+        $rawOrder = DB::table('orders')->where('id', $order->id)->value('delivery_address');
+        $this->assertStringNotContainsString('Rạch Gầm', $rawCustomer.$rawOrder);
+        $this->assertSame('129 Rạch Gầm', Crypt::decryptString($rawCustomer));
+        $this->assertSame('129 Rạch Gầm', $order->fresh()->delivery_address);
+    }
+
+    public function test_plaintext_addresses_from_old_data_are_encrypted_once(): void
+    {
+        $order = $this->orders->place($this->payload(['address' => '5 Lê Lợi']), OrderChannel::Zalo);
+        DB::table('customers')->update(['address' => '5 Lê Lợi']);
+        DB::table('orders')->update(['delivery_address' => '5 Lê Lợi']);
+
+        $this->assertSame(2, AddressEncryption::encryptPlaintextRows());
+        $this->assertSame(0, AddressEncryption::encryptPlaintextRows());
+        $this->assertSame('5 Lê Lợi', Customer::firstOrFail()->address);
+        $this->assertSame('5 Lê Lợi', $order->fresh()->delivery_address);
     }
 
     public function test_zero_quantity_lines_are_ignored_and_duplicates_merged(): void

@@ -62,18 +62,60 @@ class HarvestPlanScreensTest extends TestCase
         $this->assertDatabaseHas('forecasts', ['product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'generated_on' => '2026-10-02']);
     }
 
-    public function test_operator_adjusts_a_row_with_a_reason(): void
+    public function test_operator_saves_all_rows_at_once(): void
     {
-        $item = $this->generate()->items()->firstOrFail();
+        SupplyReport::factory()->create(['farmer_id' => $this->nh02->id, 'product_id' => $this->rm->id, 'available_date' => '2026-10-03', 'quantity_kg' => 9, 'source' => 'form']);
+        $plan = $this->generate();
+        [$first, $second] = $plan->items()->orderBy('id')->get()->all();
+        $url = '/admin/harvest-plans/'.$plan->id;
 
-        $this->from('/admin/harvest-plans/'.$item->harvest_plan_id)
-            ->patch('/admin/harvest-plan-items/'.$item->id, ['final_kg' => '9', 'adjust_reason' => ''])
-            ->assertSessionHasErrors('action');
+        $this->get($url)->assertSee('Lưu tất cả');
 
-        $this->patch('/admin/harvest-plan-items/'.$item->id, ['final_kg' => '9', 'adjust_reason' => 'Cuối tuần, tăng dự phòng'])
-            ->assertRedirect('/admin/harvest-plans/'.$item->harvest_plan_id);
+        // Một dòng thiếu lý do → không dòng nào được lưu, số đã nhập vẫn giữ lại.
+        $this->from($url)->patch($url.'/items', ['items' => [
+            $first->id => ['final_kg' => (float) $first->suggested_kg, 'adjust_reason' => '', 'farmer_id' => $first->farmer_id],
+            $second->id => ['final_kg' => '9', 'adjust_reason' => '', 'farmer_id' => $second->farmer_id],
+        ]])->assertSessionHasErrors('action')->assertSessionHasInput('items');
+        $this->assertNull($first->refresh()->final_kg);
 
-        $this->assertSame(['9.00', '8.00'], [$item->refresh()->final_kg, $item->suggested_kg]);
+        $this->patch($url.'/items', ['items' => [
+            $first->id => ['final_kg' => (float) $first->suggested_kg, 'adjust_reason' => '', 'farmer_id' => $first->farmer_id],
+            $second->id => ['final_kg' => '9', 'adjust_reason' => 'Cuối tuần, tăng dự phòng', 'farmer_id' => $second->farmer_id],
+        ]])->assertRedirect($url);
+
+        $this->assertSame($first->suggested_kg, $first->refresh()->final_kg);
+        $this->assertSame(['9.00', 'Cuối tuần, tăng dự phòng'], [$second->refresh()->final_kg, $second->adjust_reason]);
+    }
+
+    public function test_operator_splits_a_product_across_farmers_registered_for_it(): void
+    {
+        $plan = $this->generate();
+        $first = $plan->items()->firstOrFail();
+        $url = '/admin/harvest-plans/'.$plan->id;
+        $row = fn ($kg, $reason, $farmerId) => ['final_kg' => $kg, 'adjust_reason' => $reason, 'farmer_id' => $farmerId];
+
+        // Chỉ nhà đã đăng ký trồng rau muống được hiện trong ô chọn.
+        $this->nh02->products()->detach($this->rm->id);
+        $this->get($url)->assertSee('+ Thêm nông hộ cho Rau muống')->assertSee($this->nh01->name)->assertDontSee($this->nh02->name);
+        $this->nh02->products()->attach($this->rm->id, ['typical_weekly_kg' => 10]);
+
+        $this->patch($url.'/items', ['items' => [$first->id => $row('8', '', $first->farmer_id)], 'add_product_id' => $this->rm->id])->assertRedirect($url);
+        $added = $plan->items()->where('suggested_kg', 0)->firstOrFail();
+
+        // Không cho cùng một nhà ở hai dòng của cùng loại rau.
+        $this->from($url)->patch($url.'/items', ['items' => [
+            $first->id => $row('8', '', $first->farmer_id), $added->id => $row('2', '', $first->farmer_id),
+        ]])->assertSessionHasErrors('action');
+
+        $this->patch($url.'/items', ['items' => [
+            $first->id => $row('6', 'Chia cho nhà khác', $first->farmer_id), $added->id => $row('2', '', $this->nh02->id),
+        ]])->assertRedirect($url);
+        $this->assertSame(['2.00', $this->nh02->id, 'Chia thêm nông hộ'], [$added->refresh()->final_kg, $added->farmer_id, $added->adjust_reason]);
+
+        $this->patch($url.'/items', ['items' => [$added->id => $row('2', '', $this->nh02->id)], 'remove_item_id' => $added->id])->assertRedirect($url);
+        $this->assertModelMissing($added);
+
+        $this->from($url)->patch($url.'/items', ['items' => [$first->id => $row('6', 'x', $first->farmer_id)], 'remove_item_id' => $first->id])->assertSessionHasErrors('action');
     }
 
     public function test_confirm_shows_the_zalo_message_and_link(): void

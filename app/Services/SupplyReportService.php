@@ -8,6 +8,7 @@ use App\Models\Farmer;
 use App\Models\HarvestPlan;
 use App\Models\SupplyReport;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -21,6 +22,31 @@ class SupplyReportService
         return HarvestPlan::whereDate('delivery_date', $date)
             ->where('status', '!=', HarvestPlanStatus::Draft)
             ->exists();
+    }
+
+    /**
+     * Số báo cao bất thường so với mức thường ngày của chính nông hộ đó (thường do gõ dư số 0).
+     * Chỉ đánh dấu, không chặn: người vận hành gọi hỏi lại trước khi chốt.
+     *
+     * @return Collection<string, array{kg: float, usual_kg: float}> khoá "farmer_id-product_id"
+     */
+    public function unusualReports(string $date): Collection
+    {
+        $factor = (float) config('farm2home.supply_unusual_factor');
+
+        return SupplyReport::query()
+            ->join('farmer_products', fn ($join) => $join->on('farmer_products.farmer_id', '=', 'supply_reports.farmer_id')
+                ->on('farmer_products.product_id', '=', 'supply_reports.product_id'))
+            ->whereDate('supply_reports.available_date', $date)
+            ->where('farmer_products.typical_weekly_kg', '>', 0)
+            ->whereRaw('supply_reports.quantity_kg > farmer_products.typical_weekly_kg / 7 * ?', [$factor])
+            ->get(['supply_reports.farmer_id', 'supply_reports.product_id', 'supply_reports.quantity_kg', 'farmer_products.typical_weekly_kg'])
+            ->mapWithKeys(fn (SupplyReport $report) => [
+                "{$report->farmer_id}-{$report->product_id}" => [
+                    'kg' => (float) $report->quantity_kg,
+                    'usual_kg' => round((float) $report->typical_weekly_kg / 7, 1),
+                ],
+            ]);
     }
 
     /**

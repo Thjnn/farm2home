@@ -27,7 +27,7 @@ class PublicBatchPageTest extends TestCase
             'harvested_at' => '2026-10-03 05:30:00', 'received_at' => '2026-10-03 07:00:00',
             'processed_at' => '2026-10-03 08:30:00', 'packed_at' => '2026-10-03 10:00:00',
             'processing_note' => 'Nhặt lá úa, rửa sơ, để ráo', 'storage_guide' => 'Bảo quản ngăn mát 4–8°C.',
-            'best_before' => '2026-10-05', 'quality_status' => $quality,
+            'best_before' => '2026-10-05', 'quality_status' => $quality, 'qr_key' => 'KHOA123',
         ]);
     }
 
@@ -35,7 +35,7 @@ class PublicBatchPageTest extends TestCase
     {
         $this->batch($this->nh01);
 
-        $this->get('/lo/F2H-261003-RM-NH01')
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')
             ->assertOk()
             ->assertSee('F2H-261003-RM-NH01')
             ->assertSee('Rau muống')
@@ -53,7 +53,7 @@ class PublicBatchPageTest extends TestCase
     {
         $this->batch($this->nh01);
 
-        $this->get('/lo/F2H-261003-RM-NH01')
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')
             ->assertDontSee('100%')
             ->assertDontSee('tuyệt đối')
             ->assertDontSee('sức khỏe')
@@ -65,8 +65,8 @@ class PublicBatchPageTest extends TestCase
         $this->batch($this->nh01);
         $this->batch($this->nh02);
 
-        $this->get('/lo/F2H-261003-RM-NH01')->assertDontSee('VietGAP')->assertSee('Chưa có chứng nhận được xác thực');
-        $this->get('/lo/F2H-261003-RM-NH02')->assertSee('VietGAP (mẫu)')->assertSee('30/06/2027');
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')->assertDontSee('VietGAP')->assertSee('Chưa có chứng nhận được xác thực');
+        $this->get('/lo/F2H-261003-RM-NH02/KHOA123')->assertSee('VietGAP (mẫu)')->assertSee('30/06/2027');
     }
 
     public function test_expired_certificate_is_not_shown(): void
@@ -74,7 +74,7 @@ class PublicBatchPageTest extends TestCase
         $this->batch($this->nh02);
         $this->nh02->update(['certificate_expires_at' => '2026-10-02']);
 
-        $this->get('/lo/F2H-261003-RM-NH02')->assertOk()->assertDontSee('VietGAP');
+        $this->get('/lo/F2H-261003-RM-NH02/KHOA123')->assertOk()->assertDontSee('VietGAP');
     }
 
     public function test_only_batches_that_passed_quality_check_are_public(): void
@@ -82,14 +82,28 @@ class PublicBatchPageTest extends TestCase
         $this->batch($this->nh01, 'pending');
         $this->batch($this->nh02, 'rejected');
 
-        $this->get('/lo/F2H-261003-RM-NH01')->assertNotFound();
-        $this->get('/lo/F2H-261003-RM-NH02')->assertNotFound();
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')->assertNotFound();
+        $this->get('/lo/F2H-261003-RM-NH02/KHOA123')->assertNotFound();
         $this->get('/lo/KHONG-TON-TAI')->assertNotFound();
+    }
+
+    public function test_the_page_needs_the_random_key_so_codes_cannot_be_guessed(): void
+    {
+        $batch = Batch::factory()->create(['code' => 'F2H-261003-CN-NH01', 'farmer_id' => $this->nh01->id, 'product_id' => $this->cn->id, 'quality_status' => 'passed']);
+
+        $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{10}$/', $batch->qr_key);
+        $this->assertStringEndsWith('/lo/F2H-261003-CN-NH01/'.$batch->qr_key, $batch->publicUrl());
+
+        $this->get($batch->publicUrl())->assertOk();
+        $this->get('/lo/F2H-261003-CN-NH01')->assertNotFound();
+        $this->get('/lo/F2H-261003-CN-NH01/SAIKHOA123')->assertNotFound();
+        $this->post('/lo/F2H-261003-CN-NH01/SAIKHOA123/phan-hoi', ['rating' => 1])->assertNotFound();
+        $this->assertDatabaseCount('feedbacks', 0);
     }
 
     public function test_qr_service_returns_inline_svg(): void
     {
-        $svg = app(QrCodeService::class)->svg('http://farm2home.test/lo/F2H-261003-RM-NH01');
+        $svg = app(QrCodeService::class)->svg('http://farm2home.test/lo/F2H-261003-RM-NH01/KHOA123');
 
         $this->assertStringStartsWith('<svg', ltrim($svg));
         $this->assertStringNotContainsString('<?xml', $svg);

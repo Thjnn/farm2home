@@ -101,7 +101,8 @@ class HarvestPlanService
         $differs = abs($finalKg - (float) $item->suggested_kg) > 0.001;
 
         if ($differs && blank($reason)) {
-            throw new DomainException('Cần ghi lý do khi số chốt khác số gợi ý.');
+            // Dòng operator tự thêm (gợi ý 0) thì lý do đã rõ.
+            $reason = (float) $item->suggested_kg === 0.0 ? 'Chia thêm nông hộ' : throw new DomainException('Cần ghi lý do khi số chốt khác số gợi ý.');
         }
 
         $item->update([
@@ -111,6 +112,61 @@ class HarvestPlanService
         ]);
 
         return $item;
+    }
+
+    /**
+     * Lưu tất cả dòng của kế hoạch cùng lúc. Một dòng lỗi thì không dòng nào được lưu.
+     *
+     * @param  array<int|string, array{final_kg: float|string, adjust_reason?: ?string, farmer_id?: int|string|null}>  $rows  khóa là id dòng
+     *
+     * @throws DomainException kèm tên rau / nông hộ của dòng lỗi
+     */
+    public function updateItems(HarvestPlan $plan, array $rows): void
+    {
+        DB::transaction(function () use ($plan, $rows) {
+            foreach ($plan->items()->with('product', 'farmer')->whereKey(array_keys($rows))->get() as $item) {
+                $row = $rows[$item->id];
+
+                try {
+                    $this->updateItem($item, (float) $row['final_kg'], $row['adjust_reason'] ?? null, filled($row['farmer_id'] ?? null) ? (int) $row['farmer_id'] : null);
+                } catch (DomainException $e) {
+                    $who = $item->farmer ? " · {$item->farmer->name}" : '';
+
+                    throw new DomainException("{$item->product->name}{$who}: {$e->getMessage()}");
+                }
+            }
+
+            $duplicate = $plan->items()->with('product')->whereNotNull('farmer_id')
+                ->select('product_id')->groupBy('product_id', 'farmer_id')->havingRaw('count(*) > 1')->first();
+
+            if ($duplicate !== null) {
+                throw new DomainException("{$duplicate->product->name}: một nông hộ đang được chọn ở hai dòng.");
+            }
+        });
+    }
+
+    /**
+     * Thêm một dòng trống cho loại rau để chia phần cho thêm nông hộ.
+     */
+    public function addItem(HarvestPlan $plan, Product $product): HarvestPlanItem
+    {
+        if ($plan->status !== HarvestPlanStatus::Draft) {
+            throw new DomainException('Chỉ sửa được khi kế hoạch còn ở trạng thái nháp.');
+        }
+
+        return $plan->items()->create(['product_id' => $product->id, 'suggested_kg' => 0]);
+    }
+
+    /**
+     * Xoá dòng operator tự thêm. Dòng hệ thống gợi ý thì đặt số chốt về 0 thay vì xoá.
+     */
+    public function removeItem(HarvestPlanItem $item): void
+    {
+        if ($item->plan->status !== HarvestPlanStatus::Draft || (float) $item->suggested_kg > 0) {
+            throw new DomainException('Chỉ xoá được dòng tự thêm khi kế hoạch còn nháp.');
+        }
+
+        $item->delete();
     }
 
     /**

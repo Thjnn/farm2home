@@ -29,6 +29,10 @@
         </div>
     @endif
 
+    @if ($isDraft)
+        {{-- Nút mặc định khi nhấn Enter: lưu, không phải thêm/xoá dòng. --}}
+        <button form="save-all-items" class="sr-only" tabindex="-1" aria-hidden="true">Lưu tất cả</button>
+    @endif
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
         <table class="w-full min-w-[900px] text-left text-sm">
             <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
@@ -50,6 +54,10 @@
                         <td class="px-3 py-2">
                             @if ($item->farmer)
                                 {{ $item->farmer->name }}
+                                @isset($unusual["{$item->farmer_id}-{$item->product_id}"])
+                                    @php($odd = $unusual["{$item->farmer_id}-{$item->product_id}"])
+                                    <span class="block text-xs text-amber-800">⚠ Báo @kg($odd['kg']), thường khoảng @kg($odd['usual_kg'])/ngày. Hỏi lại trước khi chốt.</span>
+                                @endisset
                             @else
                                 <span class="font-semibold text-rose-700">Chưa có nguồn</span>
                             @endif
@@ -60,23 +68,24 @@
                         <td class="px-3 py-2 text-right font-semibold">@kg($item->suggested_kg)</td>
                         @if ($isDraft)
                             <td class="px-3 py-2" colspan="2">
-                                <form method="POST" action="{{ route('admin.harvest-plan-items.update', $item) }}" class="flex flex-wrap items-center gap-2">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="number" step="0.5" min="0" name="final_kg" value="{{ (float) ($item->final_kg ?? $item->suggested_kg) }}" aria-label="Số kg chốt cho {{ $item->product->name }}"
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <input type="number" step="0.5" min="0" form="save-all-items" name="items[{{ $item->id }}][final_kg]" value="{{ (float) old("items.{$item->id}.final_kg", $item->final_kg ?? $item->suggested_kg) }}" aria-label="Số kg chốt cho {{ $item->product->name }}"
                                         class="h-11 w-20 rounded-lg border border-stone-300 px-2 text-right">
-                                    <input name="adjust_reason" value="{{ $item->adjust_reason }}" placeholder="Lý do nếu khác gợi ý" aria-label="Lý do điều chỉnh"
+                                    <input form="save-all-items" name="items[{{ $item->id }}][adjust_reason]" value="{{ old("items.{$item->id}.adjust_reason", $item->adjust_reason) }}" placeholder="Lý do nếu khác gợi ý" aria-label="Lý do điều chỉnh"
                                         class="h-11 min-w-40 flex-1 rounded-lg border border-stone-300 px-2">
-                                    <select name="farmer_id" aria-label="Nông hộ" class="h-11 rounded-lg border border-stone-300 bg-white px-2">
+                                    <select form="save-all-items" name="items[{{ $item->id }}][farmer_id]" aria-label="Nông hộ" class="h-11 rounded-lg border border-stone-300 bg-white px-2">
                                         @unless ($item->farmer_id)
                                             <option value="">— chọn nông hộ —</option>
                                         @endunless
-                                        @foreach ($allFarmers as $farmer)
-                                            <option value="{{ $farmer->id }}" @selected($item->farmer_id === $farmer->id)>{{ $farmer->code }} · {{ $farmer->name }}</option>
+                                        {{-- Chỉ nhà đã đăng ký trồng loại rau này (giữ nhà đang được chia dù chưa đăng ký). --}}
+                                        @foreach ($allFarmers->filter(fn ($farmer) => $farmer->id === $item->farmer_id || $farmer->products->contains('id', $item->product_id)) as $farmer)
+                                            <option value="{{ $farmer->id }}" @selected((int) old("items.{$item->id}.farmer_id", $item->farmer_id) === $farmer->id)>{{ $farmer->code }} · {{ $farmer->name }}</option>
                                         @endforeach
                                     </select>
-                                    <button class="h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100">Lưu</button>
-                                </form>
+                                    @if ((float) $item->suggested_kg === 0.0)
+                                        <button form="save-all-items" name="remove_item_id" value="{{ $item->id }}" class="h-11 rounded-lg px-3 text-rose-700 hover:bg-rose-50">Xoá</button>
+                                    @endif
+                                </div>
                             </td>
                         @else
                             <td class="px-3 py-2">
@@ -106,21 +115,36 @@
                             </td>
                         @endif
                     </tr>
+                    @if ($isDraft && ($loop->last || $plan->items[$loop->index + 1]->product_id !== $item->product_id))
+                        <tr>
+                            <td></td>
+                            <td class="px-3 pb-2" colspan="7">
+                                <button form="save-all-items" name="add_product_id" value="{{ $item->product_id }}" class="min-h-11 text-sm font-medium text-emerald-800 hover:underline">+ Thêm nông hộ cho {{ $item->product->name }}</button>
+                            </td>
+                        </tr>
+                    @endif
                 @empty
                     <tr><td colspan="8" class="px-3 py-6 text-center text-stone-500">Không có nhu cầu nào cho ngày này.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    @error('final_kg')
-        <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
-    @enderror
+    @if ($errors->has('items.*'))
+        <p class="mt-2 text-sm text-rose-700">{{ $errors->first('items.*') }}</p>
+    @endif
     @error('received_kg')
         <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
     @enderror
 
     <div class="mt-4 flex flex-wrap gap-3">
         @if ($isDraft)
+            @if ($plan->items->isNotEmpty())
+                <form id="save-all-items" method="POST" action="{{ route('admin.harvest-plans.items.update', $plan) }}">
+                    @csrf
+                    @method('PATCH')
+                    <button class="min-h-11 rounded-lg border border-emerald-700 bg-white px-4 font-semibold text-emerald-800 hover:bg-emerald-50">Lưu tất cả</button>
+                </form>
+            @endif
             <form method="POST" action="{{ route('admin.harvest-plans.generate') }}">
                 @csrf
                 <input type="hidden" name="delivery_date" value="{{ $plan->delivery_date->toDateString() }}">

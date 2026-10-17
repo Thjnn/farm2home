@@ -50,7 +50,7 @@
     <section class="mt-6" aria-labelledby="feedback-heading">
         <h2 id="feedback-heading" class="mb-2 text-lg font-semibold">Gửi phản hồi</h2>
         @if (Route::has('feedbacks.store'))
-            <form method="POST" action="{{ route('feedbacks.store', $batch->code) }}" class="space-y-4 rounded-xl border border-stone-200 bg-white p-4">
+            <form method="POST" action="{{ route('feedbacks.store', [$batch->code, $batch->qr_key]) }}" class="space-y-4 rounded-xl border border-stone-200 bg-white p-4">
                 @csrf
                 @foreach (['rating' => 'Bạn đánh giá lô rau này thế nào?', 'freshness_rating' => 'Độ tươi (không bắt buộc)'] as $field => $legend)
                     <fieldset>

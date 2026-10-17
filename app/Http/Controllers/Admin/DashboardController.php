@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\ForecastMethod;
 use App\Http\Controllers\Controller;
+use App\Models\Farmer;
 use App\Services\KpiService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -34,6 +35,7 @@ class DashboardController extends Controller
             'environment' => $kpi->environment($from, $to),
             'loyalty' => $kpi->loyalty($from, $to),
             'methods' => ForecastMethod::cases(),
+            'expiringCertificates' => Farmer::certificatesNeedingRenewal(),
         ]);
     }
 }

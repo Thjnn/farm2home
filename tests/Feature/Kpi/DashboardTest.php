@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Kpi;
 
+use App\Models\Farmer;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,6 +16,23 @@ class DashboardTest extends TestCase
     {
         parent::setUp();
         $this->travelTo('2026-10-03 21:00:00');
+    }
+
+    public function test_dashboard_reminds_about_certificates_expiring_soon_or_expired(): void
+    {
+        Farmer::factory()->create(['code' => 'NH11', 'certificate_name' => 'VietGAP', 'certificate_file' => 'certificates/a.pdf', 'certificate_expires_at' => '2026-10-13']);
+        Farmer::factory()->create(['code' => 'NH12', 'certificate_name' => 'VietGAP', 'certificate_file' => 'certificates/b.pdf', 'certificate_expires_at' => '2026-10-01']);
+        Farmer::factory()->create(['code' => 'NH13', 'certificate_name' => 'VietGAP', 'certificate_file' => 'certificates/c.pdf', 'certificate_expires_at' => '2027-06-30']);
+        Farmer::factory()->create(['code' => 'NH14', 'certificate_name' => 'VietGAP', 'certificate_file' => null, 'certificate_expires_at' => '2026-10-05']);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/admin')
+            ->assertOk()
+            ->assertSee('Chứng nhận cần gia hạn')
+            ->assertSee('NH11')->assertSee('còn 10 ngày')
+            ->assertSee('NH12')->assertSee('đã hết hạn 2 ngày, trang QR không còn hiện chứng nhận')
+            ->assertDontSee('NH13')->assertDontSee('NH14');
+
+        $this->get('/admin/farmers')->assertSee('(còn 10 ngày, nhắc gia hạn)');
     }
 
     public function test_dashboard_shows_all_five_kpi_groups_for_the_sample_period(): void

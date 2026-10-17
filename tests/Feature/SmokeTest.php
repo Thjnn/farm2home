@@ -32,7 +32,7 @@ class SmokeTest extends TestCase
     {
         $farmer = Farmer::where('code', 'NH01')->firstOrFail();
 
-        foreach (['/', '/dat-hang', '/tra-cuu', '/login', '/lo/F2H-260917-RM-NH01', '/nong-ho/'.$farmer->access_token] as $url) {
+        foreach (['/', '/dat-hang', '/tra-cuu', '/login', Batch::where('code', 'F2H-260917-RM-NH01')->firstOrFail()->publicUrl(), '/nong-ho/'.$farmer->access_token] as $url) {
             $this->get($url)->assertOk();
         }
 

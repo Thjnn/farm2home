@@ -36,8 +36,8 @@ Route::post('/dat-hang', [PublicOrderController::class, 'store'])->middleware('t
 Route::get('/dat-hang/cam-on', [PublicOrderController::class, 'thanks'])->name('orders.thanks');
 Route::post('/hoi-dap', ChatbotController::class)->middleware('throttle:30,1')->name('chatbot.reply');
 
-Route::get('/lo/{batch:code}', BatchPageController::class)->name('batches.public');
-Route::post('/lo/{batch:code}/phan-hoi', [PublicFeedbackController::class, 'store'])->middleware('throttle:5,1')->name('feedbacks.store');
+Route::get('/lo/{batch:code}/{key}', BatchPageController::class)->name('batches.public');
+Route::post('/lo/{batch:code}/{key}/phan-hoi', [PublicFeedbackController::class, 'store'])->middleware('throttle:5,1')->name('feedbacks.store');
 
 Route::get('/tra-cuu', [OrderLookupController::class, 'show'])->name('lookup.show');
 Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('throttle:10,1')->name('lookup.search');
@@ -77,10 +77,10 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::get('harvest-plans', [HarvestPlanController::class, 'index'])->name('harvest-plans.index');
     Route::post('harvest-plans/generate', [HarvestPlanController::class, 'generate'])->name('harvest-plans.generate');
     Route::get('harvest-plans/{plan}', [HarvestPlanController::class, 'show'])->name('harvest-plans.show');
+    Route::patch('harvest-plans/{plan}/items', [HarvestPlanController::class, 'updateItems'])->name('harvest-plans.items.update');
     Route::post('harvest-plans/{plan}/confirm', [HarvestPlanController::class, 'confirm'])->name('harvest-plans.confirm');
     Route::post('harvest-plans/{plan}/sent', [HarvestPlanController::class, 'sent'])->name('harvest-plans.sent');
     Route::post('harvest-plans/{plan}/complete', [HarvestPlanController::class, 'complete'])->name('harvest-plans.complete');
-    Route::patch('harvest-plan-items/{item}', [HarvestPlanController::class, 'updateItem'])->name('harvest-plan-items.update');
     Route::post('harvest-plan-items/{item}/receive', [HarvestPlanController::class, 'receive'])->name('harvest-plan-items.receive');
 
     Route::get('batches', [BatchController::class, 'index'])->name('batches.index');

@@ -50,7 +50,7 @@ class OrderFeedbackLinkTest extends TestCase
         $this->post('/tra-cuu', ['phone' => '0988000001'])
             ->assertOk()
             ->assertSee('Đánh giá Rau muống')
-            ->assertSee(route('batches.public', 'F2H-261003-RM-NH01'))
+            ->assertSee(Batch::where('code', 'F2H-261003-RM-NH01')->firstOrFail()->publicUrl())
             ->assertDontSee('F2H-261003-CN-NH02');
 
         $this->actingAs($this->operator)->get('/admin/orders/'.$this->order->id)

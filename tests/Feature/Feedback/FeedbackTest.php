@@ -41,14 +41,15 @@ class FeedbackTest extends TestCase
         $this->batch = Batch::factory()->create([
             'code' => 'F2H-261003-RM-NH01', 'farmer_id' => $this->nh01->id, 'product_id' => $this->rm->id, 'quantity_kg' => 5,
             'harvested_at' => '2026-10-03 05:30:00', 'best_before' => '2026-10-05', 'quality_status' => 'passed',
+            'qr_key' => 'KHOA123',
         ]);
         app(BatchService::class)->allocate(CarbonImmutable::parse('2026-10-03'));
     }
 
     public function test_anonymous_feedback_is_stored_as_new(): void
     {
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 4, 'freshness_rating' => 5, 'comment' => 'Rau tươi'])
-            ->assertRedirect('/lo/F2H-261003-RM-NH01')
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 4, 'freshness_rating' => 5, 'comment' => 'Rau tươi'])
+            ->assertRedirect('/lo/F2H-261003-RM-NH01/KHOA123')
             ->assertSessionHas('status');
 
         $feedback = Feedback::firstOrFail();
@@ -59,7 +60,7 @@ class FeedbackTest extends TestCase
 
     public function test_known_phone_links_the_customer_and_the_order_that_used_this_batch(): void
     {
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 2, 'comment' => 'Rau hơi héo', 'phone' => '0988000001']);
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 2, 'comment' => 'Rau hơi héo', 'phone' => '0988000001']);
 
         $feedback = Feedback::firstOrFail();
         $this->assertSame([$this->order->customer_id, $this->order->id], [$feedback->customer_id, $feedback->order_id]);
@@ -67,7 +68,7 @@ class FeedbackTest extends TestCase
 
     public function test_unknown_phone_is_not_stored_anywhere(): void
     {
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 5, 'phone' => '0977000000'])->assertRedirect();
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 5, 'phone' => '0977000000'])->assertRedirect();
 
         $this->assertNull(Feedback::firstOrFail()->customer_id);
         $this->assertDatabaseMissing('customers', ['phone' => '0977000000']);
@@ -75,10 +76,10 @@ class FeedbackTest extends TestCase
 
     public function test_rating_and_phone_are_validated(): void
     {
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 6])->assertSessionHasErrors('rating');
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', [])->assertSessionHasErrors('rating');
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 3, 'freshness_rating' => 0])->assertSessionHasErrors('freshness_rating');
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 3, 'phone' => '123'])->assertSessionHasErrors('phone');
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 6])->assertSessionHasErrors('rating');
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', [])->assertSessionHasErrors('rating');
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 3, 'freshness_rating' => 0])->assertSessionHasErrors('freshness_rating');
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 3, 'phone' => '123'])->assertSessionHasErrors('phone');
 
         $this->assertSame(0, Feedback::count());
     }
@@ -87,12 +88,12 @@ class FeedbackTest extends TestCase
     {
         $this->batch->update(['quality_status' => 'rejected']);
 
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 4])->assertNotFound();
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 4])->assertNotFound();
     }
 
     public function test_public_page_has_the_form_fields(): void
     {
-        $this->get('/lo/F2H-261003-RM-NH01')
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')
             ->assertSee('name="rating"', false)
             ->assertSee('name="freshness_rating"', false)
             ->assertSee('name="comment"', false)
@@ -101,7 +102,7 @@ class FeedbackTest extends TestCase
 
     public function test_operator_lists_and_resolves_feedback(): void
     {
-        $this->post('/lo/F2H-261003-RM-NH01/phan-hoi', ['rating' => 2, 'comment' => 'Rau hơi héo', 'phone' => '0988000001']);
+        $this->post('/lo/F2H-261003-RM-NH01/KHOA123/phan-hoi', ['rating' => 2, 'comment' => 'Rau hơi héo', 'phone' => '0988000001']);
         $feedback = Feedback::firstOrFail();
         $this->actingAs($this->operator);
 

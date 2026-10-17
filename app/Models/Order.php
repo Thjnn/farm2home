@@ -35,6 +35,7 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'delivery_address' => 'encrypted',
             'order_type' => OrderType::class,
             'channel' => OrderChannel::class,
             'delivery_method' => DeliveryMethod::class,
@@ -104,7 +105,7 @@ class Order extends Model
     public function feedbackRequestMessage(): string
     {
         $links = $this->feedbackBatches()
-            ->map(fn (Batch $batch) => "• {$batch->product->name}: ".route('batches.public', $batch->code))
+            ->map(fn (Batch $batch) => "• {$batch->product->name}: ".$batch->publicUrl())
             ->implode("\n");
 
         return "FARM2HOME cảm ơn anh/chị {$this->customer->name} đã nhận đơn {$this->code}. "

@@ -85,7 +85,7 @@ class BatchController extends Controller
         return view('admin.batches.labels', [
             'batch' => $batch->load('product', 'farmer'),
             'count' => $count,
-            'qrSvg' => $qr->svg(route('batches.public', $batch->code), 160),
+            'qrSvg' => $qr->svg($batch->publicUrl(), 160),
         ]);
     }
 }

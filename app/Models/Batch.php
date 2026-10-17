@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'code', 'harvest_plan_item_id', 'farmer_id', 'product_id', 'quantity_kg',
@@ -20,6 +21,21 @@ class Batch extends Model
 {
     /** @use HasFactory<BatchFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Batch $batch) {
+            $batch->qr_key ??= Str::random(10);
+        });
+    }
+
+    /**
+     * Link in trên tem QR. Thiếu hoặc sai khoá thì trang lô báo không tìm thấy.
+     */
+    public function publicUrl(): string
+    {
+        return route('batches.public', [$this->code, $this->qr_key]);
+    }
 
     /**
      * @return array<string, string>

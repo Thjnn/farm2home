@@ -10,9 +10,11 @@ use App\Models\Farmer;
 use App\Models\HarvestPlan;
 use App\Models\HarvestPlanItem;
 use App\Models\Order;
+use App\Models\Product;
 use App\Services\BatchService;
 use App\Services\ForecastService;
 use App\Services\HarvestPlanService;
+use App\Services\SupplyReportService;
 use Carbon\CarbonImmutable;
 use Closure;
 use DomainException;
@@ -42,9 +44,10 @@ class HarvestPlanController extends Controller
         });
     }
 
-    public function show(HarvestPlan $plan, HarvestPlanService $plans): View
+    public function show(HarvestPlan $plan, HarvestPlanService $plans, SupplyReportService $supply): View
     {
         $plan->load('items.product', 'items.farmer', 'items.batch', 'creator', 'confirmer');
+        $plan->setRelation('items', $plan->items->sortBy([['product_id', 'asc'], ['id', 'asc']])->values());
 
         $isConfirmed = $plan->status !== HarvestPlanStatus::Draft;
         $farmers = $plan->items->pluck('farmer')->filter()->unique('id')->values();
@@ -52,26 +55,39 @@ class HarvestPlanController extends Controller
         return view('admin.harvest-plans.show', [
             'plan' => $plan,
             'pendingOrders' => Order::whereDate('delivery_date', $plan->delivery_date)->where('status', OrderStatus::Pending)->count(),
-            'allFarmers' => Farmer::where('status', FarmerStatus::Active)->orderBy('code')->get(),
+            'allFarmers' => Farmer::where('status', FarmerStatus::Active)->with('products:id')->orderBy('code')->get(),
             'messages' => $isConfirmed
                 ? $farmers->mapWithKeys(fn (Farmer $farmer) => [$farmer->id => $plans->zaloMessage($plan, $farmer)])
                 : collect(),
             'farmers' => $farmers,
+            'unusual' => $supply->unusualReports($plan->delivery_date->toDateString()),
         ]);
     }
 
-    public function updateItem(Request $request, HarvestPlanItem $item, HarvestPlanService $plans): RedirectResponse
+    public function updateItems(Request $request, HarvestPlan $plan, HarvestPlanService $plans): RedirectResponse
     {
         $data = $request->validate([
-            'final_kg' => ['required', 'numeric', 'min:0', 'max:1000'],
-            'adjust_reason' => ['nullable', 'string', 'max:255'],
-            'farmer_id' => ['nullable', 'exists:farmers,id'],
+            'items' => ['required', 'array'],
+            'items.*.final_kg' => ['required', 'numeric', 'min:0', 'max:1000'],
+            'items.*.adjust_reason' => ['nullable', 'string', 'max:255'],
+            'items.*.farmer_id' => ['nullable', 'exists:farmers,id'],
+            'add_product_id' => ['nullable', 'exists:products,id'],
+            'remove_item_id' => ['nullable', 'integer'],
         ]);
 
-        return $this->attempt(function () use ($data, $item, $plans) {
-            $plans->updateItem($item, (float) $data['final_kg'], $data['adjust_reason'] ?? null, isset($data['farmer_id']) ? (int) $data['farmer_id'] : null);
+        // Nút thêm/xoá dòng cũng gửi kèm cả bảng để không mất số đang nhập dở.
+        return $this->attempt(function () use ($data, $plan, $plans) {
+            $plans->updateItems($plan, $data['items']);
 
-            return redirect()->route('admin.harvest-plans.show', $item->harvest_plan_id)->with('status', 'Đã lưu số chốt.');
+            if (filled($data['add_product_id'] ?? null)) {
+                $plans->addItem($plan, Product::findOrFail($data['add_product_id']));
+            }
+
+            if (filled($data['remove_item_id'] ?? null)) {
+                $plans->removeItem($plan->items()->findOrFail($data['remove_item_id']));
+            }
+
+            return redirect()->route('admin.harvest-plans.show', $plan)->with('status', 'Đã lưu tất cả số chốt.');
         });
     }
 
@@ -123,7 +139,7 @@ class HarvestPlanController extends Controller
         try {
             return $action();
         } catch (DomainException $e) {
-            return back()->withErrors(['action' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['action' => $e->getMessage()]);
         }
     }
 }

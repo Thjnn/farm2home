@@ -1,7 +1,7 @@
 <x-layouts.base :title="'Tem lô '.$batch->code" bodyClass="bg-white">
     <div class="mx-auto max-w-3xl p-4">
         <div class="mb-4 flex items-center justify-between gap-3 print:hidden">
-            <p class="text-sm text-stone-600">{{ $count }} tem · quét mã sẽ mở {{ route('batches.public', $batch->code) }}</p>
+            <p class="text-sm text-stone-600">{{ $count }} tem · quét mã sẽ mở {{ $batch->publicUrl() }}</p>
             <button type="button" onclick="window.print()" class="min-h-11 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">In</button>
         </div>
 

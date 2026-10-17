@@ -50,7 +50,10 @@
                             <span class="mb-1 block text-stone-700">{{ $product->name }} (kg)</span>
                             <input type="number" step="0.5" min="0" max="500" name="supply[{{ $farmer->id }}][{{ $product->id }}]"
                                 value="{{ isset($reports[$farmer->id][$product->id]) ? (float) $reports[$farmer->id][$product->id] : '' }}"
-                                class="block min-h-11 w-full rounded-lg border border-stone-300 px-3">
+                                class="block min-h-11 w-full rounded-lg border {{ isset($unusual["{$farmer->id}-{$product->id}"]) ? 'border-amber-500 bg-amber-50' : 'border-stone-300' }} px-3">
+                            @isset($unusual["{$farmer->id}-{$product->id}"])
+                                <span class="mt-1 block text-amber-800">⚠ Cao bất thường: thường khoảng @kg($unusual["{$farmer->id}-{$product->id}"]['usual_kg'])/ngày. Gọi hỏi lại nông hộ.</span>
+                            @endisset
                         </label>
                     @empty
                         <p class="text-sm text-stone-500">Nông hộ này chưa được gắn loại rau nào.</p>

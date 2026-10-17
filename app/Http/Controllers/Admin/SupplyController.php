@@ -32,6 +32,7 @@ class SupplyController extends Controller
             'reports' => $reports->groupBy('farmer_id')->map(fn ($group) => $group->pluck('quantity_kg', 'product_id')),
             'totals' => $reports->groupBy('product_id')->map(fn ($group) => $group->sum(fn ($report) => (float) $report->quantity_kg)),
             'productNames' => Product::pluck('name', 'id'),
+            'unusual' => $supply->unusualReports($date),
         ]);
     }
 

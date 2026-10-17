@@ -14,6 +14,9 @@
                     Chứng nhận:
                     @if ($farmer->hasValidCertificate())
                         Có{{ $farmer->certificate_expires_at ? ', đến '.$farmer->certificate_expires_at->format('d/m/Y') : '' }}
+                        @if ($farmer->certificateDaysLeft() !== null && $farmer->certificateDaysLeft() <= config('farm2home.certificate_warning_days'))
+                            <span class="font-semibold text-amber-800">(còn {{ $farmer->certificateDaysLeft() }} ngày, nhắc gia hạn)</span>
+                        @endif
                     @elseif ($farmer->certificate_file)
                         Hết hạn
                     @else

@@ -35,6 +35,25 @@
         <p class="mb-4 rounded-lg bg-stone-100 px-4 py-3 text-sm text-stone-700">Chưa có dữ liệu trong khoảng này.</p>
     @endif
 
+    @if ($expiringCertificates->isNotEmpty())
+        <section class="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900" aria-label="Chứng nhận cần gia hạn">
+            <p class="font-semibold">Chứng nhận cần gia hạn</p>
+            <ul class="mt-1 space-y-0.5">
+                @foreach ($expiringCertificates as $farmer)
+                    @php($daysLeft = $farmer->certificateDaysLeft())
+                    <li>
+                        {{ $farmer->code }} · {{ $farmer->name }}: {{ $farmer->certificate_name ?? 'chứng nhận' }}
+                        {{ $daysLeft < 0 ? 'đã hết hạn '.abs($daysLeft).' ngày, trang QR không còn hiện chứng nhận' : ($daysLeft === 0 ? 'hết hạn hôm nay' : 'còn '.$daysLeft.' ngày') }}
+                        ({{ $farmer->certificate_expires_at->format('d/m/Y') }})
+                        @if (auth()->user()->role === \App\Enums\UserRole::Admin)
+                            · <a href="{{ route('admin.farmers.edit', $farmer) }}" class="underline">cập nhật</a>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <div class="space-y-6">
         <section aria-labelledby="kpi-economics">
             <h2 id="kpi-economics" class="mb-2 font-semibold">Kinh tế</h2>

@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable([
@@ -38,9 +37,12 @@ class Batch extends Model
         return route('batches.public', [$this->code, $this->qr_key]);
     }
 
+    /**
+     * Dùng asset() (theo tên miền đang mở) thay vì Storage::url() (theo APP_URL), để ảnh vẫn hiện khi mở qua link tunnel.
+     */
     public function photoUrl(): ?string
     {
-        return $this->photo === null ? null : Storage::disk('public')->url($this->photo);
+        return $this->photo === null ? null : asset('storage/'.$this->photo);
     }
 
     /**

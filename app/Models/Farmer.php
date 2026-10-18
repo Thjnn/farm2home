@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'code', 'name', 'phone', 'zalo_phone', 'address', 'growing_area', 'area_m2', 'farming_method',
@@ -142,7 +141,8 @@ class Farmer extends Model
      */
     public function farmPhotoUrls(): array
     {
-        return array_map(fn (string $path) => Storage::disk('public')->url($path), $this->farm_photos ?? []);
+        // asset() theo tên miền đang mở, không theo APP_URL như Storage::url() (xem Batch::photoUrl()).
+        return array_map(fn (string $path) => asset('storage/'.$path), $this->farm_photos ?? []);
     }
 
     public function zaloLink(): string

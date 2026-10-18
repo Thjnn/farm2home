@@ -100,4 +100,32 @@
             </div>
         </form>
     </section>
+
+    <section aria-labelledby="rating-heading" class="mt-6 rounded-xl border border-stone-200 bg-white p-4">
+        <h2 id="rating-heading" class="text-lg font-semibold">Khách đánh giá rau của cô chú</h2>
+        @if ($rating['count'] === 0)
+            <p class="mt-1 text-base text-stone-700">Chưa có lượt đánh giá nào.</p>
+        @else
+            <p class="mt-2 text-3xl font-bold">{{ number_format($rating['rating'], 1, ',', '.') }}<span class="text-amber-500">★</span>
+                <span class="text-base font-normal text-stone-600">({{ $rating['count'] }} lượt đánh giá)</span>
+            </p>
+            @if ($rating['freshness'] !== null)
+                <p class="text-base text-stone-700">Độ tươi: <span class="font-semibold">{{ number_format($rating['freshness'], 1, ',', '.') }}★</span></p>
+            @endif
+            @if ($recentComments->isNotEmpty())
+                <ul class="mt-3 space-y-2">
+                    @foreach ($recentComments as $feedback)
+                        <li class="rounded-lg bg-stone-50 px-3 py-2 text-base">
+                            <p class="text-sm text-stone-600">{{ $feedback->batch->product->name }} · {{ $feedback->rating }}★ · {{ $feedback->created_at->format('d/m') }}</p>
+                            <p>“{{ $feedback->comment }}”</p>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        @endif
+    </section>
+
+    @if ($farmer->maskedBankAccount())
+        <p class="mt-4 text-base text-stone-700">Tài khoản nhận tiền: <span class="font-semibold">{{ $farmer->maskedBankAccount() }}</span>. Sai số thì cô chú báo FARM2HOME qua Zalo.</p>
+    @endif
 </x-layouts.farmer>

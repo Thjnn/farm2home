@@ -10,9 +10,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'code', 'name', 'phone', 'zalo_phone', 'address', 'growing_area', 'area_m2', 'farming_method',
+    'bank_name', 'bank_account_number', 'bank_account_holder', 'farm_photos',
     'certificate_name', 'certificate_file', 'certificate_expires_at', 'access_token', 'status', 'note',
 ])]
 class Farmer extends Model
@@ -29,6 +32,8 @@ class Farmer extends Model
             'status' => FarmerStatus::class,
             'certificate_expires_at' => 'date',
             'area_m2' => 'integer',
+            'bank_account_number' => 'encrypted',
+            'farm_photos' => 'array',
         ];
     }
 
@@ -86,6 +91,58 @@ class Farmer extends Model
             ->whereDate('certificate_expires_at', '<=', today()->addDays((int) config('farm2home.certificate_warning_days')))
             ->orderBy('certificate_expires_at')
             ->get();
+    }
+
+    public function feedbacks(): HasManyThrough
+    {
+        return $this->hasManyThrough(Feedback::class, Batch::class);
+    }
+
+    /**
+     * Điểm trung bình khách chấm cho các lô của nông hộ. Độ tươi tính riêng vì sao chung có thể bị kéo xuống do giao trễ.
+     *
+     * @return array{count: int, rating: ?float, freshness: ?float}
+     */
+    public function ratingSummary(): array
+    {
+        $row = $this->feedbacks()
+            ->toBase()
+            ->selectRaw('COUNT(*) as total, AVG(feedbacks.rating) as rating, AVG(feedbacks.freshness_rating) as freshness')
+            ->first();
+
+        return [
+            'count' => (int) $row->total,
+            'rating' => $row->rating === null ? null : round((float) $row->rating, 1),
+            'freshness' => $row->freshness === null ? null : round((float) $row->freshness, 1),
+        ];
+    }
+
+    /**
+     * Trang QR chỉ hiện sao khi đủ lượt đánh giá, để vài lượt đầu không quyết định ấn tượng về nông hộ.
+     */
+    public function hasEnoughRatingsToShow(int $count): bool
+    {
+        return $count >= (int) config('farm2home.farmer_rating_min_count');
+    }
+
+    /**
+     * Ví dụ "Agribank ••• 6789": đủ để nông hộ nhận ra tài khoản của mình mà không lộ số đầy đủ.
+     */
+    public function maskedBankAccount(): ?string
+    {
+        if (blank($this->bank_account_number)) {
+            return null;
+        }
+
+        return trim($this->bank_name.' ••• '.substr($this->bank_account_number, -4));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function farmPhotoUrls(): array
+    {
+        return array_map(fn (string $path) => Storage::disk('public')->url($path), $this->farm_photos ?? []);
     }
 
     public function zaloLink(): string

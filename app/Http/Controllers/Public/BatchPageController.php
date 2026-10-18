@@ -16,6 +16,8 @@ class BatchPageController extends Controller
     {
         abort_unless($batch->quality_status === QualityStatus::Passed && hash_equals((string) $batch->qr_key, $key), 404);
 
-        return view('public.batches.show', ['batch' => $batch->load('product', 'farmer')]);
+        $batch->load('product', 'farmer');
+
+        return view('public.batches.show', ['batch' => $batch, 'farmerRating' => $batch->farmer->ratingSummary()]);
     }
 }

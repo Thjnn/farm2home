@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Batch;
 use App\Services\BatchService;
 use App\Services\QrCodeService;
+use App\Support\PhotoStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,20 @@ class BatchController extends Controller
         $batches->setQuality($batch, QualityStatus::from($data['quality_status']), $data['qc_note'] ?? null);
 
         return redirect()->route('admin.batches.show', $batch)->with('status', 'Đã cập nhật lô hàng.');
+    }
+
+    /**
+     * Ảnh sản phẩm thật của lô, chụp bằng điện thoại khi nhận hàng; hiện trên trang QR. Chụp lại thì thay ảnh cũ.
+     */
+    public function photo(Request $request, Batch $batch): RedirectResponse
+    {
+        $data = $request->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240']]);
+
+        $old = $batch->photo;
+        $batch->update(['photo' => PhotoStore::store($data['photo'], 'batches')]);
+        PhotoStore::delete($old);
+
+        return redirect()->route('admin.batches.show', $batch)->with('status', 'Đã lưu ảnh lô hàng.');
     }
 
     public function allocate(Request $request, BatchService $batches): RedirectResponse

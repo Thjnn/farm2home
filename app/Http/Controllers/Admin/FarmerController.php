@@ -6,6 +6,7 @@ use App\Enums\FarmerStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Farmer;
 use App\Models\Product;
+use App\Support\PhotoStore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -75,6 +76,12 @@ class FarmerController extends Controller
             'growing_area' => ['nullable', 'string', 'max:255'],
             'area_m2' => ['nullable', 'integer', 'min:0'],
             'farming_method' => ['nullable', 'string', 'max:150'],
+            'bank_name' => ['nullable', 'string', 'max:100'],
+            'bank_account_number' => ['nullable', 'regex:/^\d{6,20}$/'],
+            'bank_account_holder' => ['nullable', 'string', 'max:150'],
+            'farm_photos' => ['nullable', 'array', 'max:4'],
+            'farm_photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'remove_farm_photos' => ['nullable', 'boolean'],
             'certificate_name' => ['nullable', 'string', 'max:150'],
             'certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:4096'],
             'certificate_expires_at' => ['nullable', 'date'],
@@ -85,12 +92,21 @@ class FarmerController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $farmer, $data) {
-            $farmer->fill(Arr::except($data, ['certificate', 'products']));
+            $farmer->fill(Arr::except($data, ['certificate', 'products', 'farm_photos', 'remove_farm_photos']));
             $farmer->zalo_phone = $farmer->zalo_phone ?: $data['phone'];
             $farmer->access_token = $farmer->access_token ?: $this->newToken();
 
             if ($request->hasFile('certificate')) {
                 $farmer->certificate_file = $request->file('certificate')->store('certificates', 'public');
+            }
+
+            // Chọn ảnh mới thì thay cả bộ ảnh vườn cũ.
+            if ($request->hasFile('farm_photos') || $request->boolean('remove_farm_photos')) {
+                array_map(PhotoStore::delete(...), $farmer->farm_photos ?? []);
+                $farmer->farm_photos = array_map(
+                    fn ($photo) => PhotoStore::store($photo, 'farms'),
+                    $request->file('farm_photos', []),
+                ) ?: null;
             }
 
             $farmer->save();

@@ -10,12 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable([
     'code', 'harvest_plan_item_id', 'farmer_id', 'product_id', 'quantity_kg',
     'harvested_at', 'received_at', 'processed_at', 'packed_at', 'processing_note',
-    'storage_guide', 'best_before', 'quality_status', 'qc_note',
+    'storage_guide', 'best_before', 'quality_status', 'qc_note', 'photo',
 ])]
 class Batch extends Model
 {
@@ -35,6 +36,11 @@ class Batch extends Model
     public function publicUrl(): string
     {
         return route('batches.public', [$this->code, $this->qr_key]);
+    }
+
+    public function photoUrl(): ?string
+    {
+        return $this->photo === null ? null : Storage::disk('public')->url($this->photo);
     }
 
     /**

@@ -46,6 +46,13 @@ class FarmerPortalController extends Controller
             'dates' => $dates,
             'reports' => $reports,
             'locked' => collect($dates)->mapWithKeys(fn ($date) => [$date => $supply->isLocked($date)]),
+            'rating' => $farmer->ratingSummary(),
+            'recentComments' => $farmer->feedbacks()
+                ->whereNotNull('comment')
+                ->with('batch.product')
+                ->latest('feedbacks.created_at')
+                ->limit(3)
+                ->get(),
             'harvests' => HarvestPlan::whereIn('status', [HarvestPlanStatus::Confirmed, HarvestPlanStatus::Sent])
                 ->whereDate('harvest_date', '>=', today()->toDateString())
                 ->whereHas('items', $ownRows)

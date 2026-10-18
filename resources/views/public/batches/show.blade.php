@@ -1,6 +1,13 @@
 <x-layouts.public :title="'Lô '.$batch->code">
     <header class="mb-4">
-        <x-product-image :product="$batch->product" class="mb-4 aspect-[16/9] w-full rounded-xl" />
+        @if ($batch->photo)
+            <figure class="mb-4">
+                <img src="{{ $batch->photoUrl() }}" alt="Ảnh {{ $batch->product->name }} của lô này" class="aspect-[16/9] w-full rounded-xl object-cover">
+                <figcaption class="mt-1 text-xs text-stone-600">Ảnh chụp chính lô rau này khi FARM2HOME nhận hàng</figcaption>
+            </figure>
+        @else
+            <x-product-image :product="$batch->product" class="mb-4 aspect-[16/9] w-full rounded-xl" />
+        @endif
         <p class="text-sm text-stone-600">Thông tin lô hàng</p>
         <h1 class="text-2xl font-bold tracking-tight">{{ $batch->product->name }}</h1>
         <p class="mt-1 text-sm text-stone-600">Mã lô <span class="font-semibold text-stone-900">{{ $batch->code }}</span></p>
@@ -35,6 +42,25 @@
             @endif
         </dl>
     </section>
+
+    @if ($batch->farmer->farm_photos || $batch->farmer->hasEnoughRatingsToShow($farmerRating['count']))
+        <section class="mt-4 rounded-xl border border-stone-200 bg-white p-4 text-sm" aria-labelledby="farm-heading">
+            <h2 id="farm-heading" class="font-semibold">Vườn rau của {{ $batch->farmer->name }}</h2>
+            @if ($batch->farmer->hasEnoughRatingsToShow($farmerRating['count']))
+                <p class="mt-1 text-stone-700">
+                    Khách đánh giá <span class="font-semibold text-stone-900">{{ number_format($farmerRating['rating'], 1, ',', '.') }}★</span>
+                    ({{ $farmerRating['count'] }} lượt)@if ($farmerRating['freshness'] !== null) · độ tươi {{ number_format($farmerRating['freshness'], 1, ',', '.') }}★@endif
+                </p>
+            @endif
+            @if ($batch->farmer->farm_photos)
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    @foreach ($batch->farmer->farmPhotoUrls() as $url)
+                        <img src="{{ $url }}" alt="Ảnh vườn rau của nông hộ {{ $batch->farmer->name }}" loading="lazy" class="aspect-square w-full rounded-lg object-cover">
+                    @endforeach
+                </div>
+            @endif
+        </section>
+    @endif
 
     <section class="mt-4 rounded-xl border border-stone-200 bg-white p-4 text-sm" aria-label="Chứng nhận">
         @if ($batch->farmer->hasValidCertificate())
@@ -78,7 +104,7 @@
                     @enderror
                 </div>
 
-                <x-field name="phone" label="Số điện thoại đặt hàng (không bắt buộc, để chúng tôi liên hệ xử lý)" type="tel" inputmode="numeric" />
+                <x-field name="phone" label="Số điện thoại đặt hàng" type="tel" inputmode="numeric" />
 
                 <button class="min-h-12 w-full rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Gửi phản hồi</button>
             </form>

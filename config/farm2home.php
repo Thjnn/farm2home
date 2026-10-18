@@ -13,6 +13,9 @@ return [
     // Báo trước bao nhiêu ngày khi chứng nhận của nông hộ sắp hết hạn.
     'certificate_warning_days' => 15,
 
+    // Trang QR chỉ hiện sao trung bình của nông hộ khi có ít nhất chừng này lượt đánh giá.
+    'farmer_rating_min_count' => 5,
+
     'forecast' => [
         'default_method' => 'moving_average',
         'window_days' => 7,

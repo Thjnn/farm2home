@@ -15,7 +15,7 @@ class OrderLookupController extends Controller
 {
     public function show(): View
     {
-        return view('public.orders.lookup', ['orders' => null, 'phone' => null, 'points' => null, 'rewards' => []]);
+        return view('public.orders.lookup', ['orders' => null, 'phone' => null, 'points' => null, 'rewards' => [], 'feedbacks' => collect()]);
     }
 
     /**
@@ -52,6 +52,8 @@ class OrderLookupController extends Controller
             // Quyết định D25: chỉ hiện số dư, không hiện lịch sử điểm.
             'points' => $customer === null ? null : $loyalty->balance($customer),
             'rewards' => Reward::all(),
+            // Chỉ phản hồi gửi kèm số điện thoại này; phản hồi ẩn danh không gắn được với khách.
+            'feedbacks' => $customer === null ? collect() : $customer->feedbacks()->with('batch.product')->latest()->latest('id')->limit(5)->get(),
         ]);
     }
 }

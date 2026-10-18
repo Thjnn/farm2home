@@ -87,6 +87,7 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::post('batches/allocate', [BatchController::class, 'allocate'])->name('batches.allocate');
     Route::get('batches/{batch}', [BatchController::class, 'show'])->name('batches.show');
     Route::patch('batches/{batch}', [BatchController::class, 'update'])->name('batches.update');
+    Route::post('batches/{batch}/photo', [BatchController::class, 'photo'])->name('batches.photo');
     Route::get('batches/{batch}/labels', [BatchController::class, 'labels'])->name('batches.labels');
 
     Route::get('feedbacks', [AdminFeedbackController::class, 'index'])->name('feedbacks.index');

@@ -56,4 +56,27 @@
             @endif
         </section>
     @endif
+
+    @if ($feedbacks->isNotEmpty())
+        <section class="mt-6" aria-labelledby="feedback-history-heading">
+            <h2 id="feedback-history-heading" class="mb-2 text-sm font-medium text-stone-600">Phản hồi bạn đã gửi</h2>
+            <ul class="space-y-2">
+                @foreach ($feedbacks as $feedback)
+                    <li class="rounded-xl border border-stone-200 bg-white p-4 text-sm">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="font-semibold">{{ $feedback->batch->product->name }} · {{ $feedback->rating }}★</span>
+                            <x-status-badge :status="$feedback->status" />
+                        </div>
+                        <p class="mt-1 text-stone-600">{{ $feedback->created_at->format('d/m/Y') }} · lô {{ $feedback->batch->code }}</p>
+                        @if ($feedback->comment)
+                            <p class="mt-2">“{{ $feedback->comment }}”</p>
+                        @endif
+                        @if ($feedback->response)
+                            <p class="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-emerald-900"><span class="font-medium">FARM2HOME trả lời:</span> {{ $feedback->response }}</p>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
 </x-layouts.public>

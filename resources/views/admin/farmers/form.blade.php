@@ -28,6 +28,39 @@
         </div>
 
         <fieldset class="rounded-xl border border-stone-200 bg-white p-4">
+            <legend class="px-1 text-sm font-medium text-stone-700">Tài khoản nhận tiền thu mua</legend>
+            <p class="mb-3 text-sm text-stone-600">Không hiện công khai. Số tài khoản được lưu mã hoá; trang của nông hộ chỉ hiện 4 số cuối.</p>
+            <div class="grid gap-4 sm:grid-cols-3">
+                <x-field name="bank_name" label="Ngân hàng (vd Agribank)" :value="$farmer->bank_name" />
+                <x-field name="bank_account_number" label="Số tài khoản" inputmode="numeric" :value="$farmer->bank_account_number" />
+                <x-field name="bank_account_holder" label="Chủ tài khoản" :value="$farmer->bank_account_holder" />
+            </div>
+        </fieldset>
+
+        <fieldset class="rounded-xl border border-stone-200 bg-white p-4">
+            <legend class="px-1 text-sm font-medium text-stone-700">Ảnh vườn rau (hiện trên trang QR)</legend>
+            <p class="mb-3 text-sm text-stone-600">Chỉ dùng ảnh thật chụp tại vườn, khi nông hộ đồng ý. Tối đa 4 ảnh; chọn ảnh mới sẽ thay cả bộ ảnh cũ.</p>
+            @if ($farmer->farm_photos)
+                <div class="mb-3 grid grid-cols-4 gap-2">
+                    @foreach ($farmer->farmPhotoUrls() as $url)
+                        <img src="{{ $url }}" alt="" class="aspect-square w-full rounded-lg object-cover">
+                    @endforeach
+                </div>
+                <label class="mb-3 flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="remove_farm_photos" value="1" class="size-5">
+                    Xoá hết ảnh vườn
+                </label>
+            @endif
+            <input id="farm_photos" type="file" name="farm_photos[]" accept="image/*" multiple class="block w-full text-sm" aria-label="Chọn ảnh vườn rau">
+            @error('farm_photos')
+                <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
+            @enderror
+            @error('farm_photos.*')
+                <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
+            @enderror
+        </fieldset>
+
+        <fieldset class="rounded-xl border border-stone-200 bg-white p-4">
             <legend class="px-1 text-sm font-medium text-stone-700">Chứng nhận</legend>
             <p class="mb-3 text-sm text-stone-600">Chỉ điền khi có giấy tờ thật. Trang QR chỉ hiện chứng nhận khi có file và còn hạn.</p>
             <div class="grid gap-4 sm:grid-cols-2">

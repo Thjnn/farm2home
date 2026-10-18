@@ -25,6 +25,22 @@
             @else
                 <p class="mt-3 text-xs text-stone-500">Trang QR và tem chỉ dùng được khi lô đã đạt kiểm tra.</p>
             @endif
+
+            <form method="POST" action="{{ route('admin.batches.photo', $batch) }}" enctype="multipart/form-data" class="mt-4 border-t border-stone-200 pt-4">
+                @csrf
+                <h3 class="mb-2 font-medium">Ảnh sản phẩm của lô (hiện trên trang QR)</h3>
+                @if ($batch->photo)
+                    <img src="{{ $batch->photoUrl() }}" alt="Ảnh {{ $batch->product->name }} lô {{ $batch->code }}" class="mb-2 aspect-[4/3] w-full rounded-lg object-cover">
+                @endif
+                {{-- Trên điện thoại, capture mở thẳng camera sau; chọn xong là tự gửi. --}}
+                <label class="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-emerald-700 px-4 font-semibold text-emerald-800 hover:bg-emerald-50">
+                    {{ $batch->photo ? 'Chụp lại ảnh' : 'Chụp ảnh lô hàng' }}
+                    <input type="file" name="photo" accept="image/*" capture="environment" class="sr-only" onchange="this.form.submit()">
+                </label>
+                @error('photo')
+                    <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
+                @enderror
+            </form>
         </section>
 
         <section class="rounded-xl border border-stone-200 bg-white p-4 lg:col-span-2">

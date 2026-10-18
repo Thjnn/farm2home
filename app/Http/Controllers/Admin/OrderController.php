@@ -57,6 +57,7 @@ class OrderController extends Controller
             'date' => $date,
             'status' => $filters['status'] ?? null,
             'statuses' => OrderStatus::cases(),
+            'bulkStatuses' => [OrderStatus::Confirmed, OrderStatus::Packing, OrderStatus::Delivering, OrderStatus::Delivered],
         ]);
     }
 
@@ -152,5 +153,24 @@ class OrderController extends Controller
         }
 
         return redirect()->route('admin.orders.show', $order)->with('status', 'Đã cập nhật trạng thái đơn.');
+    }
+
+    public function bulkTransition(Request $request, OrderService $orders): RedirectResponse
+    {
+        $data = $request->validate([
+            'status' => ['required', Rule::enum(OrderStatus::class)->except([OrderStatus::Pending, OrderStatus::Cancelled])],
+            'order_ids' => ['required', 'array', 'max:500'],
+            'order_ids.*' => ['integer'],
+        ], ['order_ids.required' => 'Chưa chọn đơn nào.']);
+
+        $to = OrderStatus::from($data['status']);
+        $result = $orders->transitionMany(Order::with('items')->whereIn('id', $data['order_ids'])->orderBy('id')->get(), $to);
+
+        $message = "Đã chuyển {$result['moved']} đơn sang \"{$to->label()}\".";
+        if ($result['skipped'] > 0) {
+            $message .= " Bỏ qua {$result['skipped']} đơn không ở bước liền trước.";
+        }
+
+        return back()->with('status', $message);
     }
 }

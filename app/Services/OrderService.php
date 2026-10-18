@@ -120,6 +120,34 @@ class OrderService
         });
     }
 
+    /**
+     * Chuyển cả nhóm đơn sang cùng một trạng thái; đơn không ở bước liền trước thì bỏ qua (không báo lỗi).
+     * Hủy đơn không làm hàng loạt vì mỗi đơn cần lý do riêng.
+     *
+     * @param  iterable<Order>  $orders
+     * @return array{moved: int, skipped: int}
+     */
+    public function transitionMany(iterable $orders, OrderStatus $to): array
+    {
+        if ($to === OrderStatus::Cancelled) {
+            throw new DomainException('Hủy đơn phải làm từng đơn để nhập lý do.');
+        }
+
+        $moved = 0;
+        $skipped = 0;
+
+        foreach ($orders as $order) {
+            if ($order->status->canTransitionTo($to)) {
+                $this->transition($order, $to);
+                $moved++;
+            } else {
+                $skipped++;
+            }
+        }
+
+        return ['moved' => $moved, 'skipped' => $skipped];
+    }
+
     private function markDelivered(Order $order): void
     {
         $order->delivered_at = now();

@@ -81,6 +81,40 @@ class AdminOrderTest extends TestCase
         $this->assertSame(OrderStatus::Pending, $this->order->refresh()->status);
     }
 
+    public function test_operator_moves_several_orders_at_once_and_skips_the_ones_not_ready(): void
+    {
+        $second = app(OrderService::class)->place([
+            'name' => 'Trần Văn Bình', 'phone' => '0988000002', 'address' => '5 Hùng Vương',
+            'delivery_zone_id' => $this->zone->id, 'delivery_date' => '2026-10-03', 'time_slot' => '17:00-19:00',
+            'order_type' => 'single', 'items' => [['product_id' => $this->rm->id, 'quantity' => 1]],
+            'payment_method' => 'cod', 'data_consent' => true,
+        ], OrderChannel::Website);
+        $delivered = Order::factory()->create(['customer_id' => $second->customer_id, 'status' => OrderStatus::Delivered]);
+
+        $this->actingAs($this->operator)
+            ->from('/admin/orders?delivery_date=2026-10-03')
+            ->patch('/admin/orders/bulk-status', ['status' => 'confirmed', 'order_ids' => [$this->order->id, $second->id, $delivered->id]])
+            ->assertRedirect('/admin/orders?delivery_date=2026-10-03')
+            ->assertSessionHas('status', 'Đã chuyển 2 đơn sang "Đã xác nhận". Bỏ qua 1 đơn không ở bước liền trước.');
+
+        $this->assertSame(OrderStatus::Confirmed, $this->order->fresh()->status);
+        $this->assertNotNull($second->fresh()->confirmed_at);
+        $this->assertSame(OrderStatus::Delivered, $delivered->fresh()->status);
+    }
+
+    public function test_bulk_action_cannot_cancel_and_needs_a_selection(): void
+    {
+        $this->actingAs($this->operator)
+            ->patch('/admin/orders/bulk-status', ['status' => 'cancelled', 'order_ids' => [$this->order->id]])
+            ->assertSessionHasErrors('status');
+
+        $this->actingAs($this->operator)
+            ->patch('/admin/orders/bulk-status', ['status' => 'confirmed'])
+            ->assertSessionHasErrors(['order_ids' => 'Chưa chọn đơn nào.']);
+
+        $this->assertSame(OrderStatus::Pending, $this->order->fresh()->status);
+    }
+
     public function test_cancel_needs_a_reason(): void
     {
         $this->actingAs($this->operator)

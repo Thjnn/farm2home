@@ -30,7 +30,12 @@
              class="mb-3 flex h-[70vh] max-h-[480px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl"
              aria-label="Hỏi đáp nhanh">
         <header class="flex items-center justify-between bg-emerald-700 px-4 py-2 text-white">
-            <h2 class="font-semibold">Hỏi đáp nhanh</h2>
+            <h2 class="flex items-center gap-2 font-semibold">
+                <span class="flex size-10 items-center justify-center rounded-full bg-white/90">
+                    <x-bot-avatar class="size-8" ::class="sending && 'is-thinking'" />
+                </span>
+                Hỏi đáp nhanh
+            </h2>
             <button type="button" @click="open = false" class="flex size-11 items-center justify-center rounded-full hover:bg-emerald-800" aria-label="Đóng hỏi đáp">✕</button>
         </header>
         <div x-ref="log" class="flex-1 space-y-2 overflow-y-auto bg-stone-50 p-3 text-sm" aria-live="polite">
@@ -51,7 +56,9 @@
     <button type="button" @click="open = !open; if (open) $nextTick(() => document.getElementById('chatbot-input').focus())"
             class="flex min-h-12 items-center gap-2 rounded-full bg-emerald-700 px-4 font-semibold text-white shadow-lg hover:bg-emerald-800"
             :aria-expanded="open.toString()">
-        <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8l-4 4v-4.2A3 3 0 0 1 2 11V5Z"/></svg>
+        <span class="-ml-2 flex size-10 items-center justify-center rounded-full bg-white/90">
+            <x-bot-avatar class="size-8" />
+        </span>
         Hỏi đáp
     </button>
 </div>

@@ -13,3 +13,38 @@
 [x-cloak] {
     display: none !important;
 }
+
+/* Chatbot avatar (components/bot-avatar) */
+.bot-avatar .bot-eye,
+.bot-avatar .bot-eyes,
+.bot-avatar .bot-sprout {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+.bot-avatar .bot-eye {
+    animation: bot-blink 4s infinite;
+}
+.bot-avatar .bot-sprout {
+    transform-origin: bottom;
+    animation: bot-sway 3s ease-in-out infinite;
+}
+.bot-avatar.is-thinking .bot-eyes {
+    animation: bot-look 1s ease-in-out infinite;
+}
+@keyframes bot-blink {
+    0%, 94%, 100% { transform: scaleY(1); }
+    97% { transform: scaleY(0.1); }
+}
+@keyframes bot-sway {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(6deg); }
+}
+@keyframes bot-look {
+    0%, 100% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bot-avatar * {
+        animation: none !important;
+    }
+}

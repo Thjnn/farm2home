@@ -33,6 +33,15 @@ return [
         'time_slots' => ['06:00-08:00', '10:00-12:00', '17:00-19:00'],
     ],
 
+    // Tài khoản nhận chuyển khoản. bank_id là mã BIN hoặc tên viết tắt theo VietQR (vd 970405 hoặc agribank).
+    // Để trống thì trang cảm ơn chỉ báo sẽ gửi thông tin qua Zalo.
+    'bank' => [
+        'bank_id' => env('BANK_ID'),
+        'name' => env('BANK_NAME'),
+        'account_number' => env('BANK_ACCOUNT_NUMBER'),
+        'account_holder' => env('BANK_ACCOUNT_HOLDER'),
+    ],
+
     'batch' => [
         'harvest_time' => '05:30',
     ],

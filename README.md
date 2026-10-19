@@ -164,6 +164,17 @@ Mở `http://farm2home.test`.
 
 Muốn bật chatbot Gemini thì điền `GEMINI_API_KEY` trong `.env` (`GEMINI_MODEL` mặc định `gemini-flash-lite-latest`).
 
+Muốn trang cảm ơn hiện mã QR chuyển khoản thì điền 4 biến `BANK_*` trong `.env`. Để trống thì trang chỉ báo "sẽ gửi thông tin chuyển khoản qua Zalo".
+
+```dotenv
+BANK_ID=vcb                          # mã ngân hàng theo VietQR (vcb, agribank, mbbank, tcb, bidv, acb...), không phải mã SWIFT
+BANK_NAME=Vietcombank
+BANK_ACCOUNT_NUMBER=0123456789       # không để dấu cách ở cuối dòng
+BANK_ACCOUNT_HOLDER="CAO PHUC THINH" # có dấu cách thì phải để trong ngoặc kép
+```
+
+Sửa `.env` xong mà chưa thấy thay đổi thì chạy `php artisan config:clear`. Ảnh QR lấy từ `img.vietqr.io`, với số tiền và nội dung (mã đơn) điền sẵn. Người vận hành đối chiếu tiền vào rồi bấm **"Đã nhận tiền"** ở trang chi tiết đơn.
+
 ### Gửi link demo tạm thời
 
 `link-tam-thoi.bat` chạy app và mở một link công khai tạm thời qua Cloudflare Quick Tunnel (không cần tài khoản, cần cài `cloudflared`). Link được chép sẵn để dán vào Zalo; nhấn phím bất kỳ trong cửa sổ để tắt. Chạy `npm run build` trước, và **đổi mật khẩu mẫu** trước khi gửi link cho người ngoài.
@@ -217,7 +228,7 @@ Test chạy trên DB `farm2home_test` (cấu hình trong `phpunit.xml`), không 
 
 ## Deploy
 
-Các bước deploy Railway (biến môi trường, lệnh build, volume cho file chứng nhận, nạp dữ liệu ban đầu) nằm ở [`docs/plans/phase-7-p1-deploy.md`](docs/plans/phase-7-p1-deploy.md), Task 7.4. Nhớ thêm `GEMINI_API_KEY` / `GEMINI_MODEL` nếu dùng chatbot.
+Các bước deploy Railway (biến môi trường, lệnh build, volume cho file chứng nhận, nạp dữ liệu ban đầu) nằm ở [`docs/plans/phase-7-p1-deploy.md`](docs/plans/phase-7-p1-deploy.md), Task 7.4. Nhớ thêm `GEMINI_API_KEY` / `GEMINI_MODEL` nếu dùng chatbot, và 4 biến `BANK_ID`, `BANK_NAME`, `BANK_ACCOUNT_NUMBER`, `BANK_ACCOUNT_HOLDER` vào phần **Variables** của Railway để hiện mã QR chuyển khoản (file `.env` trên máy không được đưa lên Railway).
 
 ## Trạng thái
 

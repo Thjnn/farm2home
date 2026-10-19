@@ -111,4 +111,20 @@ class Order extends Model
         return "FARM2HOME cảm ơn anh/chị {$this->customer->name} đã nhận đơn {$this->code}. "
             ."Anh/chị bấm vào link từng loại rau để xem nguồn gốc và đánh giá giúp tụi em nhé:\n{$links}";
     }
+
+    /**
+     * Ảnh mã VietQR đã điền sẵn số tiền và nội dung = mã đơn, để người vận hành đối chiếu khi nhận tiền.
+     * Null khi chưa cấu hình tài khoản nhận.
+     */
+    public function bankTransferQrUrl(): ?string
+    {
+        $bank = config('farm2home.bank');
+
+        if (blank($bank['bank_id']) || blank($bank['account_number'])) {
+            return null;
+        }
+
+        return "https://img.vietqr.io/image/{$bank['bank_id']}-{$bank['account_number']}-compact2.png?"
+            .http_build_query(['amount' => $this->total, 'addInfo' => $this->code, 'accountName' => $bank['account_holder']]);
+    }
 }

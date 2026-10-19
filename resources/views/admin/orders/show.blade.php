@@ -65,6 +65,15 @@
                         <div><dt class="inline text-stone-600">Lý do hủy:</dt> <dd class="inline">{{ $order->cancel_reason }}</dd></div>
                     @endif
                 </dl>
+
+                @if ($order->payment_method === \App\Enums\PaymentMethod::BankTransfer && $order->payment_status === \App\Enums\PaymentStatus::Unpaid)
+                    <form method="POST" action="{{ route('admin.orders.paid', $order) }}" class="mt-3">
+                        @csrf
+                        @method('PATCH')
+                        <p class="mb-2 text-stone-600">Kiểm tra app ngân hàng có khoản @vnd($order->total) nội dung <span class="font-medium">{{ $order->code }}</span>.</p>
+                        <button class="min-h-11 w-full rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Đã nhận tiền</button>
+                    </form>
+                @endif
             </section>
 
             @if ($order->feedbackBatches()->isNotEmpty())

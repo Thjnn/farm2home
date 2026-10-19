@@ -73,16 +73,17 @@
             </div>
         </div>
 
-        <fieldset>
+        <fieldset x-data="{ payment: @js(old('payment_method', 'cod')) }">
             <legend class="mb-1 text-sm font-medium text-stone-700">Thanh toán</legend>
             <div class="grid grid-cols-2 gap-2">
                 @foreach ($paymentMethods as $method)
                     <label class="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-stone-300 bg-white px-2 text-center text-sm has-checked:border-emerald-700 has-checked:bg-emerald-50 has-checked:font-semibold">
-                        <input type="radio" name="payment_method" value="{{ $method->value }}" class="sr-only" @checked(old('payment_method', 'cod') === $method->value)>
+                        <input type="radio" name="payment_method" value="{{ $method->value }}" x-model="payment" class="sr-only" @checked(old('payment_method', 'cod') === $method->value)>
                         {{ $method->label() }}
                     </label>
                 @endforeach
             </div>
+            <p x-show="payment === 'bank_transfer'" x-cloak class="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">Sau khi bấm Đặt hàng, bạn sẽ thấy mã QR với số tiền và nội dung điền sẵn.</p>
             @error('payment_method')
                 <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
             @enderror

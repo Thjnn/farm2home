@@ -148,6 +148,22 @@ class OrderService
         return ['moved' => $moved, 'skipped' => $skipped];
     }
 
+    /**
+     * Người vận hành xác nhận đã thấy tiền chuyển khoản về tài khoản (COD tự thành đã thu khi giao xong).
+     *
+     * @throws DomainException
+     */
+    public function markPaid(Order $order): Order
+    {
+        if ($order->payment_method !== PaymentMethod::BankTransfer || $order->payment_status !== PaymentStatus::Unpaid) {
+            throw new DomainException('Chỉ xác nhận được đơn chuyển khoản chưa thanh toán.');
+        }
+
+        $order->update(['payment_status' => PaymentStatus::Paid]);
+
+        return $order;
+    }
+
     private function markDelivered(Order $order): void
     {
         $order->delivered_at = now();

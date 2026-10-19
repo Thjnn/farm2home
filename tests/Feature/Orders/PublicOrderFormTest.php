@@ -65,7 +65,8 @@ class PublicOrderFormTest extends TestCase
             ->assertSee('value="2026-10-03"', false)
             ->assertSee('value="2026-10-09"', false)
             ->assertDontSee('value="2026-10-02"', false)
-            ->assertDontSee('value="2026-10-10"', false);
+            ->assertDontSee('value="2026-10-10"', false)
+            ->assertSee('Sau khi bấm Đặt hàng, bạn sẽ thấy mã QR');
     }
 
     public function test_valid_order_is_stored_and_customer_sees_the_code(): void
@@ -83,6 +84,30 @@ class PublicOrderFormTest extends TestCase
             ->assertSee('03/10/2026')
             ->assertDontSee('129 Rạch Gầm')
             ->assertDontSee('0988000001');
+    }
+
+    public function test_bank_transfer_thanks_page_shows_a_prefilled_vietqr(): void
+    {
+        config(['farm2home.bank' => ['bank_id' => '970405', 'name' => 'Agribank', 'account_number' => '7300205123456', 'account_holder' => 'FARM2HOME']]);
+
+        $this->post('/dat-hang', $this->form(['payment_method' => 'bank_transfer']));
+
+        $this->get('/dat-hang/cam-on')
+            ->assertOk()
+            ->assertSee('https://img.vietqr.io/image/970405-7300205123456-compact2.png?amount=34000&amp;addInfo=DH261003-001&amp;accountName=FARM2HOME', false)
+            ->assertSee('7300205123456');
+    }
+
+    public function test_bank_transfer_without_configured_account_falls_back_to_zalo(): void
+    {
+        config(['farm2home.bank.account_number' => null]);
+
+        $this->post('/dat-hang', $this->form(['payment_method' => 'bank_transfer']));
+
+        $this->get('/dat-hang/cam-on')
+            ->assertOk()
+            ->assertSee('gửi thông tin chuyển khoản qua Zalo')
+            ->assertDontSee('vietqr.io');
     }
 
     public function test_order_after_cutoff_for_tomorrow_is_rejected(): void

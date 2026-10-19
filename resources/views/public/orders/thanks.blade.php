@@ -11,7 +11,23 @@
         </dl>
 
         @if ($order->payment_method === \App\Enums\PaymentMethod::BankTransfer)
-            <p class="mt-3 text-sm text-emerald-900">Chúng tôi sẽ gửi thông tin chuyển khoản qua Zalo.</p>
+            @if ($qrUrl = $order->bankTransferQrUrl())
+                <div class="mt-4 rounded-lg border border-emerald-200 bg-white p-4 text-sm">
+                    <h2 class="font-semibold">Chuyển khoản</h2>
+                    <p class="mt-1 text-stone-600">Mở app ngân hàng, quét mã bên dưới. Số tiền và nội dung đã điền sẵn.</p>
+                    <img src="{{ $qrUrl }}" alt="Mã QR chuyển khoản đơn {{ $order->code }}" width="280" height="280" class="mx-auto mt-3 h-auto w-full max-w-[280px]">
+                    <dl class="mt-3 space-y-1">
+                        <div class="flex justify-between gap-4"><dt class="text-stone-600">Ngân hàng</dt><dd>{{ config('farm2home.bank.name') }}</dd></div>
+                        <div class="flex justify-between gap-4"><dt class="text-stone-600">Số tài khoản</dt><dd class="font-semibold">{{ config('farm2home.bank.account_number') }}</dd></div>
+                        <div class="flex justify-between gap-4"><dt class="text-stone-600">Chủ tài khoản</dt><dd>{{ config('farm2home.bank.account_holder') }}</dd></div>
+                        <div class="flex justify-between gap-4"><dt class="text-stone-600">Số tiền</dt><dd class="font-semibold">@vnd($order->total)</dd></div>
+                        <div class="flex justify-between gap-4"><dt class="text-stone-600">Nội dung</dt><dd class="font-semibold">{{ $order->code }}</dd></div>
+                    </dl>
+                    <p class="mt-3 text-stone-600">Bạn có thể chuyển trước hoặc khi nhận rau. Chúng tôi sẽ xác nhận khi nhận được tiền.</p>
+                </div>
+            @else
+                <p class="mt-3 text-sm text-emerald-900">Chúng tôi sẽ gửi thông tin chuyển khoản qua Zalo.</p>
+            @endif
         @endif
 
         @if ($requestedReward)

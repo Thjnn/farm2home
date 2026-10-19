@@ -29,6 +29,28 @@ class AdminOrderTest extends TestCase
         ], OrderChannel::Website);
     }
 
+    public function test_operator_marks_a_bank_transfer_order_paid_once(): void
+    {
+        $this->actingAs($this->operator);
+        $this->order->update(['payment_method' => 'bank_transfer']);
+
+        $this->get("/admin/orders/{$this->order->id}")->assertOk()->assertSee('Đã nhận tiền');
+
+        $this->patch("/admin/orders/{$this->order->id}/paid")->assertRedirect("/admin/orders/{$this->order->id}");
+        $this->assertSame('paid', $this->order->refresh()->payment_status->value);
+        $this->get("/admin/orders/{$this->order->id}")->assertOk()->assertDontSee('Đã nhận tiền');
+
+        $this->patch("/admin/orders/{$this->order->id}/paid")->assertSessionHasErrors('action');
+    }
+
+    public function test_cod_order_cannot_be_marked_paid_by_hand(): void
+    {
+        $this->actingAs($this->operator);
+
+        $this->patch("/admin/orders/{$this->order->id}/paid")->assertSessionHasErrors('action');
+        $this->assertSame('unpaid', $this->order->refresh()->payment_status->value);
+    }
+
     public function test_guests_cannot_see_orders(): void
     {
         $this->get('/admin/orders')->assertRedirect('/login');

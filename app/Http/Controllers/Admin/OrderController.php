@@ -155,6 +155,17 @@ class OrderController extends Controller
         return redirect()->route('admin.orders.show', $order)->with('status', 'Đã cập nhật trạng thái đơn.');
     }
 
+    public function markPaid(Order $order, OrderService $orders): RedirectResponse
+    {
+        try {
+            $orders->markPaid($order);
+        } catch (DomainException $e) {
+            return back()->withErrors(['action' => $e->getMessage()]);
+        }
+
+        return redirect()->route('admin.orders.show', $order)->with('status', 'Đã ghi nhận tiền chuyển khoản.');
+    }
+
     public function bulkTransition(Request $request, OrderService $orders): RedirectResponse
     {
         $data = $request->validate([

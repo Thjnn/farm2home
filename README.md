@@ -228,7 +228,7 @@ Test chạy trên DB `farm2home_test` (cấu hình trong `phpunit.xml`), không 
 
 ## Deploy
 
-Các bước deploy Railway (biến môi trường, lệnh build, volume cho file chứng nhận, nạp dữ liệu ban đầu) nằm ở [`docs/plans/phase-7-p1-deploy.md`](docs/plans/phase-7-p1-deploy.md), Task 7.4. Nhớ thêm `GEMINI_API_KEY` / `GEMINI_MODEL` nếu dùng chatbot, và 4 biến `BANK_ID`, `BANK_NAME`, `BANK_ACCOUNT_NUMBER`, `BANK_ACCOUNT_HOLDER` vào phần **Variables** của Railway để hiện mã QR chuyển khoản (file `.env` trên máy không được đưa lên Railway).
+**Đọc [`docs/TRUOC-KHI-DEPLOY.md`](docs/TRUOC-KHI-DEPLOY.md) trước mỗi lần deploy.** Các bước deploy Railway (biến môi trường, lệnh build, volume cho file chứng nhận, nạp dữ liệu ban đầu) nằm ở [`docs/plans/phase-7-p1-deploy.md`](docs/plans/phase-7-p1-deploy.md), Task 7.4. Nhớ thêm `GEMINI_API_KEY` / `GEMINI_MODEL` nếu dùng chatbot, và 4 biến `BANK_ID`, `BANK_NAME`, `BANK_ACCOUNT_NUMBER`, `BANK_ACCOUNT_HOLDER` vào phần **Variables** của Railway để hiện mã QR chuyển khoản (file `.env` trên máy không được đưa lên Railway).
 
 ## Trạng thái
 

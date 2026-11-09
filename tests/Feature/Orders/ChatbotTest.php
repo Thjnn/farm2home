@@ -133,6 +133,44 @@ class ChatbotTest extends TestCase
         $this->assertStringContainsString('Mình chưa hiểu', $this->ask('xyz'));
     }
 
+    public function test_cancel_or_change_questions_point_to_the_operator_zalo(): void
+    {
+        $this->admin->update(['phone' => '0911000001']);
+        $this->operator->update(['phone' => '0922000002']);
+
+        foreach (['tôi muốn hủy đơn hàng', 'huy don', 'đổi ngày giao được không', 'sửa đơn'] as $question) {
+            $reply = $this->ask($question);
+            $this->assertStringContainsString('Để hủy hoặc đổi đơn', $reply, $question);
+            $this->assertStringContainsString('https://zalo.me/0922000002', $reply, $question);
+        }
+    }
+
+    public function test_operator_contact_falls_back_to_admin_then_to_a_call_back(): void
+    {
+        $this->assertStringContainsString('gọi lại số FARM2HOME', $this->ask('hủy đơn'));
+
+        $this->admin->update(['phone' => '0911000001']);
+        $this->assertStringContainsString('https://zalo.me/0911000001', $this->ask('hủy đơn'));
+    }
+
+    public function test_unknown_question_offers_the_operator_zalo(): void
+    {
+        $this->operator->update(['phone' => '0922000002']);
+
+        $this->assertStringContainsString('https://zalo.me/0922000002', $this->ask('xyz'));
+    }
+
+    public function test_gemini_is_told_how_to_handle_cancel_requests(): void
+    {
+        $this->operator->update(['phone' => '0922000002']);
+        config(['services.gemini.key' => 'test-key']);
+        Http::fake(['generativelanguage.googleapis.com/*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'ok']]]]]])]);
+
+        $this->ask('hủy đơn giúp tôi');
+
+        Http::assertSent(fn (Request $request) => str_contains($request['system_instruction']['parts'][0]['text'], 'Để hủy hoặc đổi đơn, bạn nhắn Zalo cho người vận hành: https://zalo.me/0922000002'));
+    }
+
     public function test_message_is_required_and_short(): void
     {
         $this->postJson('/hoi-dap', ['message' => ''])->assertUnprocessable();

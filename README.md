@@ -82,7 +82,7 @@ kg gợi ý = làm_tròn_lên_0,5( max(0, kg đơn đã có + kg dự báo thêm
 
 ### Chatbot hỏi đáp
 
-Ô hỏi đáp ở trang đặt hàng trả lời về giá, giỏ rau, giờ giao, cách tra đơn, nguồn gốc lô và nhu cầu dự kiến. Dùng Gemini (`GEMINI_API_KEY`) khi có; không có key hoặc gọi lỗi thì trả lời theo kịch bản soạn sẵn. Chatbot chỉ gợi ý mua sắm, không tư vấn sức khỏe.
+Ô hỏi đáp ở trang đặt hàng trả lời về giá, giỏ rau, giờ giao, cách tra đơn, nguồn gốc lô và nhu cầu dự kiến. Dùng Gemini (`GEMINI_API_KEY`) khi có; không có key hoặc gọi lỗi thì trả lời theo kịch bản soạn sẵn. Chatbot chỉ gợi ý mua sắm, không tư vấn sức khỏe. Khách hỏi hủy/đổi đơn, hoặc hỏi câu chatbot không trả lời được, thì chatbot đưa link `zalo.me` của người vận hành. Số lấy từ tài khoản người vận hành đầu tiên có số điện thoại trong **Admin → Tài khoản** (không có thì lấy số admin), nên muốn bật link này thì admin phải điền số điện thoại cho tài khoản người vận hành.
 
 Giải thích chi tiết (công thức, file, giới hạn khi thuyết trình): [`docs/CHUC-NANG-AI.md`](docs/CHUC-NANG-AI.md).
 

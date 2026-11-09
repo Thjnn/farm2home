@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Enums\PaymentMethod;
+use App\Enums\UserRole;
 use App\Models\Basket;
 use App\Models\DeliveryZone;
 use App\Models\Product;
+use App\Models\User;
 use App\Support\Format;
 use App\Support\OrderWindow;
 use App\Support\Reward;
@@ -66,6 +68,11 @@ class ChatbotService
 
         if ($this->has($plain, ['benh', 'tieu duong', 'huyet ap', 'giam can', 'mang thai', 'co bau', 'suc khoe', 'chua benh', 'an kieng'])) {
             return self::HEALTH_REPLY;
+        }
+
+        // Xét trước giờ giao và tra cứu, kẻo "đổi ngày giao" thành giờ giao, "hủy đơn hàng" thành tra cứu.
+        if ($this->has($plain, ['huy', 'doi don', 'sua don', 'thay doi', 'doi ngay', 'doi dia chi', 'doi gio', 'doi khung gio'])) {
+            return $this->changeOrderReply();
         }
 
         // Hỏi dự báo phải xét trước tên rau, kẻo "dự báo rau muống" thành câu trả lời giá.
@@ -142,7 +149,25 @@ class ChatbotService
             return "Chào bạn! Mình trả lời được các câu hỏi về:\n".$this->topics();
         }
 
-        return "Mình chưa hiểu câu hỏi này. Bạn thử hỏi về:\n".$this->topics();
+        return "Mình chưa hiểu câu hỏi này. Bạn thử hỏi về:\n".$this->topics()."\n\nHoặc ".$this->operatorContact().'.';
+    }
+
+    private function changeOrderReply(): string
+    {
+        return 'Để hủy hoặc đổi đơn, bạn '.$this->operatorContact().', kèm mã đơn (VD DH261003-001) nhé.';
+    }
+
+    /**
+     * Số của tài khoản người vận hành đầu tiên có điền số (admin nhập ở màn Tài khoản); không có thì lấy số admin.
+     */
+    private function operatorContact(): string
+    {
+        $phone = User::where('role', UserRole::Operator)->whereNotNull('phone')->orderBy('id')->value('phone')
+            ?? User::where('role', UserRole::Admin)->whereNotNull('phone')->orderBy('id')->value('phone');
+
+        return $phone === null
+            ? 'gọi lại số FARM2HOME đã liên hệ xác nhận đơn'
+            : "nhắn Zalo cho người vận hành: https://zalo.me/{$phone}";
     }
 
     /**
@@ -193,6 +218,8 @@ class ChatbotService
         $lookup = self::LOOKUP_REPLY;
         $origin = self::ORIGIN_REPLY;
         $forecastNote = self::FORECAST_NOTE;
+        $changeOrder = $this->changeOrderReply();
+        $contact = $this->operatorContact();
         $outlook = $this->products()->map(fn (Product $product) => $this->forecastLine($product))->filter()->implode("\n") ?: 'Chưa có số dự kiến.';
 
         return <<<PROMPT
@@ -203,7 +230,9 @@ class ChatbotService
         - Ngắn gọn: tối đa 3 câu, khoảng 60 chữ, từ ngữ đơn giản như nói với người lớn tuổi.
         - Khách hỏi con số (giá, phí giao, ngày giờ giao, điểm thưởng) thì câu đầu tiên nêu đúng con số đó lấy từ DỮ LIỆU, câu sau nêu lý do ngắn vì sao ra con số đó.
           Ví dụ: "Phí giao về Phường Mỹ Tho là 10.000đ, vì đơn chưa tới 150.000đ tiền hàng để được miễn phí." hoặc "Đặt bây giờ thì giao sớm nhất ngày 12/10, vì đã qua 18:00 là giờ chốt đơn hôm nay."
-        - Chỉ dùng thông tin trong phần DỮ LIỆU bên dưới. Không có thông tin thì nói thật là mình chưa có thông tin đó. Tuyệt đối không bịa giá, phí, khuyến mãi hay thời gian giao.
+        - Chỉ dùng thông tin trong phần DỮ LIỆU bên dưới. Không có thông tin thì nói thật là mình chưa có thông tin đó, rồi mời khách {$contact}. Tuyệt đối không bịa giá, phí, khuyến mãi hay thời gian giao.
+        - Khách muốn hủy, đổi hay sửa đơn thì trả lời đúng câu này: "{$changeOrder}" Không tự hứa là đã hủy hay đã đổi đơn.
+        - Đường link zalo.me phải chép nguyên văn, không sửa, không bọc trong dấu ngoặc.
         - Nếu khách nhắc tên phường/xã, hãy đối chiếu với mô tả từng cụm giao hàng để trả lời đúng cụm. Không thấy trong danh sách thì nói khu vực đó chưa có trong danh sách giao.
         - Khách hỏi nấu món gì (lẩu, canh, xào, gỏi, đãi tiệc...) thì gợi ý vài loại rau hợp món trong danh sách đang bán kèm giá, có thể gợi ý giỏ rau; nếu khách cần rau vào ngày cụ thể thì nhắc ngày giao sớm nhất. Không gợi ý loại rau không có trong danh sách.
         - Khách hoặc nông hộ hỏi dự báo, nhu cầu, cần chuẩn bị bao nhiêu kg thì dùng phần "Dự kiến nhu cầu" trong DỮ LIỆU: nêu tổng kg, ngày đông nhất và lý do có sẵn ở đó, không tự thêm lý do khác.

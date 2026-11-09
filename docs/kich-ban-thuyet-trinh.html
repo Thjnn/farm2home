@@ -108,6 +108,16 @@
   .qa summary::before { content: 'H'; flex: none; font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--surface); background: var(--say); border-radius: 5px; padding: 1px 6px; height: fit-content; margin-top: 3px; }
   .qa .ans { margin: 8px 0 0 30px; font-size: 14.5px; }
   .qa .ans .pt { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .mentor summary { flex-wrap: wrap; align-items: baseline; }
+  .mentor summary::before { content: none; }
+  .mentor .mn { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--muted); min-width: 22px; }
+  .mentor .mt { flex: 1; min-width: 200px; }
+  .mentor .mq { display: block; font-weight: 400; font-size: 13.5px; color: var(--body); margin-top: 2px; }
+  .mentor .ms { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border-radius: 5px; padding: 2px 7px; white-space: nowrap; }
+  .ms-done { color: var(--accent); background: var(--accent-soft); }
+  .ms-part { color: var(--demo); background: var(--demo-soft); }
+  .ms-plan { color: var(--say); background: var(--say-soft); border: 1px solid color-mix(in srgb, var(--say) 30%, transparent); }
+  .mentor .ans p { margin-bottom: 8px; }
   ul.chk { list-style: none; }
   ul.chk li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
   ul.chk li:last-child { border-bottom: 0; }
@@ -133,9 +143,9 @@
 
 <header class="top">
   <div class="eyebrow">Business Challenge 2026 · AI for Inclusive Growth and Sustainable Communities</div>
-  <h1>Kịch bản thuyết trình: công nghệ của FARM2HOME AI</h1>
-  <p>Phần trình bày về sản phẩm và công nghệ: web làm được gì, AI nằm ở đâu, vì sao thiết kế như vậy. Mỗi đoạn có <b>lời nói</b> (chữ to, đọc được), cột bên cạnh là <b>màn hình cần chiếu</b>, <b>thao tác demo</b> và <b>ý phải nhấn</b>.</p>
-  <div class="facts">
+  <h1 data-i18n="h1">Kịch bản thuyết trình: công nghệ của FARM2HOME AI</h1>
+  <p data-i18n="intro">Phần trình bày về sản phẩm và công nghệ: web làm được gì, AI nằm ở đâu, vì sao thiết kế như vậy. Mỗi đoạn có <b>lời nói</b> (chữ to, đọc được), cột bên cạnh là <b>màn hình cần chiếu</b>, <b>thao tác demo</b> và <b>ý phải nhấn</b>.</p>
+  <div class="facts" data-i18n="facts">
     <span>⏱ khoảng 7 phút + hỏi đáp</span>
     <span>🎤 1 người nói + 1 người bấm demo</span>
     <span>📱 1 điện thoại + 1 laptop</span>
@@ -147,31 +157,36 @@
   <div class="in">
     <span class="clock" id="clock">0:00</span>
     <button id="startBtn" class="primary" type="button">▶ Tập nói</button>
-    <button id="resetBtn" type="button">Đặt lại</button>
+    <button id="resetBtn" type="button" data-i18n="reset">Đặt lại</button>
     <div class="bar" id="bar"><div class="needle" id="needle"></div></div>
-    <button id="compactBtn" type="button" title="Chỉ hiện lời nói">Chỉ lời nói</button>
-    <button id="themeToggle" type="button">Giao diện</button>
+    <button id="compactBtn" type="button" data-i18n="compact">Chỉ lời nói</button>
+    <button id="langBtn" type="button" title="Đổi ngôn ngữ / Switch language">Tiếng Việt</button>
+    <button id="themeToggle" type="button" data-i18n="theme">Giao diện</button>
   </div>
 </div>
 
 <main>
-  <h2 class="part">Phần 1 · Lời thuyết trình</h2>
-  <p class="part-lead">Chữ <em>tô nền</em> là cụm từ khoá, nói chậm và rõ. Dòng <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">[ngừng]</span> là chỗ dừng một nhịp để giám khảo nhìn màn hình.</p>
+  <h2 class="part" data-i18n="p1">Phần 1 · Lời thuyết trình</h2>
+  <p class="part-lead" data-i18n="p1lead">Chữ <em>tô nền</em> là cụm từ khoá, nói chậm và rõ. Dòng <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">[ngừng]</span> là chỗ dừng một nhịp để giám khảo nhìn màn hình.</p>
   <div id="segs"></div>
 
-  <h2 class="part" id="hoi-dap">Phần 2 · Câu hỏi giám khảo hay hỏi</h2>
-  <p class="part-lead">Trả lời ngắn, thật, có số. Nếu không biết thì nói "chúng em chưa đo, sẽ đo trong pilot", đừng đoán.</p>
+  <h2 class="part" id="hoi-dap" data-i18n="p2">Phần 2 · Câu hỏi giám khảo hay hỏi</h2>
+  <p class="part-lead" data-i18n="p2lead">Trả lời ngắn, thật, có số. Nếu không biết thì nói "chúng em chưa đo, sẽ đo trong pilot", đừng đoán.</p>
   <div class="card qa" id="qa"></div>
 
-  <h2 class="part" id="chuan-bi">Phần 3 · Chuẩn bị trước giờ thuyết trình</h2>
+  <h2 class="part" id="cau-hoi-co" data-i18n="p2b">Phần 2b · 20 câu hỏi công nghệ của cô Hằng</h2>
+  <p class="part-lead" data-i18n="p2blead">Câu trả lời giống hệt file <code>Cau-hoi-Cong-nghe-F2H-tra-loi-moi.docx</code>. Nhãn màu cho biết tính năng <b>đã có</b> (demo được), <b>có một phần</b>, hay <b>là kế hoạch</b>. Đừng nhận những gì chưa có.</p>
+  <div class="card qa mentor" id="mentor"></div>
+
+  <h2 class="part" id="chuan-bi" data-i18n="p3">Phần 3 · Chuẩn bị trước giờ thuyết trình</h2>
   <div class="grid2">
     <div class="card">
-      <h3>Checklist (đánh dấu được, máy tự nhớ)</h3>
+      <h3 data-i18n="chkTitle">Checklist (đánh dấu được, máy tự nhớ)</h3>
       <ul class="chk" id="chk"></ul>
     </div>
     <div class="card">
-      <h3>Tab mở sẵn theo đúng thứ tự demo</h3>
-      <ol style="margin-left:18px;font-size:14px">
+      <h3 data-i18n="tabsTitle">Tab mở sẵn theo đúng thứ tự demo</h3>
+      <ol style="margin-left:18px;font-size:14px" data-i18n="tabs">
         <li><b>Điện thoại:</b> trang chủ → <code>/dat-hang</code></li>
         <li><b>Điện thoại hoặc tab 2:</b> link nông hộ NH01 <code>/nong-ho/{token}</code></li>
         <li><b>Laptop:</b> <code>/admin/forecasts</code> (Dự báo)</li>
@@ -180,8 +195,8 @@
         <li><b>Laptop:</b> <code>/admin</code> (Tổng quan, đã chọn sẵn khoảng ngày)</li>
         <li><b>Dự phòng:</b> <code>docs/kich-ban-su-dung.html</code> (sơ đồ một ngày) và <code>docs/so-do-csdl.html</code></li>
       </ol>
-      <h3 style="margin-top:16px">Nếu demo trục trặc</h3>
-      <ul class="dont">
+      <h3 style="margin-top:16px" data-i18n="troubleTitle">Nếu demo trục trặc</h3>
+      <ul class="dont" data-i18n="trouble">
         <li>Mất mạng / link tạm thời chết → chạy trên <code>farm2home.test</code> ở laptop, chỉ chiếu màn hình laptop.</li>
         <li>Lỗi "SQLSTATE … refused" → MySQL chưa bật: mở Laragon, <b>Start All</b>.</li>
         <li>Chatbot không trả lời bằng Gemini → vẫn có câu trả lời soạn sẵn; nói "khi không có mạng, chatbot dùng câu trả lời dự phòng".</li>
@@ -191,8 +206,8 @@
   </div>
 
   <div class="card" style="margin-top:14px">
-    <h3>Những câu KHÔNG được nói</h3>
-    <ul class="dont">
+    <h3 data-i18n="dontTitle">Những câu KHÔNG được nói</h3>
+    <ul class="dont" data-i18n="dont">
       <li>"AI tự quyết định thu hoạch" → sai. AI chỉ gợi ý, người vận hành chốt.</li>
       <li>"Mô hình học máy / deep learning dự báo" → hiện là thống kê baseline có chủ đích; học máy là giai đoạn sau.</li>
       <li>"Rau 100% sạch", "QR chứng nhận an toàn" → QR chỉ là thông tin lô; chứng nhận chỉ hiện khi có file còn hạn.</li>
@@ -204,7 +219,7 @@
   </div>
 </main>
 
-<footer>Số liệu và tính năng khớp với code hiện tại (tháng 10/2026). Chi tiết AI: <code>docs/CHUC-NANG-AI.md</code> · kịch bản người dùng: <code>docs/kich-ban-su-dung.html</code>.</footer>
+<footer data-i18n="footer">Số liệu và tính năng khớp với code hiện tại (tháng 10/2026). Chi tiết AI: <code>docs/CHUC-NANG-AI.md</code> · kịch bản người dùng: <code>docs/kich-ban-su-dung.html</code>.</footer>
 
 <script>
 // t = giây bắt đầu; opt = bỏ được khi thiếu giờ
@@ -309,9 +324,9 @@ const QA = [
   { q: 'Sao không làm app di động?',
     a: 'Bắt người dân tải app là rào cản lớn nhất. Web chạy được trên mọi điện thoại, và ai muốn thì cài lên màn hình chính như app, không qua kho ứng dụng. Một bộ code, chi phí thấp.' },
   { q: 'Bảo mật dữ liệu khách hàng thế nào?',
-    a: 'Thu tối thiểu: tên, số điện thoại, địa chỉ giao, và khách phải đồng ý mới lưu. Trang tra cứu đơn cố ý không hiện tên và địa chỉ vì ai biết số điện thoại cũng tra được. Link nông hộ lộ thì quản trị cấp link mới, link cũ hết hiệu lực ngay. Trang quản trị phải đăng nhập và phân quyền admin / người vận hành.' },
+    a: 'Thu tối thiểu: tên, số điện thoại, địa chỉ giao, và khách phải đồng ý mới lưu. Địa chỉ được mã hoá trong cơ sở dữ liệu. Trang tra cứu đơn cố ý không hiện tên và địa chỉ vì ai biết số điện thoại cũng tra được. Link nông hộ lộ thì quản trị cấp link mới, link cũ hết hiệu lực ngay. Trang quản trị phải đăng nhập và phân quyền admin / người vận hành.' },
   { q: 'QR của các bạn có chứng minh rau sạch không?',
-    a: 'Không, và chúng em nói rõ điều đó. QR cho thấy sự thật về lô: nhà nào, thu lúc nào, sơ chế, bảo quản. Chứng nhận chỉ hiện khi có giấy tờ thật còn hạn. Chúng em không ghi "100% sạch".' },
+    a: 'Không, và chúng em nói rõ điều đó. QR cho thấy sự thật về lô: nhà nào, thu lúc nào, sơ chế, bảo quản. Chứng nhận chỉ hiện khi có giấy tờ thật còn hạn. Chúng em không ghi "100% sạch". Mỗi link QR còn có một khoá ngẫu nhiên nên không đoán ra được mã của lô khác.' },
   { q: 'Chatbot Gemini có nói sai không?',
     a: 'Chatbot được đưa dữ liệu thật của hệ thống (rau, giỏ, giá, giờ giao) và chỉ trả lời về mua sắm, không tư vấn sức khoẻ. Không có mạng hoặc Gemini lỗi thì nó dùng câu trả lời soạn sẵn. Chatbot không tham gia quyết định thu hoạch.' },
   { q: 'Chi phí vận hành công nghệ bao nhiêu?',
@@ -319,6 +334,9 @@ const QA = [
     p: 'Nếu nhóm đã có số chi phí hosting cụ thể thì thay câu này bằng số thật.' },
   { q: 'Mở rộng ra nhiều xã, nhiều loại rau được không?',
     a: 'Được. Rau, giỏ, khu giao, nông hộ đều do quản trị thêm trên giao diện, không cần sửa code. Dự báo và phân bổ chạy theo từng loại rau, từng ngày, nên thêm loại rau là tự có dự báo riêng.' },
+  { q: 'Sao không dùng microservices? Đông người dùng có bị sập không?',
+    a: 'Chúng em dùng kiến trúc nguyên khối (một ứng dụng Laravel) vì phù hợp quy mô pilot và đội nhỏ: 20–30 hộ, vài chục đơn mỗi ngày, một người lập trình. Tách microservices lúc này chỉ tăng chi phí và lỗi vận hành. Khách đặt rải rác trong ngày cho ngày mai, hạn chót 18:00, nên không có giờ cao điểm dồn dập. Khi có mô hình học máy bằng Python, chúng em tách riêng dịch vụ dự báo; chỉ tách thêm khi có lý do cụ thể về tải hoặc đội ngũ.',
+    p: 'Microservices = chia hệ thống thành nhiều chương trình nhỏ chạy riêng, như khu ẩm thực nhiều quầy; nguyên khối = một bếp làm hết, như quán ăn gia đình.' },
   { q: 'Làm sao biết hệ thống thật sự giảm lãng phí?',
     a: 'Ghi rau dư mỗi ngày theo lô và lý do, so sánh theo tuần trước và sau khi dùng dự báo, đồng thời theo dõi tỉ lệ giao đủ. Rau dư giảm mà giao đủ không giảm thì mới là hiệu quả thật.' },
 ];
@@ -337,43 +355,596 @@ const CHECK = [
   'Tập nói ít nhất 2 lần với đồng hồ, không quá 7:30',
 ];
 
+// 20 câu hỏi công nghệ của cô Hằng, trả lời theo hệ thống đang chạy (cùng nội dung file Cau-hoi-Cong-nghe-F2H-tra-loi-moi.docx).
+const MENTOR_QA = [
+ {
+  "n": 1,
+  "s": "part",
+  "topic": "Ngưỡng dữ liệu để dùng học máy",
+  "q": "Hiện tại hệ thống chỉ dùng công thức thống kê cơ bản như trung bình trượt. Nhóm quy định ngưỡng dữ liệu cụ thể là bao nhiêu để đủ điều kiện kích hoạt các mô hình Machine Learning, và làm sao chứng minh máy học sẽ cho tỷ lệ sai số thấp hơn kinh nghiệm phán đoán của nông dân?",
+  "qe": "Currently, the system only uses basic statistical formulas like moving average. What specific data threshold does the team set to trigger Machine Learning models, and how will you prove that ML yields a lower error rate than farmers' judgment?",
+  "a": [
+   "Chúng em không đặt ngưỡng bằng một số bản ghi cố định mà bằng kết quả: mô hình học máy chỉ được dùng khi thắng các phương pháp hiện tại trên dữ liệu thật.",
+   "Điều kiện tối thiểu: khoảng 8–12 tuần đơn thật, để có đủ nhiều chu kỳ tuần (riêng phương pháp \"trung bình cùng thứ\" đã cần 4 tuần mới có 4 điểm cho mỗi thứ).",
+   "Cách so sánh đã có sẵn: mỗi ngày hệ thống lưu dự báo của cả 3 phương pháp, và 21:00 tự điền nhu cầu thật. Mô hình mới chỉ cần chạy song song \"trong bóng\", không ảnh hưởng vận hành. Chúng em đo bằng WAPE (tổng kg đoán lệch / tổng kg thực tế) thay vì MAPE, vì mỗi loại rau chỉ vài kg/ngày khiến MAPE bị phóng đại.",
+   "So với phán đoán của con người: hệ thống đã lưu song song số AI gợi ý và số người vận hành chốt kèm lý do cho từng dòng kế hoạch. Chúng em so WAPE của cả hai với nhu cầu thật; mô hình chỉ thay phương pháp đang dùng khi thấp hơn rõ rệt trong ít nhất 2–3 tuần liên tục. Pilot chưa chạy nên chúng em chưa có con số."
+  ],
+  "ae": [
+   "We do not set a fixed record count; the threshold is the result: an ML model is only used when it beats the current methods on real data.",
+   "Minimum condition: about 8–12 weeks of real orders, to cover enough weekly cycles (the \"same-weekday average\" method alone needs 4 weeks to get 4 points per weekday).",
+   "The comparison is already built in: every day the system stores forecasts from all 3 methods and fills in actual demand at 21:00. A new model only needs to run in \"shadow mode\" alongside, without affecting operations. We measure with WAPE (total kg error / total actual kg) rather than MAPE, because each vegetable sells only a few kg a day, which inflates MAPE.",
+   "Against human judgment: for every plan line the system already stores both the AI suggestion and the operator's final figure with a reason. We compare the WAPE of both against actual demand; a model replaces the current method only if it is clearly lower for at least 2–3 consecutive weeks. The pilot has not run yet, so we have no figures."
+  ]
+ },
+ {
+  "n": 2,
+  "s": "done",
+  "topic": "Kiểm soát rác dữ liệu",
+  "q": "Kiểm soát rác dữ liệu: Đầu vào từ Zalo/Google Forms của nông hộ rất dễ chứa dữ liệu phi cấu trúc hoặc sai lệch. Hệ thống tự động chuẩn hóa, làm sạch và phát hiện bất thường như thế nào để rác dữ liệu không làm gãy chuỗi kết quả dự báo?",
+  "qe": "Inputs from farmers via Zalo/Google Forms are prone to containing unstructured or incorrect data. How does the system automatically standardize, clean data, and detect anomalies so that garbage data does not break the forecasting chain?",
+  "a": [
+   "Nông hộ không nhập chữ tự do qua Zalo hay Google Forms mà vào một trang web có cấu trúc qua link riêng. Có 4 lớp kiểm soát:",
+   "(1) Chỉ có ô số cho đúng những loại rau nhà mình đã đăng ký, bước 0,5 kg; máy chủ chặn số âm, chữ, số trên 500 kg.",
+   "(2) Mỗi nông hộ + loại rau + ngày chỉ có một dòng (ràng buộc trong cơ sở dữ liệu): gửi lại thì cập nhật, không sinh trùng; khóa không cho sửa sau khi kế hoạch được chốt.",
+   "(3) Phát hiện bất thường: số báo cao hơn 3 lần mức thường ngày của chính nhà đó (kg/tuần đã khai chia 7) bị đánh dấu cảnh báo ở trang Sản lượng và Kế hoạch thu hoạch để người vận hành gọi hỏi lại, ví dụ trường hợp gõ dư một số 0. So với mức của từng nhà phù hợp với dữ liệu nhỏ hơn là Z-score trên toàn bộ dữ liệu.",
+   "(4) Không nông hộ nào bị giao quá số mình báo, và người vận hành duyệt trước khi chốt. Nông hộ báo miệng thì người vận hành nhập hộ vào cùng form đó.",
+   "Ngoài ra, dự báo nhu cầu được tính từ đơn hàng (form đặt hàng cũng có kiểm tra dữ liệu), không phải từ số nông hộ báo. Số báo sai chỉ ảnh hưởng bước chia cho nông hộ, và bước này đã có cảnh báo."
+  ],
+  "ae": [
+   "Farmers do not type free text into Zalo or Google Forms; they use a structured web page through a private link. There are 4 layers of control:",
+   "(1) Number fields only for the vegetables the farm has registered, in 0.5 kg steps; the server rejects negatives, text and values above 500 kg.",
+   "(2) One row per farmer + vegetable + date (a database constraint): resubmitting updates the row instead of duplicating it, and the date is locked once the plan is confirmed.",
+   "(3) Anomaly detection: a figure more than 3 times the farm's own usual level (declared kg per week ÷ 7) is flagged on the Supply and Harvest Plan screens so the operator calls back, e.g. an extra zero typed by mistake. Comparing against each farm's own level suits small data better than a global Z-score.",
+   "(4) No farmer is ever allocated more than they reported, and the operator reviews before confirming. When a farmer reports by phone, the operator enters it into the same form.",
+   "Also, demand forecasts are computed from orders (the order form is validated too), not from farmers' supply reports. A wrong supply figure only affects the allocation step, which is already flagged."
+  ]
+ },
+ {
+  "n": 3,
+  "s": "part",
+  "topic": "Chống gian lận mã QR",
+  "q": "Chống gian lận mã QR: Vì dự án không dùng sổ cái bất biến như Blockchain, nhóm có cơ chế mã hóa động hay đối soát chéo nào để ngăn rủi ro kẻ gian in hàng loạt một mã QR sạch để dán lên rau trôi nổi không?",
+  "qe": "Since the project does not use an immutable ledger like Blockchain, does the team have a dynamic encryption or cross-checking mechanism to prevent bad actors from mass-printing a clean QR code to stick on unverified vegetables?",
+  "a": [
+   "Đã có: mỗi lô có mã đọc được (F2H-ngày-rau-nông hộ) và một khóa ngẫu nhiên 10 ký tự nằm trong link QR. Thiếu hoặc sai khóa thì trang không mở, form phản hồi cũng bị chặn, nên không thể suy ra một mã QR hợp lệ từ mã lô. Trang QR chỉ mở với lô đã qua kiểm tra chất lượng.",
+   "Chúng em nói thẳng giới hạn: QR là công cụ truy xuất nguồn gốc, không phải chống giả tuyệt đối; một tem thật vẫn có thể bị chụp lại. Rủi ro này nhỏ ở mô hình của F2H vì chuỗi ngắn và khép kín: nhóm tự sơ chế, đóng gói và giao tận tay khách, rau không bày bán ở sạp. Trang QR luôn hiện ngày giờ thu hoạch, đóng gói và hạn dùng của lô, nên tem cũ hoặc lệch ngày dễ bị nhận ra.",
+   "Khi mở rộng sang điểm bán của bên thứ ba: đếm số lượt quét so với số gói của lô và hiện cảnh báo khi vượt. Chúng em không tự vô hiệu hóa mã, để tránh khóa nhầm khách mua thật."
+  ],
+  "ae": [
+   "In place: each batch has a readable code (F2H-date-vegetable-farmer) plus a random 10-character key inside the QR link. Without the correct key the page does not open and the feedback form is blocked, so a valid QR cannot be derived from the batch code. The QR page only opens for batches that passed the quality check.",
+   "We are frank about the limit: the QR is a traceability tool, not absolute anti-counterfeiting; a genuine label can still be photographed. The risk is small in F2H's model because the chain is short and closed: the team processes, packs and hand-delivers to customers; produce is not sold on market stalls. The QR page always shows the batch's harvest time, packing time and best-before date, so old or mismatched labels are easy to spot.",
+   "When we expand to third-party points of sale: count scans against the number of packs in the batch and show a warning when exceeded. We will not auto-disable codes, to avoid locking out genuine customers."
+  ]
+ },
+ {
+  "n": 4,
+  "s": "plan",
+  "topic": "Thời tiết và biên an toàn",
+  "q": "Tích hợp biến số ngoại cảnh: Tham số \"biên an toàn\" trong công thức dự báo có kế hoạch tích hợp API dữ liệu thời tiết thực tế để tự động nội suy điều chỉnh không, hay hoàn toàn phụ thuộc vào người vận hành tự cài đặt bằng cảm tính?",
+  "qe": "Does the \"safety margin\" parameter in the forecast formula plan to integrate real-time weather API data for automatic interpolation adjustments, or does it rely entirely on the operator's manual, intuitive settings?",
+  "a": [
+   "Hiện tại: biên an toàn mặc định 10%, chỉnh được theo từng kế hoạch. Mọi lần người vận hành sửa số chốt khác số gợi ý đều bắt buộc ghi lý do (ví dụ \"trời mưa\"), và rau dư/hư được ghi theo ngày và lý do.",
+   "Chúng em cố ý chưa tự động: chưa có dữ liệu cho biết mưa làm hao hụt bao nhiêu phần trăm với từng loại rau ở Mỹ Tho. Một hệ số 10–15% đặt sẵn cũng vẫn là cảm tính, chỉ là cảm tính của máy.",
+   "Lộ trình: (1) pilot ghi lý do điều chỉnh và rau dư/hư theo ngày; (2) ghép với dữ liệu thời tiết lịch sử từ API miễn phí (như Open-Meteo) để ước lượng mức hao hụt thật; (3) khi có số liệu, hệ thống gợi ý biên an toàn theo dự báo thời tiết, vẫn hiện cho người vận hành duyệt chứ không tự áp."
+  ],
+  "ae": [
+   "Today: the default safety margin is 10% and can be adjusted per plan. Whenever the operator changes a final figure away from the suggestion, a reason is mandatory (e.g. \"rain\"), and surplus/damaged produce is logged by day and reason.",
+   "We deliberately have not automated it yet: we have no data on how much rain reduces yield for each vegetable in My Tho. A preset 10–15% factor would still be intuition, just the machine's intuition.",
+   "Roadmap: (1) the pilot records adjustment reasons and surplus/damage per day; (2) we join this with historical weather data from a free API (such as Open-Meteo) to estimate real losses; (3) once we have numbers, the system suggests a weather-based margin, still shown to the operator for approval rather than applied automatically."
+  ]
+ },
+ {
+  "n": 5,
+  "s": "done",
+  "topic": "SQL hay NoSQL",
+  "q": "Quản trị nợ kỹ thuật: Khi nâng cấp từ hệ thống phân mảnh (Giai đoạn 1) lên Web/App tập trung (Giai đoạn 3), nhóm thiết kế cấu trúc dữ liệu theo hướng SQL hay NoSQL ngay từ bây giờ để đảm bảo di chuyển dữ liệu trơn tru, không đứt gãy?",
+  "qe": "When upgrading from a fragmented system (Phase 1) to a centralized Web/App (Phase 3), is the team designing the Data Schema using SQL or NoSQL right now to ensure smooth, seamless data migration?",
+  "a": [
+   "Nhóm đã bỏ qua giai đoạn bảng tính: MVP chạy trên cơ sở dữ liệu quan hệ MySQL ngay từ đầu, nên không còn bước chuyển đổi từ bảng tính.",
+   "Cấu trúc gồm 21 bảng, 39 khóa ngoại và các ràng buộc không trùng: mã đơn, mã lô, số điện thoại khách, mỗi nông hộ + rau + ngày một báo cáo sản lượng, mỗi ngày giao một kế hoạch. Mọi thay đổi cấu trúc đi qua migration có phiên bản và được sao lưu trước, nên nâng cấp không đứt gãy.",
+   "Chọn SQL vì dữ liệu là giao dịch có quan hệ chặt (đơn – dòng đơn – lô – nông hộ), cần toàn vẹn và transaction cho tiền và tồn kho. Chỉ phần sở thích của khách lưu dạng JSON, là nơi cần linh hoạt. Ứng dụng truy cập dữ liệu qua lớp ORM của Laravel nên có thể chuyển sang PostgreSQL nếu cần. Nhóm có sơ đồ cơ sở dữ liệu tương tác để trình bày."
+  ],
+  "ae": [
+   "The team skipped the spreadsheet stage: the MVP runs on a relational MySQL database from the start, so there is no spreadsheet migration step.",
+   "The schema has 21 tables, 39 foreign keys and uniqueness constraints: order code, batch code, customer phone, one supply report per farmer + vegetable + date, one plan per delivery date. Every schema change goes through versioned migrations with a backup first, so upgrades do not break data.",
+   "We chose SQL because the data is transactional with tight relations (order – order line – batch – farmer) and needs integrity and transactions for money and stock. Only customer preferences are stored as JSON, where flexibility is needed. The app accesses data through Laravel's ORM, so moving to PostgreSQL is possible if needed. We have an interactive database diagram to present."
+  ]
+ },
+ {
+  "n": 6,
+  "s": "plan",
+  "topic": "Người dùng mới (cold start)",
+  "q": "Hệ thống gợi ý giỏ rau tự động hóa được xây dựng dựa trên quy mô hộ, ngân sách và sở thích. Nhóm giải quyết như thế nào đối với người dùng mới chưa có bất kỳ lịch sử mua hàng nào để hệ thống AI này vẫn có thể đưa ra gợi ý chính xác?",
+  "qe": "The recommendation system automates vegetable baskets based on household size, budget, and preferences. How does the team solve the \"Cold Start\" problem for new users with no purchase history so that this AI system can still provide accurate suggestions?",
+  "a": [
+   "Gợi ý giỏ cá nhân hóa chưa có trong MVP. Hiện tại khách chọn giỏ theo số người (mỗi giỏ ghi rõ phù hợp cho mấy người), và chatbot gợi ý rau theo món dựa trên những loại rau đang có.",
+   "Khi làm, chúng em giữ nguyên tắc không bắt khách tạo tài khoản. Khách có thể trả lời 2 câu không bắt buộc khi đặt (nhà mấy người, rau không ăn), lưu theo số điện thoại nếu khách đồng ý. Khách mới dùng gợi ý theo luật: quy mô hộ cộng rau đang vào mùa hoặc đang có nhiều. Sau 3–5 đơn mới dùng lịch sử mua của chính khách đó.",
+   "Với 20–30 hộ trong pilot, lọc cộng tác chưa có ý nghĩa thống kê; chúng em chỉ cân nhắc khi có hàng trăm khách. Gợi ý chỉ là gợi ý mua sắm, không đưa lời khuyên sức khỏe."
+  ],
+  "ae": [
+   "Personalised baskets are not in the MVP. Today customers choose a basket by household size (each basket states how many people it suits), and the chatbot suggests vegetables for dishes based on what is available.",
+   "When we build it, we keep the rule of no forced accounts. Customers may answer 2 optional questions when ordering (household size, vegetables they avoid), stored against their phone number if they consent. New customers get rule-based suggestions: household size plus vegetables in season or in surplus. After 3–5 orders we use the customer's own purchase history.",
+   "With 20–30 pilot households, collaborative filtering is not statistically meaningful; we will only consider it at hundreds of customers. Suggestions are shopping suggestions only, never health advice."
+  ]
+ },
+ {
+  "n": 7,
+  "s": "done",
+  "topic": "Tồn khả dụng, bán vượt tồn",
+  "q": "Công thức dự báo lõi sử dụng biến số \"Tồn khả dụng\". Trạng thái tồn kho của nông sản thay đổi liên tục, kiến trúc hệ thống xử lý bài toán đồng bộ dữ liệu thời gian thực giữa nông trại và nền tảng như thế nào để tránh lỗi khách đặt được hàng nhưng thực tế đã hết?",
+  "qe": "The core forecasting formula uses the \"Available inventory\" variable. Agricultural inventory states change constantly; how does the system architecture handle real-time data synchronization between the farm and the platform to prevent Overselling?",
+  "a": [
+   "F2H đặt trước rồi mới thu hoạch, nên không có kho rau để bán vượt như sàn thương mại điện tử. Khách đặt cho ngày mai trước 18:00; sau giờ chốt, hệ thống mới tính số cần thu và nông hộ thu theo số đó. \"Tồn khả dụng\" trong công thức chỉ là rau của lô cũ còn dùng được, đem trừ bớt khỏi số cần thu.",
+   "Rủi ro thật là thu thiếu hoặc rau hỏng, được xử lý như sau: biên an toàn 10%; tồn khả dụng chỉ tính lô đã đạt chất lượng, còn hạn, trừ phần đã gán cho đơn và phần đã ghi hư, và được tính lại trực tiếp từ cơ sở dữ liệu mỗi lần tạo gợi ý (không dùng bộ nhớ đệm); khi gán lô cho đơn, lô hết hạn sớm được dùng trước và khách giỏ định kỳ được ưu tiên; số gói thực giao được ghi lại để đo tỉ lệ giao đủ.",
+   "Các thao tác liên quan đến tiền và tồn chạy trong transaction, và kế hoạch được khóa dòng khi tạo để hai người không ghi đè nhau. Ở quy mô pilot chưa cần Redis hay hàng đợi tin nhắn."
+  ],
+  "ae": [
+   "F2H takes pre-orders and harvests afterwards, so there is no stock to oversell as on an e-commerce marketplace. Customers order for tomorrow before 18:00; after the cut-off the system computes how much to harvest and farmers harvest exactly that. \"Available inventory\" in the formula is only usable produce from earlier batches, subtracted from the amount to harvest.",
+   "The real risk is under-harvesting or spoilage, handled as follows: a 10% safety margin; available stock only counts batches that passed quality checks and are within shelf life, minus what is already allocated to orders and what was logged as damaged, recomputed directly from the database each time a suggestion is generated (no cache); when allocating batches to orders, the earliest-expiring batches go first and subscription customers are prioritised; delivered packs are recorded to measure the fill rate.",
+   "Money and stock operations run inside database transactions, and the plan row is locked during generation so two people cannot overwrite each other. At pilot scale there is no need for Redis or a message queue."
+  ]
+ },
+ {
+  "n": 8,
+  "s": "plan",
+  "topic": "Chịu tải giờ cao điểm",
+  "q": "Theo lộ trình, Giai đoạn 3 sẽ tích hợp Website/App và tự động hóa toàn bộ. Các nền tảng đi chợ thường chịu tải cực lớn vào các khung giờ vàng (ví dụ 6h-8h sáng). Nhóm có phương án thiết kế kiến trúc máy chủ như thế nào (ví dụ: Microservices, Load Balancing) để không bị sập khi có hàng ngàn truy cập đồng thời?",
+  "qe": "According to the roadmap, Phase 3 will integrate a Web/App and fully automate everything. Grocery platforms often face massive traffic spikes during golden hours (e.g., 6 AM - 8 AM). What is the team's server architecture plan (e.g., Microservices, Load Balancing) to avoid crashing during thousands of concurrent accesses?",
+  "a": [
+   "Hiện hệ thống là một ứng dụng Laravel nguyên khối. Đây là lựa chọn đúng cho quy mô pilot (20–30 hộ, vài chục đơn mỗi ngày) và đội có một lập trình viên; tách microservices lúc này chỉ tăng chi phí và lỗi vận hành.",
+   "Đặc điểm tải của F2H khác chợ online giao ngay: khách đặt rải rác trong ngày cho ngày mai, hạn chót 18:00; buổi sáng là lúc giao hàng chứ không phải lúc đặt hàng, nên không có đỉnh 6–8h.",
+   "Lộ trình khi tải tăng, làm phần rẻ trước: lưu đệm các trang công khai và danh mục; đưa việc nặng (dự báo, sinh đơn định kỳ) vào hàng đợi chạy nền; ứng dụng không giữ trạng thái trên máy chủ nên có thể chạy nhiều máy sau một bộ cân bằng tải; cơ sở dữ liệu thêm bản sao chỉ đọc. Chỉ tách thành dịch vụ riêng khi có lý do cụ thể, ví dụ mô hình dự báo viết bằng Python. Chúng em không cam kết con số uptime khi chưa đo."
+  ],
+  "ae": [
+   "Today the system is a single Laravel application (monolith). That is the right choice for the pilot (20–30 households, a few dozen orders a day) and a team with one developer; splitting into microservices now would only add cost and operational failures.",
+   "F2H's load pattern differs from instant-delivery grocery apps: customers order throughout the day for tomorrow, with an 18:00 cut-off; mornings are for delivery, not ordering, so there is no 6–8 AM spike.",
+   "Roadmap as load grows, cheapest steps first: cache public pages and the catalogue; move heavy work (forecasting, subscription order generation) to background queues; the app keeps no state on the server, so it can run on several machines behind a load balancer; add read replicas to the database. We only split out a separate service when there is a concrete reason, such as a Python forecasting model. We do not promise an uptime figure we have not measured."
+  ]
+ },
+ {
+  "n": 9,
+  "s": "part",
+  "topic": "Zalo Mini App cho nông hộ",
+  "q": "Nhóm xác định người dùng đầu vào là \"nông hộ ít kỹ năng số\". Ở Giai đoạn 3, thay vì bắt họ tải và học cách dùng một Native App mới (rất dễ thất bại), nhóm có kế hoạch xây dựng dưới dạng Zalo Mini App để tận dụng thói quen cũ và API hệ sinh thái của Zalo không?",
+  "qe": "The team identifies the input users as \"farmers with low digital skills\". In Phase 3, instead of forcing them to download and learn a new Native App (which has a high failure rate), does the team plan to build a Zalo Mini App to leverage their existing habits and Zalo's ecosystem APIs?",
+  "a": [
+   "Chúng em đồng ý không làm app riêng cho nông hộ. Hiện tại nông hộ không cài gì, không có tài khoản: bấm link riêng được gửi qua Zalo, nhập số kg, bấm \"Tôi sẽ thu hoạch\". Người vận hành gửi tin nhắn soạn sẵn qua Zalo. Ai muốn có thể thêm trang vào màn hình chính như một app (PWA); lần sau mở là vào thẳng trang nông hộ.",
+   "Zalo Mini App là bước tiếp theo hợp lý: đăng nhập bằng Zalo, gửi thông báo kế hoạch tự động qua ZNS. Nhưng việc này cần tài khoản doanh nghiệp/OA đã xác thực, và ZNS tính phí theo từng tin, nên nhóm làm khi pilot đã chứng minh được mô hình. Kể cả khi có ZNS, tin chỉ được gửi sau khi người vận hành chốt kế hoạch."
+  ],
+  "ae": [
+   "We agree on not building a separate app for farmers. Today farmers install nothing and have no account: they tap a private link sent via Zalo, enter kilograms, and tap \"I will harvest\". The operator sends pre-written messages via Zalo. Anyone can add the page to their home screen like an app (PWA); next time it opens straight to their farmer page.",
+   "A Zalo Mini App is a sensible next step: Zalo login and automatic plan notifications via ZNS. However, it requires a verified business/OA account and ZNS is charged per message, so we will do it once the pilot proves the model. Even with ZNS, messages are only sent after the operator confirms the plan."
+  ]
+ },
+ {
+  "n": 10,
+  "s": "done",
+  "topic": "Bảo vệ dữ liệu cá nhân",
+  "q": "Hệ thống thu thập thông tin nhạy cảm về \"quy mô hộ, ngân sách\" để phân tích. Việc mã hóa và bảo vệ các dữ liệu định danh này được thực hiện như thế nào khi chuyển đổi từ bảng tính phân mảnh sang cơ sở dữ liệu tập trung?",
+  "qe": "The system collects sensitive information regarding \"household size, budget\" for analysis. How is the encryption and protection of this Personally Identifiable Information (PII) executed when transitioning from fragmented spreadsheets to a centralized database?",
+  "a": [
+   "Nguyên tắc đầu tiên là thu tối thiểu: form đặt hàng chỉ hỏi tên, số điện thoại và địa chỉ giao, khách phải đánh dấu đồng ý mới gửi được; quy mô hộ và ngân sách hiện không được thu.",
+   "Bảo vệ: địa chỉ của khách và địa chỉ giao trong đơn được mã hóa trong cơ sở dữ liệu (AES-256, khóa lưu tách riêng khỏi cơ sở dữ liệu); lộ file dữ liệu mà không có khóa thì không đọc được. Trang tra cứu đơn theo số điện thoại không hiện tên và địa chỉ. Trang quản trị phải đăng nhập và phân quyền admin/người vận hành. Link của nông hộ bị lộ thì quản trị cấp link mới, link cũ hết hiệu lực ngay.",
+   "Số điện thoại chưa mã hóa vì đang dùng để nhận ra khách cũ; bước tiếp theo là lưu thêm mã băm để tìm kiếm rồi mới mã hóa số điện thoại. Về dữ liệu cho mô hình: dự báo dùng tổng kg theo ngày và loại rau, không dùng danh tính khách, nên đã ẩn danh ngay từ thiết kế."
+  ],
+  "ae": [
+   "The first principle is data minimisation: the order form asks only for name, phone and delivery address, and customers must tick consent before submitting; household size and budget are currently not collected.",
+   "Protection: customer addresses and order delivery addresses are encrypted in the database (AES-256, with the key stored separately from the database); a leaked data file cannot be read without the key. The order lookup by phone does not show name or address. The admin area requires login with admin/operator roles. If a farmer's link leaks, the admin issues a new one and the old link stops working immediately.",
+   "Phone numbers are not yet encrypted because they identify returning customers; the next step is to store a hash for lookups and then encrypt the phone number. For modelling, forecasts use total kg per day and vegetable, not customer identities, so the data is anonymous by design."
+  ]
+ },
+ {
+  "n": 11,
+  "s": "part",
+  "topic": "Mạng yếu, offline",
+  "q": "Ở khu vực nông thôn như Đồng Tháp/Mỹ Tho, kết nối mạng 3G/4G của nông hộ thường không ổn định. Hệ thống thu thập dữ liệu có cơ chế lưu trữ ngoại tuyến (Offline-first) và tự động đồng bộ hóa (resync) khi có mạng để tránh việc nông dân phải nhập lại từ đầu hoặc gây trùng lặp dữ liệu không?",
+  "qe": "In rural areas like Dong Thap/My Tho, farmers' 3G/4G connections are often unstable. Does the data collection system have an offline-first storage mechanism and automatic resync when the network is restored to prevent farmers from having to re-enter data or causing data duplication?",
+  "a": [
+   "Đã có: thao tác của nông hộ rất ngắn (vài ô số), và máy chủ chống trùng: mỗi nông hộ + rau + ngày chỉ một dòng, gửi lại thì cập nhật. Mạng chập chờn, bấm gửi nhiều lần cũng không sinh dữ liệu trùng. Khi mất mạng, app hiện trang báo mất mạng thay vì trang lỗi. Nông hộ luôn có kênh dự phòng là nhắn Zalo hoặc gọi điện để người vận hành nhập hộ.",
+   "Chưa có lưu ngoại tuyến rồi tự đồng bộ. Bước tiếp theo: lưu tạm số đang nhập ngay trên điện thoại và tự gửi lại khi có mạng (Background Sync). Vì máy chủ đã chống trùng nên gửi lại nhiều lần vẫn an toàn."
+  ],
+  "ae": [
+   "In place: farmer actions are very short (a few number fields), and the server prevents duplicates: one row per farmer + vegetable + date, and resubmitting updates it. With a flaky connection, tapping submit several times creates no duplicates. When offline, the app shows an offline notice instead of an error page. Farmers always have a fallback: message on Zalo or call, and the operator enters the data.",
+   "There is no offline storage with automatic resync yet. Next step: keep the figures being typed on the phone and resend automatically when the connection returns (Background Sync). Since the server already prevents duplicates, resending is safe."
+  ]
+ },
+ {
+  "n": 12,
+  "s": "plan",
+  "topic": "Vòng phản hồi của gợi ý",
+  "q": "Hệ thống cá nhân hóa giỏ rau dựa vào AI. Nếu AI gợi ý sai (khách không thích món rau đó) và khách hàng xóa sản phẩm khỏi giỏ hoặc đánh giá 1 sao, kiến trúc \"Vòng lặp phản hồi\" được thiết kế thế nào để mô hình tự động cập nhật và không lặp lại sai lầm này vào tuần sau?",
+  "qe": "The vegetable basket personalization system is AI-driven. If the AI makes a bad suggestion (the customer dislikes that vegetable) and the customer removes it from the cart or gives a 1-star rating, how is the \"Feedback Loop\" architecture designed so the model automatically updates and doesn't repeat the mistake next week?",
+  "a": [
+   "Chưa có giỏ cá nhân hóa nên chưa có vòng phản hồi cho phần gợi ý. Vòng phản hồi đang chạy là theo lô hàng: khách chấm điểm 1–5 và độ tươi trên trang QR; phản hồi gắn với lô, nông hộ và đơn; người vận hành xử lý theo các bước mới → đang xử lý → đã xử lý (bắt buộc ghi cách xử lý); dashboard theo dõi điểm trung bình và tỉ lệ đã xử lý.",
+   "Khi có gợi ý cá nhân: loại rau bị khách bỏ hoặc chấm thấp sẽ bị loại khỏi gợi ý của khách đó ngay (một luật đơn giản, không cần chờ huấn luyện lại), đồng thời được lưu làm dữ liệu cho mô hình sau. Cần tách hai trường hợp \"khách không thích loại rau này\" và \"lô rau này bị xấu\": trường hợp sau là lỗi chất lượng, phải xử lý với nông hộ, không phải hạ điểm loại rau."
+  ],
+  "ae": [
+   "There are no personalised baskets yet, so there is no feedback loop for recommendations. The feedback loop that runs today is per batch: customers rate 1–5 and freshness on the QR page; feedback is linked to the batch, farmer and order; the operator handles it through new → in progress → resolved (a resolution note is mandatory); the dashboard tracks the average rating and resolution rate.",
+   "Once recommendations exist: a vegetable the customer removes or rates low is excluded from that customer's suggestions immediately (a simple rule, no retraining wait), and stored as training data for later models. We must separate \"the customer dislikes this vegetable\" from \"this batch was poor\": the latter is a quality issue to resolve with the farmer, not a reason to downrank the vegetable."
+  ]
+ },
+ {
+  "n": 13,
+  "s": "part",
+  "topic": "Xác thực chứng nhận",
+  "q": "Để minh bạch hóa \"rau sạch\", bên cạnh mã QR nội bộ, nền tảng có khả năng gọi API hoặc liên kết dữ liệu trực tiếp với các tổ chức cấp chứng nhận (như VietGAP, GlobalGAP) để tự động xác thực thời hạn chứng chỉ của nông hộ theo thời gian thực không?",
+  "qe": "To transparently prove \"clean vegetables,\" besides the internal QR code, is the platform capable of calling APIs or directly linking data with certification bodies (like VietGAP, GlobalGAP) to automatically verify farmers' certificate expiration dates in real-time?",
+  "a": [
+   "Các tổ chức chứng nhận hiện chưa có API mở. Hệ thống đang làm như sau: quản trị tải file chứng nhận lên và nhập ngày hết hạn; trang QR chỉ hiện chứng nhận khi có file và còn hạn, và tự ẩn khi hết hạn; trang Tổng quan và trang Nông hộ nhắc trước 15 ngày và báo khi đã hết hạn. Trang QR không bao giờ ghi \"100% sạch\".",
+   "Nông hộ chưa có hoặc đã hết chứng nhận vẫn được bán, chỉ không hiện chứng nhận. Chúng em không khóa tạo lô vì mục tiêu của dự án là bao trùm nông hộ nhỏ: chọn minh bạch thay vì loại trừ.",
+   "Đọc tự động ngày hết hạn bằng OCR là làm được nhưng chưa cần: số nông hộ ít, người nhập tay và đối chiếu với giấy gốc đáng tin hơn. Bước tiếp theo: cho khách xem bản chứng nhận và mã số để tự tra trên cổng thông tin của đơn vị cấp."
+  ],
+  "ae": [
+   "Certification bodies do not offer open APIs yet. What the system does today: the admin uploads the certificate file and enters its expiry date; the QR page shows the certificate only when a file exists and is unexpired, and hides it automatically on expiry; the dashboard and Farmers page warn 15 days ahead and flag expired certificates. The QR page never claims \"100% clean\".",
+   "Farmers without a certificate, or with an expired one, can still sell; the certificate is simply not shown. We do not block batch creation because the project aims to include smallholders: transparency rather than exclusion.",
+   "Reading expiry dates automatically with OCR is feasible but not needed yet: with few farmers, manual entry checked against the original paper is more reliable. Next step: let customers view the certificate and its number to verify it themselves on the issuer's portal."
+  ]
+ },
+ {
+  "n": 14,
+  "s": "done",
+  "topic": "Chi phí hạ tầng",
+  "q": "Việc chạy các mô hình Machine Learning dự báo và duy trì đồng bộ dữ liệu liên tục sẽ tiêu tốn chi phí máy chủ AWS/Google Cloud rất lớn. Nhóm có chiến lược tối ưu hóa kiến trúc hạ tầng (ví dụ: dùng Serverless, Spot Instances) như thế nào để không \"đốt tiền\" quá nhanh trong giai đoạn khởi nghiệp?",
+  "qe": "Running predictive Machine Learning models and maintaining continuous data sync will consume massive AWS/Google Cloud server costs. What is the team's infrastructure optimization strategy (e.g., using Serverless, Spot Instances) to avoid burning cash too fast in the startup phase?",
+  "a": [
+   "Dự báo hiện là các phép tính thống kê rất nhẹ, chạy ngay trên máy chủ web, không cần GPU hay máy chủ riêng. Hạ tầng pilot chỉ gồm một máy chủ nhỏ và một cơ sở dữ liệu. Tin Zalo do người vận hành gửi tay nên không tốn phí tin nhắn. Chatbot dùng bản Gemini nhẹ, có giới hạn số lần hỏi; không có khóa API thì chatbot dùng câu trả lời soạn sẵn.",
+   "Dự báo chạy lúc 18:15, ngay sau giờ chốt đơn, vì kế hoạch thu hoạch được lập buổi tối và nông hộ thu hoạch sáng sớm hôm sau; chạy lúc 2 giờ sáng là quá muộn cho quy trình này.",
+   "Khi có mô hình học máy: chạy theo lô mỗi ngày một lần, huấn luyện lại hằng tuần; vì không cần thời gian thực nên có thể dùng máy giá rẻ hoặc serverless. Chi phí hạ tầng thực tế sẽ được ghi lại trong pilot."
+  ],
+  "ae": [
+   "Forecasting today is very light statistical computation running on the web server itself, with no GPU or dedicated machine. Pilot infrastructure is one small server and one database. Zalo messages are sent manually by the operator, so there are no messaging fees. The chatbot uses a lightweight Gemini model with rate limits; without an API key it falls back to scripted answers.",
+   "Forecasts run at 18:15, right after the order cut-off, because the harvest plan is made in the evening and farmers harvest early the next morning; running at 2 AM would be too late for this workflow.",
+   "Once there is an ML model: run it as a daily batch and retrain weekly; since it is not real-time, it can use cheap instances or serverless. Actual infrastructure costs will be recorded during the pilot."
+  ]
+ },
+ {
+  "n": 15,
+  "s": "part",
+  "topic": "Định tuyến giao hàng",
+  "q": "Dự báo đúng lượng nông sản là một chuyện, nhưng việc giao đến tay người dùng sao cho rau không bị héo mới là khâu quyết định. Hệ thống có tích hợp các thuật toán tối ưu hóa bài toán định tuyến xe hay API bản đồ nào để tự động chia tuyến đường ngắn nhất cho shipper không?",
+  "qe": "Accurately forecasting produce is one thing, but delivering it to users before it wilts is the deciding factor. Does the system integrate Vehicle Routing Problem algorithms or map APIs to automatically assign the shortest routes for shippers?",
+  "a": [
+   "Hiện tại: đơn được chia theo cụm giao (phường/xã, mỗi cụm một mức phí) và 3 khung giờ, có điểm nhận tập trung; người giao đi theo từng cụm và khung giờ trong bán kính nhỏ ở Mỹ Tho. Lô rau ghi giờ thu hoạch và đóng gói, đơn ghi giờ giao.",
+   "Chưa có tối ưu tuyến tự động: vài chục đơn mỗi ngày thì sắp tuyến theo cụm bằng tay là đủ. Khi đơn tăng, nhóm sẽ xuất danh sách theo cụm kèm địa chỉ và dùng công cụ tối ưu tuyến có sẵn (Google Maps nhiều điểm dừng, hoặc thư viện OR-Tools) thay vì tự viết thuật toán.",
+   "Để biết tối ưu có tác dụng, chúng em đo thời gian từ lúc đóng gói đến lúc giao (đã có trong dữ liệu) trước và sau khi áp dụng, thay vì nêu trước một con số."
+  ],
+  "ae": [
+   "Today: orders are grouped by delivery cluster (ward/commune, each with its own fee) and 3 time slots, with a central pickup point; couriers work cluster by cluster within a small radius in My Tho. Batches record harvest and packing times, and orders record delivery time.",
+   "There is no automatic route optimisation yet: at a few dozen orders a day, manual routing by cluster is enough. As orders grow, we will export per-cluster lists with addresses and use existing route optimisers (Google Maps multi-stop, or the OR-Tools library) rather than writing our own algorithm.",
+   "To know whether optimisation helps, we measure the time from packing to delivery (already in the data) before and after, rather than quoting a figure in advance."
+  ]
+ },
+ {
+  "n": 16,
+  "s": "plan",
+  "topic": "Cảm biến IoT",
+  "q": "Hiện tại nhóm đang thu thập dữ liệu đầu vào qua tin nhắn Zalo/biểu mẫu thủ công. Ở Giai đoạn 3, nhóm có kế hoạch tích hợp cảm biến IoT (ví dụ: độ ẩm, nhiệt độ) tại vườn để tự động hóa luồng dữ liệu đầu vào, giảm bớt sai số do con người nhập liệu không?",
+  "qe": "Currently, the team collects input data manually via Zalo messages/forms. In Phase 3, does the team plan to integrate IoT sensors (e.g., moisture, temperature) at the farms to automate the input data pipeline and reduce human data entry errors?",
+  "a": [
+   "IoT không nằm trong kế hoạch gần, vì ba lý do: cảm biến độ ẩm, nhiệt độ không đo được số kg rau thu được ngày mai, mà đó là con số hệ thống cần; chi phí lắp đặt, bảo trì và kết nối mạng cho vườn nhỏ là lớn so với doanh thu; và người nông dân là người hiểu vườn mình nhất.",
+   "Cách giảm sai số nhập liệu đang dùng: form có cấu trúc, cảnh báo khi số báo bất thường, nông hộ xác nhận trước khi thu, và so sánh số chốt với số thực nhận của từng nhà để biết nhà nào hay báo lệch.",
+   "Nếu sau này cần dữ liệu khí hậu, dữ liệu thời tiết từ API công cộng rẻ hơn nhiều so với lắp cảm biến riêng."
+  ],
+  "ae": [
+   "IoT is not in the near-term plan, for three reasons: moisture and temperature sensors do not measure how many kg can be harvested tomorrow, which is the figure the system needs; installation, maintenance and connectivity costs for small farms are high relative to revenue; and farmers know their own fields best.",
+   "How we reduce entry errors today: structured forms, warnings for unusual figures, farmers confirming before harvest, and comparing each farm's confirmed figure with what was actually received to see who tends to misreport.",
+   "If climate data is needed later, public weather APIs are far cheaper than installing our own sensors."
+  ]
+ },
+ {
+  "n": 17,
+  "s": "plan",
+  "topic": "Bong bóng lọc",
+  "q": "Lớp AI gợi ý giỏ rau tự động được cấu hình dựa trên nhóm rau ưa thích của khách hàng. Nhóm giải quyết hiệu ứng \"Bong bóng lọc\" như thế nào để thuật toán không bị rơi vào lối mòn, khiến tuần nào cũng chỉ gợi ý đúng một vài loại rau quen thuộc gây nhàm chán?",
+  "qe": "The automatic AI recommendation layer is configured based on the customer's preferred vegetable groups. How does the team solve the \"Filter Bubble\" effect so the algorithm doesn't fall into a rut, suggesting only the same few familiar vegetables every week and causing boredom?",
+  "a": [
+   "Chưa có gợi ý cá nhân. Hiện giỏ rau do người vận hành thay đổi theo mùa và theo rau đang có, và giỏ có tùy chọn \"cho đổi rau tương đương\".",
+   "Khi làm: giữ phần lớn giỏ theo sở thích của khách, dành một món \"rau của tuần\" theo mùa hoặc đang dư (cân bằng khám phá – khai thác, tương tự epsilon-greedy); khách bỏ món đó thì ghi nhận. Ưu tiên rau đang dư còn giúp giảm lãng phí. Đo bằng tỉ lệ khách giữ lại món mới và lượng rau dư."
+  ],
+  "ae": [
+   "There are no personalised suggestions yet. Today the operator changes baskets by season and availability, and baskets have an \"allow equivalent substitutes\" option.",
+   "When we build it: keep most of the basket to the customer's preferences and reserve one \"vegetable of the week\" that is in season or in surplus (explore–exploit balance, similar to epsilon-greedy); if the customer removes it, we record that. Favouring surplus produce also reduces waste. We measure it by how often customers keep the new item and by surplus volume."
+  ]
+ },
+ {
+  "n": 18,
+  "s": "plan",
+  "topic": "Mở rộng nhiều tỉnh",
+  "q": "Khi dự án tiến lên Giai đoạn 3 (tích hợp Website/App) và có khả năng mở rộng sang các tỉnh thành khác ngoài Đồng Tháp/Mỹ Tho, kiến trúc cơ sở dữ liệu được nhóm thiết kế theo dạng đa khách thuê hay một khách thuê để vừa phân tách được dữ liệu của từng khu vực, vừa tối ưu tốc độ truy vấn?",
+  "qe": "When the project advances to Phase 3 (Web/App integration) and scales to other provinces beyond Dong Thap/My Tho, is the database architecture designed as Multi-tenant or Single-tenant to logically separate regional data while optimizing query speeds?",
+  "a": [
+   "Hiện tại là một cơ sở dữ liệu cho một vùng; các khu vực giao hàng được tách bằng bảng cụm giao.",
+   "Khi mở tỉnh mới: dùng một cơ sở dữ liệu chung (multi-tenant chia theo logic), thêm cột vùng vào các bảng chính (nông hộ, cụm giao, đơn hàng, kế hoạch), mọi truy vấn tự lọc theo vùng của người vận hành, và thêm chỉ mục theo vùng + ngày giao.",
+   "Tốc độ chủ yếu đến từ chỉ mục: các truy vấn nặng đều lọc theo ngày giao và loại rau, và các cột này đã có chỉ mục. Chỉ tách cơ sở dữ liệu riêng khi một vùng đủ lớn để cần như vậy."
+  ],
+  "ae": [
+   "Today there is one database for one region; delivery areas are separated by the delivery-cluster table.",
+   "When opening a new province: keep one shared database (logically partitioned multi-tenancy), add a region column to the main tables (farmers, clusters, orders, plans), filter every query automatically by the operator's region, and add indexes on region + delivery date.",
+   "Speed comes mainly from indexes: the heavy queries all filter by delivery date and vegetable, and those columns are already indexed. We would only split out a separate database when a region grows large enough to need it."
+  ]
+ },
+ {
+  "n": 19,
+  "s": "part",
+  "topic": "Khôi phục khi sập",
+  "q": "Kết quả dự báo của hệ thống quyết định lượng rau thu hoạch cho 3-7 ngày tiếp theo. Nếu máy chủ bị sập ngay thời điểm chốt đơn hàng, chiến lược phục hồi sau thảm họa của hệ thống là gì, và Thời gian phục hồi mục tiêu là bao lâu?",
+  "qe": "The system's forecast determines the vegetable harvest for the next 3-7 days. If the server crashes right at the order cut-off time, what is the system's Disaster Recovery strategy, and what is the Recovery Time Objective (RTO)?",
+  "a": [
+   "Hiện tại: một máy chủ và một cơ sở dữ liệu. Đơn hàng được ghi trong transaction nên không có đơn ghi dở. Sao lưu bằng mysqldump: hiện làm thủ công, khi lên máy chủ thật sẽ tự động hằng ngày.",
+   "Quy trình khi sập đúng giờ chốt: khách vẫn đặt được qua Zalo hoặc điện thoại như trước khi có hệ thống; khi hệ thống chạy lại, người vận hành nhập hộ (form nhập hộ không bị chặn bởi giờ 18:00); kế hoạch có thể lập muộn hơn vì nông hộ thu hoạch vào sáng sớm. Thanh toán là tiền mặt hoặc chuyển khoản, không có cổng thanh toán online, nên không có rủi ro mất tiền của khách.",
+   "Mục tiêu cho pilot: khôi phục trong vài giờ từ bản sao lưu gần nhất. Khi quy mô lớn mới cần bản sao dự phòng và tự chuyển máy (failover). Chúng em không cam kết RTO 5 phút khi chưa có hạ tầng đó."
+  ],
+  "ae": [
+   "Today: one server and one database. Orders are written inside transactions, so there are no half-saved orders. Backups use mysqldump: manual for now, automated daily once on the production server.",
+   "Procedure if it crashes at cut-off: customers can still order via Zalo or phone, as before the system existed; once it is back, the operator enters those orders (the operator form is not blocked by the 18:00 cut-off); the plan can be made later because farmers harvest early in the morning. Payment is cash on delivery or bank transfer, with no online payment gateway, so no customer money is at risk.",
+   "Pilot target: restore within a few hours from the latest backup. Replicas and automatic failover are only needed at larger scale. We do not promise a 5-minute RTO without that infrastructure."
+  ]
+ },
+ {
+  "n": 20,
+  "s": "part",
+  "topic": "Triển khai liên tục (CI/CD)",
+  "q": "Theo lộ trình, hệ thống sẽ liên tục tự động hóa cập nhật toàn bộ nền tảng. Nhóm thiết lập quy trình Tích hợp và Triển khai liên tục như thế nào để khi đẩy một thuật toán dự báo Machine Learning mới lên máy chủ sẽ không làm gián đoạn trải nghiệm của khách hàng đang đặt rau?",
+  "qe": "According to the roadmap, the system will continuously automate updates across the entire platform. How does the team set up the CI/CD (Continuous Integration/Continuous Deployment) pipeline so that pushing a new Machine Learning forecasting algorithm to the server causes zero-downtime for customers currently ordering vegetables?",
+  "a": [
+   "Đã có: 345 bài kiểm thử tự động cho đặt hàng, tiền, điểm thưởng, dự báo, kế hoạch, lô hàng và mã QR, cùng công cụ kiểm tra định dạng code, chạy trước mỗi lần cập nhật.",
+   "Với thuật toán dự báo mới, không cần đến blue-green deployment: hệ thống đã lưu song song dự báo của nhiều phương pháp mỗi ngày. Thuật toán mới chạy \"trong bóng\", ghi dự báo nhưng kế hoạch thu hoạch vẫn dùng phương pháp cũ; khi sai số WAPE thấp hơn ổn định mới đổi phương pháp mặc định bằng một dòng cấu hình, và đổi lại được ngay nếu kết quả tệ hơn. Việc này không chạm tới luồng đặt hàng nên khách không bị gián đoạn.",
+   "Bước tiếp theo: dùng GitHub Actions chạy toàn bộ kiểm thử mỗi lần đẩy code, và chỉ triển khai lên máy chủ (dự kiến Railway) khi mọi kiểm thử đều qua."
+  ],
+  "ae": [
+   "In place: 345 automated tests covering ordering, money, loyalty points, forecasting, planning, batches and QR codes, plus a code-style checker, run before every update.",
+   "For a new forecasting algorithm, blue-green deployment is unnecessary: the system already stores forecasts from several methods side by side every day. The new algorithm runs in \"shadow mode\", writing forecasts while harvest planning keeps using the old method; only when its WAPE is consistently lower do we switch the default method with one configuration line, and we can switch back immediately if results get worse. This never touches the ordering flow, so customers are not interrupted.",
+   "Next step: GitHub Actions runs the full test suite on every push, and we deploy to the server (planned on Railway) only when all tests pass."
+  ]
+ }
+];
+
+// ═══ Bản tiếng Anh: cuộc thi thuyết trình và hỏi đáp 100% tiếng Anh. Thứ tự khớp từng phần tử của SEGS, QA, CHECK. ═══
+const SEGS_EN = [
+  { title: 'Opening: the problem is not selling vegetables', short: 'Opening',
+    say: [
+      'In My Tho, small farmers often <em>harvest by guesswork</em>. Some days they cut too much, buyers order less, and the vegetables wilt and are thrown away. Other days buyers need more and there is not enough. Buyers and growers <em>cannot see each other</em>.',
+      'So FARM2HOME AI is <em>not an online vegetable shop</em>. It is a coordination tool. It turns pre-orders into one concrete number: <em>how many kilos of each vegetable each farm should harvest tomorrow</em>. <span class="pause">[pause]</span>',
+      'In this part, I will show what the web app does, where the AI is, and why we designed it this way.',
+    ],
+    show: 'Title slide + one line: "Coordinating produce by demand, reducing waste".',
+    key: 'Say "not an online shop" clearly: it is what makes us different.' },
+  { title: 'One closed data loop, four users', short: 'Architecture',
+    say: [
+      'The system has <em>four users</em>: customers, farmers, the operator, and the admin.',
+      'Data moves in a closed loop: customers pre-order → the system forecasts → it suggests a harvest → the operator confirms → farmers harvest the exact amount → we pack with a <em>QR code per batch</em> → customers give feedback → and that data makes the next forecast better.',
+      'Our rule is <em>"just enough technology"</em>. Customers and farmers <em>install nothing and create no account</em>. Customers only need a phone number. Farmers only tap a link we send on Zalo, the app they already use every day.',
+    ],
+    show: 'The "One day of operations" diagram in docs/kich-ban-su-dung.html; press ▶ Chạy (Play) and let it run.',
+    demo: ['Open the swimlane diagram', 'Press ▶ Chạy (Play) and let it run while you talk'],
+    key: 'No app, no account = inclusive. This is one of the judging criteria.' },
+  { title: 'Customers order on their phone', short: 'Customer',
+    say: [
+      'This is what a customer sees on the phone. They pick a <em>ready-made basket</em> or single items, then the delivery date, time slot and area. The delivery fee is calculated by area, and it is free above a set amount.',
+      'No sign-up, no password: <em>the phone number is the account</em>. Next time, the system recognises the customer.',
+      'For questions, there is a <em>chatbot</em> powered by Gemini. It answers from real system data: prices, baskets, delivery times. It only gives shopping suggestions, never health advice. <span class="pause">[pause]</span>',
+      'Orders close at <em>6 PM</em> for the next day, and those orders are the input for the AI.',
+    ],
+    show: 'Phone mirrored on screen: /dat-hang (order page). The interface is in Vietnamese because our users are local.',
+    demo: ['Choose «Giỏ Gia Đình» (Family basket)', 'Pick tomorrow, the 17–19h slot, «Cụm 1» (Zone 1)', 'Open the chatbot, ask "phí ship bao nhiêu?" (how much is delivery?)', 'No need to press «Gửi đơn» (Send order), to save time'],
+    key: 'Little typing, big buttons, works on any phone: designed for people who are not tech-savvy.' },
+  { title: 'Farmers report supply with one link', short: 'Farmer',
+    say: [
+      'Each farm has <em>its own private link</em>. The farmer taps it, sees the next 7 days, types how many kilos they can harvest, and taps Save. That is all.',
+      'If they cannot type, they send a Zalo message and the operator enters it. This number matters: it is a <em>hard limit</em>, so the system never asks a farm for more than it reported.',
+    ],
+    show: 'Farmer link for NH01 on the phone.',
+    demo: ['Type the kilos for tomorrow', 'Press «Lưu sản lượng» (Save supply)'],
+    key: 'Small and older farmers can still use it.' },
+  { title: 'AI forecasting, and why not machine learning yet', short: 'Forecast',
+    say: [
+      'Now the AI. Every evening at <em>6:15 PM</em>, after orders close, the system forecasts demand for <em>the next 7 days, for each vegetable</em>.',
+      'We run <em>three methods</em> side by side: a 7-day moving average, exponential smoothing, and a same-weekday average that catches busy weekends. Each forecast has a <em>low–high range</em>, not just one number. <span class="pause">[pause]</span>',
+      'Why not machine learning? Because a 4-week pilot <em>does not have enough data</em> to train a model. And we set one rule: a model only counts as better if it has <em>lower real-world error</em> than these simple methods.',
+      'So every night at 9 PM, the system fills in actual demand and measures the error with <em>WAPE</em>: the total kilos we got wrong, divided by the total kilos actually ordered. This screen shows which method is winning.',
+    ],
+    show: '/admin/forecasts: chart of the last 28 days + the next 7 days, and the accuracy table.',
+    demo: ['Point at the dashed forecast line and the low–high band', 'Click through the 3 method buttons', 'Point at the «Sai số thấp nhất» (Lowest error) label'],
+    key: 'Honesty: statistics are a deliberate baseline, measured every day, with an upgrade plan. Judges value this more than the words "deep learning".' },
+  { title: 'Harvest suggestion: AI suggests, people decide', short: 'Plan',
+    say: [
+      'A forecast is not a decision yet. The system turns it into <em>kilos to harvest</em>: confirmed orders, plus the extra demand we expect, minus usable stock, plus a <em>10% safety margin</em>.',
+      'Then it <em>splits the amount across farms in proportion</em> to what each one reported. Small farms get a share too, not only the big ones, and no farm is asked for more than it reported. <span class="pause">[pause]</span>',
+      'But <em>the AI does not decide</em>. The operator reviews every line, can change the numbers, and can split one vegetable across more farms, but <em>every change needs a reason</em>, like rain or poor quality. We store <em>both the AI number and the human number</em>, so we can see where the AI is right and where it is wrong.',
+      'After confirming, the system writes a ready-to-send message for each farm. The operator opens Zalo and sends it. The farmer taps "I will harvest" to confirm.',
+    ],
+    show: 'Tomorrow\'s harvest plan in «Nháp» (Draft) status.',
+    demo: ['Point at the «Gợi ý» (Suggested) and «Chốt» (Final) columns', 'Change one line by +0.5 kg, type the reason "trời mưa" (rain)', 'Click «+ Thêm nông hộ» (Add farmer) for one vegetable', '«Lưu tất cả» (Save all) → «Chốt kế hoạch» (Confirm plan) → show the Zalo message box'],
+    key: 'Human-in-the-loop is our core principle. Stress that we keep both the suggested and the final figure, with a reason.' },
+  { title: 'Batch traceability with QR codes', short: 'QR',
+    say: [
+      'The next morning the vegetables arrive. The operator weighs them and enters the actual amount. The system creates <em>one batch</em> per vegetable per farm, with its own code, printed as a QR label on each bag.',
+      'Customers scan it and see: which farm, where it was grown, <em>what time it was harvested</em>, when it was cleaned and packed, and how to store it. And they can rate it on the same page. <span class="pause">[pause]</span>',
+      'One thing we do on purpose: <em>a QR code is not a certificate</em>. The page never says "100% clean". A certificate only appears when the farm has a real, valid document. We choose transparency over marketing.',
+    ],
+    show: 'The /lo/F2H-… page on the phone (or a printed QR label for the judges to scan).',
+    demo: ['Scan a pre-printed QR label with the phone', 'Scroll down to the feedback form'],
+    key: 'Feedback is tied to the batch code → we know exactly which farm and which day had a problem.' },
+  { title: 'Measurable: every feature feeds the KPIs', short: 'KPI',
+    say: [
+      'Finally, every action feeds into <em>one KPI dashboard</em>, so we can test the business model during the pilot.',
+      'The two most important numbers go together: <em>kilos of surplus per week</em> must go down, while the <em>share of orders delivered in full</em> must not go down. Harvesting less but leaving customers short is not success.',
+      'We also track forecast error, how often the operator changes the AI suggestion, repeat customers and packaging returns. We <em>do not claim CO₂ savings</em>, because we do not measure transport emissions.',
+    ],
+    show: '/admin: the dashboard with a date range selected.',
+    demo: ['Point at «Rau dư» (Surplus) and «Tỷ lệ giao đủ» (Fill rate)', 'Point at the WAPE table and «Số lần operator điều chỉnh» (Operator adjustments)'],
+    key: 'Surplus ↓ but fill rate not ↓. No CO₂ claims.' },
+  { title: 'Closing: low cost, ready to scale', short: 'Close',
+    say: [
+      'On the technical side, the app is built with <em>Laravel and MySQL</em>, with a light interface designed for phones first, and it <em>installs like an app</em> without any app store. We have more than <em>300 automated tests</em> for money, orders and planning.',
+      'Our roadmap: a <em>4-week pilot</em> with 2–3 farms and 20–30 households in My Tho, to collect real data. When we have enough data, we add machine learning, and we <em>only use it if it beats</em> our current methods. After that, automatic Zalo messages, but a person still approves before anything is sent. <span class="pause">[pause]</span>',
+      'FARM2HOME AI does not replace the farmer or the coordinator. It helps them <em>harvest just enough, sell it all, and waste less</em>. Thank you.',
+    ],
+    show: 'Roadmap slide with 3 steps + the closing line.',
+    key: 'Say the last line slowly and look at the judges, not the screen.' },
+];
+
+const QA_EN = [
+  { q: 'Isn\'t your AI just an average?',
+    a: 'Yes, the forecasting part is statistical today, and that is deliberate. With 4 weeks of data, a complex model easily learns noise. We built the baseline first, we measure the error every day, and we set a rule: a new model must beat the baseline on WAPE with real orders before we use it. The valuable "AI" is the whole chain: forecast → suggestion → split across farms → measure again.',
+    p: 'There is already a placeholder for a tree-regression model (tree_regression), to run as a separate Python service.' },
+  { q: 'How accurate is the forecast?',
+    a: 'We do not have a figure on real orders yet; we will measure it in the pilot with WAPE. We have numbers on simulated data, but we generated that data ourselves, so we do not use it as evidence.',
+    p: 'Never quote simulated numbers as an achievement.' },
+  { q: 'What if the AI suggests the wrong amount?',
+    a: 'The AI does not decide. The operator reviews every line, must give a reason for any change, and there is a 10% safety margin. We store both the suggested and the final number, so every change is a lesson: we learn in which direction the AI tends to be wrong.' },
+  { q: 'How does it forecast with little data at the start?',
+    a: 'In the first days the forecast is close to zero, so the harvest suggestion equals confirmed orders plus 10%. That means the system stays safe: it never tells farmers to over-harvest. After about a week, the forecast starts to be meaningful.' },
+  { q: 'Can older farmers really use it?',
+    a: 'They only tap a link on Zalo and type the kilos. No account, no password, no app to install. If they cannot type, they message or call, and the operator enters it. The harvest list is sent on Zalo, which they use every day.' },
+  { q: 'Why not build a mobile app?',
+    a: 'Asking people to download an app is the biggest barrier. The web app works on any phone, and anyone who wants can add it to the home screen like an app, without an app store. One codebase, low cost.' },
+  { q: 'How do you protect customer data?',
+    a: 'We collect the minimum: name, phone number and delivery address, and customers must consent before we store it. Addresses are encrypted in the database. The order lookup page deliberately hides name and address, because anyone who knows a phone number can use it. If a farmer\'s link leaks, the admin issues a new one and the old link stops working at once. The admin area needs a login with admin or operator roles.' },
+  { q: 'Does your QR code prove the vegetables are clean?',
+    a: 'No, and we say so clearly. The QR shows facts about the batch: which farm, harvest time, cleaning, storage. A certificate only appears if there is a real, valid document. We never write "100% clean". Each QR link also has a random key, so nobody can guess the codes of other batches.' },
+  { q: 'Can the Gemini chatbot give wrong answers?',
+    a: 'The chatbot is given real system data (vegetables, baskets, prices, delivery times) and only answers shopping questions, never health advice. If there is no internet or Gemini fails, it uses scripted answers. The chatbot plays no part in harvest decisions.' },
+  { q: 'How much does the technology cost to run?',
+    a: 'The web app and database run on one small server; the chatbot uses a lightweight Gemini model; there are no app-store fees and no messaging fees, because Zalo messages are sent by hand. We will record the exact cost during the pilot.',
+    p: 'If the team has a real hosting cost, replace this sentence with the number.' },
+  { q: 'Can it scale to more communes and more vegetables?',
+    a: 'Yes. Vegetables, baskets, delivery zones and farms are all added by the admin in the interface, with no code changes. Forecasting and allocation run per vegetable and per day, so a new vegetable automatically gets its own forecast.' },
+  { q: 'Why not microservices? Will it crash with many users?',
+    a: 'We use a monolith, one Laravel application, because it fits the pilot and a small team: 20–30 households, a few dozen orders a day, one developer. Microservices now would only add cost and operational problems. Customers order throughout the day for tomorrow, with a 6 PM cut-off, so there is no sudden rush hour. When we have a Python machine-learning model, we will split out the forecasting service; we only split further when there is a concrete reason, such as load or team size.',
+    p: 'Microservices = many small programs running separately, like a food court with many stalls; a monolith = one kitchen that does everything, like a family restaurant.' },
+  { q: 'How do you know the system really reduces waste?',
+    a: 'We log surplus every day by batch and reason, and compare week by week before and after we start forecasting, while also tracking the fill rate. Only if surplus goes down and the fill rate does not drop is it a real improvement.' },
+];
+
+const CHECK_EN = [
+  'Laragon: Start All (web server and MySQL both green)',
+  'Demo data ready: restore the backup in storage/app/backups/… then run php artisan migrate (adds QR keys, encrypts addresses), or run php artisan demo:orders (the database has been empty since 17/10)',
+  'A Draft harvest plan for tomorrow exists, with at least 2 farms that reported supply',
+  'One batch marked Passed; 2–3 of its QR labels printed for the judges to scan',
+  'Admin already logged in on the laptop',
+  'Temporary HTTPS link works on the phone (test it 10 minutes before)',
+  'GEMINI_API_KEY is in .env; ask the chatbot one question to test it',
+  'Laptop browser zoomed to 125–150% so the judges can read',
+  'Phone notifications off, battery full, brightness at maximum',
+  'Backup screenshots for every demo step',
+  'Rehearse in English at least twice with the timer, no longer than 7:30',
+];
+
+const STATIC_EN = {
+  h1: 'Pitch script: the technology behind FARM2HOME AI',
+  intro: 'The product and technology part of the pitch: what the web app does, where the AI is, and why it is designed this way. Each section has the <b>script</b> (large text, easy to read), and next to it what to <b>show on screen</b>, the <b>demo steps</b> and the <b>key point</b> to stress. The web app itself stays in Vietnamese because its users are local farmers and customers; the demo steps give the English meaning of each button.',
+  facts: '<span>⏱ about 7 minutes + Q&amp;A</span><span>🎤 1 speaker + 1 person running the demo</span><span>📱 1 phone + 1 laptop</span><span>hatched sections = skip if short on time</span>',
+  reset: 'Reset',
+  compact: 'Script only',
+  theme: 'Theme',
+  p1: 'Part 1 · The script',
+  p1lead: 'Words with a <em>highlight</em> are key phrases: say them slowly and clearly. <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">[pause]</span> marks a one-beat pause so the judges can look at the screen.',
+  p2: 'Part 2 · Questions judges often ask',
+  p2lead: 'Short, honest answers with numbers. If you do not know, say "we have not measured that yet; we will measure it in the pilot". Do not guess.',
+  p2b: 'Part 2b · Ms Hằng\'s 20 technology questions',
+  p2blead: 'The answers are identical to <code>Cau-hoi-Cong-nghe-F2H-tra-loi-moi.docx</code>. The coloured label shows whether a feature is <b>in place</b> (can be demoed), <b>partly</b> in place, or <b>planned</b>. Never claim what does not exist yet.',
+  p3: 'Part 3 · Preparation before the pitch',
+  chkTitle: 'Checklist (tick items, your browser remembers)',
+  tabsTitle: 'Tabs to open, in demo order',
+  tabs: `
+        <li><b>Phone:</b> home page → <code>/dat-hang</code> (order page)</li>
+        <li><b>Phone or tab 2:</b> farmer link for NH01 <code>/nong-ho/{token}</code></li>
+        <li><b>Laptop:</b> <code>/admin/forecasts</code> (Forecasts)</li>
+        <li><b>Laptop:</b> tomorrow's harvest plan in <b>Nháp</b> (Draft)</li>
+        <li><b>Laptop:</b> a batch marked <b>Đạt</b> (Passed) → QR page <code>/lo/F2H-…</code></li>
+        <li><b>Laptop:</b> <code>/admin</code> (Dashboard, date range already selected)</li>
+        <li><b>Backup:</b> <code>docs/kich-ban-su-dung.html</code> (one-day diagram) and <code>docs/so-do-csdl.html</code></li>`,
+  troubleTitle: 'If the demo goes wrong',
+  trouble: `
+        <li>No internet / temporary link down → run on <code>farm2home.test</code> on the laptop and only show the laptop screen.</li>
+        <li>"SQLSTATE … refused" error → MySQL is not running: open Laragon, <b>Start All</b>.</li>
+        <li>Chatbot does not answer with Gemini → scripted answers still work; say "without internet, the chatbot uses fallback answers".</li>
+        <li>Anything else → switch to the prepared screenshots; <b>never debug in front of the judges</b>.</li>`,
+  dontTitle: 'Things you must NOT say',
+  dont: `
+      <li>"The AI decides the harvest" → wrong. The AI only suggests; the operator confirms.</li>
+      <li>"A machine-learning / deep-learning model forecasts demand" → today it is a deliberate statistical baseline; machine learning comes later.</li>
+      <li>"100% clean vegetables", "the QR certifies safety" → the QR only shows batch facts; certificates appear only with a valid file.</li>
+      <li>"We cut X tonnes of CO₂" → we do not measure transport emissions.</li>
+      <li>"The forecast is 96% accurate" → that figure comes from simulated data, it is not evidence.</li>
+      <li>"Revenue of 500–700 thousand VND a day" as a fact → it is an assumption to test in the pilot.</li>
+      <li>Health advice about vegetables → the chatbot only gives shopping suggestions.</li>`,
+  footer: 'Figures and features match the current code (October 2026). AI details: <code>docs/CHUC-NANG-AI.md</code> · user scenarios: <code>docs/kich-ban-su-dung.html</code>.',
+};
+
+const MENTOR_TOPIC_EN = ['Data threshold for machine learning', 'Garbage data control', 'QR anti-counterfeiting', 'Weather and safety margin', 'SQL or NoSQL', 'New users (cold start)', 'Available stock and overselling', 'Peak-hour load', 'Zalo Mini App for farmers', 'Personal data protection', 'Weak network, offline', 'Recommendation feedback loop', 'Certificate verification', 'Infrastructure cost', 'Delivery routing', 'IoT sensors', 'Filter bubble', 'Scaling to more provinces', 'Recovery after a crash', 'Continuous deployment (CI/CD)'];
+const STATUS_LABEL = {
+  vi: { done: 'Đã có', part: 'Một phần', plan: 'Kế hoạch' },
+  en: { done: 'In place', part: 'Partly', plan: 'Planned' },
+};
+
+const UI = {
+  vi: { say: 'Lời nói', show: 'Màn hình', demo: 'Thao tác demo', key: 'Ý phải nhấn', opt: 'bỏ được khi thiếu giờ', note: 'Ghi chú', start: '▶ Tập nói', pause: '❚❚ Dừng', resume: '▶ Tiếp tục', other: 'English', title: 'FARM2HOME — Kịch bản thuyết trình' },
+  en: { say: 'Script', show: 'On screen', demo: 'Demo steps', key: 'Key point', opt: 'skip if short on time', note: 'Note', start: '▶ Rehearse', pause: '❚❚ Pause', resume: '▶ Resume', other: 'Tiếng Việt', title: 'FARM2HOME — Pitch script' },
+};
+
+let lang = 'en';
+try { lang = localStorage.getItem('f2h-pitch-lang') === 'vi' ? 'vi' : 'en'; } catch (e) {}
+const T = k => UI[lang][k];
+const STATIC_VI = {};
+document.querySelectorAll('[data-i18n]').forEach(el => { STATIC_VI[el.dataset.i18n] = el.innerHTML; });
+
 // ── dựng trang ──
 const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-document.getElementById('segs').innerHTML = SEGS.map((s, i) => {
-  const end = SEGS[i + 1]?.t ?? TOTAL;
-  return `
+const bar = document.getElementById('bar');
+let checked = {};
+try { checked = JSON.parse(localStorage.getItem('f2h-pitch-check') || '{}'); } catch (e) {}
+
+function renderContent() {
+  const segs = lang === 'en' ? SEGS.map((s, i) => ({ ...s, ...SEGS_EN[i] })) : SEGS;
+  document.getElementById('segs').innerHTML = segs.map((s, i) => {
+    const end = SEGS[i + 1]?.t ?? TOTAL;
+    return `
   <article class="seg" id="seg-${i}">
-    <div class="seg-h"><span class="tm">${fmt(s.t)} – ${fmt(end)}</span><h3>${i + 1}. ${s.title}</h3>${s.opt ? '<span class="tag">bỏ được khi thiếu giờ</span>' : ''}</div>
+    <div class="seg-h"><span class="tm">${fmt(s.t)} – ${fmt(end)}</span><h3>${i + 1}. ${s.title}</h3>${s.opt ? `<span class="tag">${T('opt')}</span>` : ''}</div>
     <div class="seg-b">
-      <div class="say"><span class="lbl">Lời nói</span>${s.say.map(p => `<p>${p}</p>`).join('')}</div>
+      <div class="say"><span class="lbl">${T('say')}</span>${s.say.map(p => `<p>${p}</p>`).join('')}</div>
       <div class="side">
-        <div class="show"><span class="lbl">Màn hình</span>${s.show}</div>
-        ${s.demo ? `<div class="demo"><span class="lbl">Thao tác demo</span><ol>${s.demo.map(d => `<li>${d}</li>`).join('')}</ol></div>` : ''}
-        <div class="key"><span class="lbl">Ý phải nhấn</span>${s.key}</div>
+        <div class="show"><span class="lbl">${T('show')}</span>${s.show}</div>
+        ${s.demo ? `<div class="demo"><span class="lbl">${T('demo')}</span><ol>${s.demo.map(d => `<li>${d}</li>`).join('')}</ol></div>` : ''}
+        <div class="key"><span class="lbl">${T('key')}</span>${s.key}</div>
       </div>
     </div>
   </article>`;
-}).join('');
+  }).join('');
 
-const bar = document.getElementById('bar');
-SEGS.forEach((s, i) => {
-  const end = SEGS[i + 1]?.t ?? TOTAL;
-  const a = document.createElement('a');
-  a.href = `#seg-${i}`;
-  a.style.width = ((end - s.t) / TOTAL * 100) + '%';
-  a.textContent = s.short;
-  a.title = `${fmt(s.t)} · ${s.title}`;
-  if (s.opt) a.classList.add('opt');
-  bar.appendChild(a);
-});
+  bar.querySelectorAll('a').forEach(a => a.remove());
+  segs.forEach((s, i) => {
+    const end = SEGS[i + 1]?.t ?? TOTAL;
+    const a = document.createElement('a');
+    a.href = `#seg-${i}`;
+    a.style.width = ((end - s.t) / TOTAL * 100) + '%';
+    a.textContent = s.short;
+    a.title = `${fmt(s.t)} · ${s.title}`;
+    if (s.opt) a.classList.add('opt');
+    bar.appendChild(a);
+  });
 
-document.getElementById('qa').innerHTML = QA.map(x => `
-  <details><summary>${x.q}</summary><div class="ans">${x.a}${x.p ? `<div class="pt">Ghi chú: ${x.p}</div>` : ''}</div></details>`).join('');
+  document.getElementById('qa').innerHTML = (lang === 'en' ? QA_EN : QA).map(x => `
+  <details><summary>${x.q}</summary><div class="ans">${x.a}${x.p ? `<div class="pt">${T('note')}: ${x.p}</div>` : ''}</div></details>`).join('');
 
-let checked = {};
-try { checked = JSON.parse(localStorage.getItem('f2h-pitch-check') || '{}'); } catch (e) {}
-document.getElementById('chk').innerHTML = CHECK.map((c, i) => `
+  const en = lang === 'en';
+  document.getElementById('mentor').innerHTML = MENTOR_QA.map((x, i) => `
+  <details><summary><span class="mn">${x.n}.</span><span class="mt">${en ? MENTOR_TOPIC_EN[i] : x.topic}<span class="mq">${en ? x.qe : x.q}</span></span><span class="ms ms-${x.s}">${STATUS_LABEL[lang][x.s]}</span></summary>
+    <div class="ans">${(en ? x.ae : x.a).map(t => `<p>${t}</p>`).join('')}</div></details>`).join('');
+
+  document.getElementById('chk').innerHTML = (lang === 'en' ? CHECK_EN : CHECK).map((c, i) => `
   <li><input type="checkbox" id="c${i}" ${checked[i] ? 'checked' : ''}><label for="c${i}">${c}</label></li>`).join('');
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.innerHTML = lang === 'en' ? STATIC_EN[el.dataset.i18n] : STATIC_VI[el.dataset.i18n];
+  });
+  document.documentElement.lang = lang;
+  document.title = T('title');
+  document.getElementById('langBtn').textContent = T('other');
+}
+
 document.getElementById('chk').addEventListener('change', e => {
   checked[e.target.id.slice(1)] = e.target.checked;
   try { localStorage.setItem('f2h-pitch-check', JSON.stringify(checked)); } catch (err) {}
@@ -382,8 +953,9 @@ document.getElementById('chk').addEventListener('change', e => {
 // ── đồng hồ tập nói ──
 const clock = document.getElementById('clock'), needle = document.getElementById('needle');
 const startBtn = document.getElementById('startBtn');
-let started = null, elapsed = 0, tick = null, lastSeg = -1;
+let started = null, elapsed = 0, tick = null, lastSeg = -1, shownSec = 0;
 function render(sec) {
+  shownSec = sec;
   clock.textContent = fmt(sec);
   clock.classList.toggle('over', sec > TOTAL);
   needle.style.left = Math.min(100, sec / TOTAL * 100) + '%';
@@ -398,18 +970,29 @@ function render(sec) {
 startBtn.addEventListener('click', () => {
   if (tick) {
     clearInterval(tick); tick = null; elapsed += (Date.now() - started) / 1000;
-    startBtn.textContent = '▶ Tiếp tục';
+    startBtn.textContent = T('resume');
   } else {
     started = Date.now();
     tick = setInterval(() => render(Math.floor(elapsed + (Date.now() - started) / 1000)), 250);
-    startBtn.textContent = '❚❚ Dừng';
+    startBtn.textContent = T('pause');
     render(Math.floor(elapsed));
   }
 });
 document.getElementById('resetBtn').addEventListener('click', () => {
   clearInterval(tick); tick = null; elapsed = 0; lastSeg = -2;
-  startBtn.textContent = '▶ Tập nói';
+  startBtn.textContent = T('start');
   render(0);
+});
+function applyLang() {
+  renderContent();
+  startBtn.textContent = tick ? T('pause') : elapsed > 0 ? T('resume') : T('start');
+  lastSeg = -2;
+  render(shownSec);
+}
+document.getElementById('langBtn').addEventListener('click', () => {
+  lang = lang === 'en' ? 'vi' : 'en';
+  try { localStorage.setItem('f2h-pitch-lang', lang); } catch (e) {}
+  applyLang();
 });
 const compactBtn = document.getElementById('compactBtn');
 compactBtn.addEventListener('click', () => {
@@ -421,7 +1004,7 @@ document.getElementById('themeToggle').addEventListener('click', () => {
   document.documentElement.classList.toggle('dark', dark);
   try { localStorage.setItem('f2h-doc-theme', dark ? 'dark' : 'light'); } catch (e) {}
 });
-render(0);
+applyLang();
 </script>
 </body>
 </html>

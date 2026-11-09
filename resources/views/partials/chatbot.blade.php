@@ -1,4 +1,14 @@
 {{-- Chatbot hỏi đáp theo kịch bản. Trả lời do ChatbotService tạo từ dữ liệu thật. --}}
+<script>
+    // Escape hết rồi chỉ biến link zalo.me thành thẻ a, để câu trả lời không chèn được HTML hay link lạ.
+    function chatbotLinkify(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+
+        return div.innerHTML.replace(/https:\/\/zalo\.me\/0\d{9}/g,
+            (url) => `<a href="${url}" target="_blank" rel="noopener" class="font-semibold text-emerald-800 underline">${url.replace('https://', '')}</a>`);
+    }
+</script>
 <div x-data="{
         open: false,
         sending: false,
@@ -40,7 +50,7 @@
         </header>
         <div x-ref="log" class="flex-1 space-y-2 overflow-y-auto bg-stone-50 p-3 text-sm" aria-live="polite">
             <template x-for="(message, index) in messages" :key="index">
-                <p x-text="message.text"
+                <p x-html="chatbotLinkify(message.text)"
                    :class="message.from === 'me' ? 'ml-auto bg-emerald-700 text-white rounded-br-sm' : 'bg-white ring-1 ring-stone-200 rounded-bl-sm'"
                    class="w-fit max-w-[85%] whitespace-pre-line rounded-2xl px-3 py-2"></p>
             </template>

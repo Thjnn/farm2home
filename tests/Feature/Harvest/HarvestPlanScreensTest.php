@@ -89,6 +89,8 @@ class HarvestPlanScreensTest extends TestCase
 
     public function test_operator_splits_a_product_across_farmers_registered_for_it(): void
     {
+        // NH02 đã báo cải ngọt nên không nằm trong cảnh báo "chưa báo sản lượng"; tên NH02 chỉ có thể đến từ ô chọn HTX.
+        SupplyReport::factory()->create(['farmer_id' => $this->nh02->id, 'product_id' => $this->cn->id, 'available_date' => '2026-10-03', 'quantity_kg' => 5, 'source' => 'form']);
         $plan = $this->generate();
         $first = $plan->items()->firstOrFail();
         $url = '/admin/harvest-plans/'.$plan->id;

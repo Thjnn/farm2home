@@ -29,6 +29,18 @@
         </div>
     @endif
 
+    @if ($staleWarnings !== [])
+        <div class="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
+            <p class="font-semibold">Kiểm tra dữ liệu trước khi chốt</p>
+            <ul class="mt-1 list-disc space-y-0.5 pl-5">
+                @foreach ($staleWarnings as $warning)
+                    <li>{{ $warning }}</li>
+                @endforeach
+            </ul>
+            <p class="mt-1">Kiểm tra lại rồi bấm "Tính lại gợi ý" bên dưới nếu cần.</p>
+        </div>
+    @endif
+
     @if ($isDraft)
         {{-- Nút mặc định khi nhấn Enter: lưu, không phải thêm/xoá dòng. --}}
         <button form="save-all-items" class="sr-only" tabindex="-1" aria-hidden="true">Lưu tất cả</button>

@@ -61,6 +61,7 @@ class HarvestPlanController extends Controller
                 : collect(),
             'farmers' => $farmers,
             'unusual' => $supply->unusualReports($plan->delivery_date->toDateString()),
+            'staleWarnings' => $plans->staleWarnings($plan),
         ]);
     }
 

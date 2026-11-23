@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Enums\FarmerStatus;
 use App\Enums\ForecastMethod;
 use App\Enums\HarvestPlanStatus;
+use App\Enums\OrderStatus;
 use App\Models\Farmer;
 use App\Models\HarvestPlan;
 use App\Models\HarvestPlanItem;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\SupplyReport;
 use App\Models\User;
@@ -24,6 +26,54 @@ class HarvestPlanService
         private readonly ForecastService $forecasts,
         private readonly BatchService $batches,
     ) {}
+
+    /**
+     * Cảnh báo dữ liệu cũ cho kế hoạch nháp: đơn hoặc sản lượng đổi sau lúc tạo gợi ý, HTX đang hợp tác chưa báo sản lượng.
+     * Kế hoạch đã chốt không còn tính lại được nên không cảnh báo.
+     *
+     * @return list<string>
+     */
+    public function staleWarnings(HarvestPlan $plan): array
+    {
+        if ($plan->status !== HarvestPlanStatus::Draft) {
+            return [];
+        }
+
+        $date = $plan->delivery_date->toDateString();
+        $warnings = [];
+        $generatedAt = $plan->items()->min('created_at');
+
+        if ($generatedAt !== null) {
+            $since = CarbonImmutable::parse($generatedAt);
+
+            // Gợi ý đã tính cả đơn chờ xác nhận, nên chỉ đơn mới và đơn bị hủy mới làm số gợi ý lệch; xác nhận đơn thì không.
+            $orders = Order::whereDate('delivery_date', $date);
+            $newOrders = (clone $orders)->where('status', '!=', OrderStatus::Cancelled)->where('created_at', '>', $since)->count();
+            $cancelled = (clone $orders)->where('status', OrderStatus::Cancelled)->where('created_at', '<=', $since)->where('updated_at', '>', $since)->count();
+            $changes = array_filter([
+                $newOrders > 0 ? "{$newOrders} đơn mới" : null,
+                $cancelled > 0 ? "{$cancelled} đơn bị hủy" : null,
+            ]);
+            if ($changes !== []) {
+                $warnings[] = implode(', ', $changes)." sau lúc tạo gợi ý ({$since->format('H:i d/m')}).";
+            }
+
+            $changedFarmers = Farmer::whereHas('supplyReports', fn ($query) => $query
+                ->whereDate('available_date', $date)->where('updated_at', '>', $since))->orderBy('code')->pluck('name');
+            if ($changedFarmers->isNotEmpty()) {
+                $warnings[] = "HTX {$changedFarmers->implode(', ')} báo hoặc sửa sản lượng sau lúc tạo gợi ý.";
+            }
+        }
+
+        $silentFarmers = Farmer::where('status', FarmerStatus::Active)->has('products')
+            ->whereDoesntHave('supplyReports', fn ($query) => $query->whereDate('available_date', $date))
+            ->orderBy('code')->pluck('name');
+        if ($silentFarmers->isNotEmpty()) {
+            $warnings[] = "HTX chưa báo sản lượng cho ngày này: {$silentFarmers->implode(', ')}.";
+        }
+
+        return $warnings;
+    }
 
     /**
      * Sinh (hoặc sinh lại) gợi ý thu hoạch cho một ngày giao. AI chỉ gợi ý: final_kg để trống cho operator chốt.

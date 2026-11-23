@@ -143,7 +143,7 @@
 
 <header class="top">
   <div class="eyebrow">Business Challenge 2026 · AI for Inclusive Growth and Sustainable Communities</div>
-  <h1 data-i18n="h1">Kịch bản thuyết trình: công nghệ của FARM2HOME AI</h1>
+  <h1 data-i18n="h1">Kịch bản thuyết trình: công nghệ của FARM2HOME</h1>
   <p data-i18n="intro">Phần trình bày về sản phẩm và công nghệ: web làm được gì, AI nằm ở đâu, vì sao thiết kế như vậy. Mỗi đoạn có <b>lời nói</b> (chữ to, đọc được), cột bên cạnh là <b>màn hình cần chiếu</b>, <b>thao tác demo</b> và <b>ý phải nhấn</b>.</p>
   <div class="facts" data-i18n="facts">
     <span>⏱ khoảng 7 phút + hỏi đáp</span>
@@ -188,7 +188,8 @@
       <h3 data-i18n="tabsTitle">Tab mở sẵn theo đúng thứ tự demo</h3>
       <ol style="margin-left:18px;font-size:14px" data-i18n="tabs">
         <li><b>Điện thoại:</b> trang chủ → <code>/dat-hang</code></li>
-        <li><b>Điện thoại hoặc tab 2:</b> link nông hộ NH01 <code>/nong-ho/{token}</code></li>
+        <li><b>Điện thoại hoặc tab 2:</b> link HTX01 <code>/htx/{token}</code></li>
+        <li><b>Laptop:</b> slide PPT <code>Presentation_Vietnamese.pptx</code> (slide 2, 6, 8 dùng xen giữa demo)</li>
         <li><b>Laptop:</b> <code>/admin/forecasts</code> (Dự báo)</li>
         <li><b>Laptop:</b> kế hoạch thu hoạch đang <b>Nháp</b> của ngày mai</li>
         <li><b>Laptop:</b> một lô đã <b>Đạt</b> → trang QR <code>/lo/F2H-…</code></li>
@@ -211,6 +212,7 @@
       <li>"AI tự quyết định thu hoạch" → sai. AI chỉ gợi ý, người vận hành chốt.</li>
       <li>"Mô hình học máy / deep learning dự báo" → hiện là thống kê baseline có chủ đích; học máy là giai đoạn sau.</li>
       <li>"Rau 100% sạch", "QR chứng nhận an toàn" → QR chỉ là thông tin lô; chứng nhận chỉ hiện khi có file còn hạn.</li>
+      <li>"Nông hộ báo sản lượng / F2H giao việc cho từng hộ" → đối tác cung ứng là <b>HTX</b>; HTX tự chia việc cho hộ thành viên ngoài hệ thống.</li>
       <li>"Giảm X tấn CO₂" → chúng em không đo khí thải vận chuyển.</li>
       <li>"Dự báo chính xác 96%" → con số đó từ dữ liệu mô phỏng, không phải bằng chứng.</li>
       <li>"Doanh thu 500–700 nghìn/ngày" như sự thật → đây là giả định cần kiểm chứng trong pilot.</li>
@@ -219,46 +221,46 @@
   </div>
 </main>
 
-<footer data-i18n="footer">Số liệu và tính năng khớp với code hiện tại (tháng 10/2026). Chi tiết AI: <code>docs/CHUC-NANG-AI.md</code> · kịch bản người dùng: <code>docs/kich-ban-su-dung.html</code>.</footer>
+<footer data-i18n="footer">Số liệu và tính năng khớp với code hiện tại và slide <code>Presentation_Vietnamese.pptx</code> (tháng 11/2026). Chi tiết AI: <code>docs/CHUC-NANG-AI.md</code> · kịch bản người dùng: <code>docs/kich-ban-su-dung.html</code>.</footer>
 
 <script>
 // t = giây bắt đầu; opt = bỏ được khi thiếu giờ
 const SEGS = [
   { t: 0, title: 'Mở đầu: vấn đề không nằm ở chỗ bán rau', short: 'Mở đầu',
     say: [
-      'Ở Mỹ Tho, nông hộ nhỏ thường <em>cắt rau theo cảm tính</em>: hôm nay cắt nhiều, khách mua ít, rau héo phải bỏ. Hôm khác khách cần thì lại không đủ. Người mua và người trồng <em>không nhìn thấy nhau</em>.',
-      'Vì vậy FARM2HOME AI <em>không phải một cửa hàng rau online</em>. Đây là một công cụ điều phối: biến đơn đặt trước thành một con số cụ thể, <em>ngày mai mỗi nhà nên thu bao nhiêu ký rau gì</em>. <span class="pause">[ngừng]</span>',
+      'Ở Mỹ Tho, hợp tác xã và các hộ trồng rau thường <em>thu hoạch theo cảm tính</em>: hôm nay cắt nhiều, khách mua ít, rau héo phải bỏ. Hôm khác khách cần thì lại không đủ. Người mua và người trồng <em>không nhìn thấy nhau</em>.',
+      'Vì vậy FARM2HOME <em>không chỉ bán rau</em>. Đây là một công cụ điều phối: biến đơn đặt trước thành một con số cụ thể, <em>ngày mai mỗi hợp tác xã nên thu bao nhiêu ký rau gì</em>. <span class="pause">[ngừng]</span>',
       'Phần này em trình bày web làm được gì, AI nằm ở đâu, và vì sao chúng em thiết kế như vậy.',
     ],
-    show: 'Slide tiêu đề + 1 câu: "Điều phối nông sản theo nhu cầu, giảm dư thừa".',
-    key: 'Câu "không phải cửa hàng online" phải nói rõ: đó là điểm khác biệt.' },
+    show: 'Slide 1 (tiêu đề): "Kết nối nông sản với nhu cầu, giảm dư thừa", rồi slide 3 "Vấn đề cốt lõi: nhu cầu và thu hoạch đang lệch pha".',
+    key: 'Câu "không chỉ bán rau" phải nói rõ: đó là điểm khác biệt (slide 4).' },
   { t: 40, title: 'Một vòng dữ liệu khép kín, bốn người dùng', short: 'Kiến trúc',
     say: [
-      'Hệ thống có <em>bốn người dùng</em>: khách hàng, nông hộ, người vận hành, và quản trị.',
-      'Dữ liệu chạy thành một vòng khép kín: khách đặt trước → hệ thống dự báo → gợi ý thu hoạch → người vận hành chốt → nông hộ thu đúng số → đóng gói có <em>mã QR theo lô</em> → khách phản hồi → dữ liệu đó quay lại làm dự báo tốt hơn.',
-      'Điều chúng em giữ chặt là <em>"công nghệ vừa đủ"</em>: khách và nông hộ <em>không cần cài app, không cần tạo tài khoản</em>. Khách chỉ cần số điện thoại. Nông hộ chỉ cần bấm một đường link gửi qua Zalo, thứ họ đang dùng hằng ngày.',
+      'Hệ thống có <em>bốn người dùng</em>: hộ gia đình mua rau, hợp tác xã cung ứng, người vận hành, và quản trị.',
+      'Dữ liệu chạy thành một vòng khép kín: khách đặt trước → hệ thống dự báo → gợi ý thu hoạch → người vận hành chốt → hợp tác xã thu đúng số → đóng gói có <em>mã QR theo lô</em> → khách phản hồi → dữ liệu đó quay lại làm dự báo tốt hơn.',
+      'Điều chúng em giữ chặt là <em>"công nghệ vừa đủ"</em>: khách và hợp tác xã <em>không cần cài app, không cần tạo tài khoản</em>. Khách chỉ cần số điện thoại. Đại diện HTX chỉ cần bấm một đường link gửi qua Zalo, thứ họ đang dùng hằng ngày.',
     ],
-    show: 'Sơ đồ "Một ngày vận hành" trong docs/kich-ban-su-dung.html, bấm ▶ Chạy cho nó tự đi.',
-    demo: ['Mở sơ đồ làn bơi', 'Bấm ▶ Chạy, để nó chạy trong lúc nói'],
+    show: 'Slide 6 "Mô hình giải pháp" (vòng 6 bước), hoặc sơ đồ "Một ngày vận hành" trong docs/kich-ban-su-dung.html, bấm ▶ Chạy cho nó tự đi.',
+    demo: ['Chiếu slide 6, hoặc mở sơ đồ làn bơi', 'Bấm ▶ Chạy, để nó chạy trong lúc nói'],
     key: 'Không cần app, không cần tài khoản = bao trùm (inclusive). Đây là tiêu chí của cuộc thi.' },
   { t: 90, title: 'Khách đặt hàng trên điện thoại', short: 'Khách',
     say: [
-      'Đây là màn hình khách thấy trên điện thoại. Khách chọn <em>giỏ rau đóng sẵn</em> hoặc chọn lẻ, chọn ngày giao, khung giờ, khu vực. Phí giao tự tính theo khu, đủ mức thì miễn phí.',
+      'Khách đặt trước qua <em>Zalo, Facebook hoặc website</em>. Đây là màn hình web khách thấy trên điện thoại. Khách chọn <em>giỏ rau đóng sẵn</em> hoặc chọn lẻ, chọn ngày giao, khung giờ, khu vực. Phí giao tự tính theo khu, đủ mức thì miễn phí.',
       'Không có đăng ký, không có mật khẩu: <em>số điện thoại chính là tài khoản</em>. Lần sau đặt lại, hệ thống tự nhận ra.',
       'Nếu khách thắc mắc, có <em>chatbot hỏi đáp</em> dùng Gemini, trả lời dựa trên dữ liệu thật của hệ thống: giá, giỏ, giờ giao. Chatbot chỉ gợi ý mua sắm, không tư vấn sức khoẻ. <span class="pause">[ngừng]</span>',
       'Đơn chốt lúc <em>18 giờ</em> cho ngày hôm sau, và đơn đó là nguyên liệu cho AI.',
     ],
-    show: 'Điện thoại chiếu lên màn hình: /dat-hang.',
+    show: 'Slide 2 "Giới thiệu website", rồi điện thoại chiếu lên màn hình: /dat-hang.',
     demo: ['Chọn Giỏ Gia Đình', 'Chọn ngày mai, khung 17–19h, Cụm 1', 'Mở chatbot, hỏi "phí ship bao nhiêu?"', 'Không cần bấm Gửi (tiết kiệm thời gian)'],
     key: 'Ít gõ, nút to, chạy trên điện thoại: thiết kế cho người không rành công nghệ.' },
-  { t: 150, title: 'Nông hộ báo sản lượng bằng một đường link', short: 'Nông hộ', opt: true,
+  { t: 150, title: 'Hợp tác xã báo sản lượng bằng một đường link', short: 'HTX', opt: true,
     say: [
-      'Phía nông hộ, mỗi nhà có <em>một đường link riêng</em>. Bác nông dân bấm vào là thấy 7 ngày tới, gõ số ký rau mình có thể thu, bấm Lưu. Hết.',
-      'Không biết gõ thì nhắn Zalo, người vận hành nhập hộ. Con số này rất quan trọng: nó là <em>giới hạn</em> để hệ thống không bao giờ giao cho một nhà nhiều hơn số họ báo.',
+      'Phía cung ứng, mỗi hợp tác xã có <em>một đường link riêng</em>. Đại diện HTX bấm vào là thấy 7 ngày tới, gõ số ký rau HTX có thể thu, bấm Lưu. Hết.',
+      'Không tiện gõ thì nhắn Zalo, người vận hành nhập hộ. Con số này rất quan trọng: nó là <em>giới hạn</em> để hệ thống không bao giờ giao cho một HTX nhiều hơn số họ báo. FARM2HOME phân bổ, trả tiền và nhắn tin theo HTX; <em>HTX tự chia việc cho các hộ thành viên</em>.',
     ],
-    show: 'Link nông hộ NH01 trên điện thoại.',
+    show: 'Link HTX01 (/htx/…) trên điện thoại.',
     demo: ['Gõ số kg cho ngày mai', 'Bấm Lưu sản lượng'],
-    key: 'Nông hộ nhỏ, lớn tuổi vẫn dùng được.' },
+    key: 'Làm việc với HTX: một đầu mối, sản lượng ổn định hơn; người lớn tuổi vẫn dùng được.' },
   { t: 180, title: 'AI dự báo nhu cầu, và vì sao chưa dùng học máy', short: 'Dự báo',
     say: [
       'Đến phần AI. Mỗi tối lúc <em>18 giờ 15</em>, sau khi đóng đơn, hệ thống tự dự báo nhu cầu <em>7 ngày tới cho từng loại rau</em>.',
@@ -266,51 +268,51 @@ const SEGS = [
       'Câu hỏi là: sao không dùng học máy? Vì pilot 4 tuần <em>chưa đủ dữ liệu</em> để huấn luyện, và chúng em đặt một luật: một mô hình chỉ được coi là tốt hơn khi nó <em>có sai số thực tế thấp hơn</em> các phương pháp đơn giản này.',
       'Nên mỗi tối 21 giờ, hệ thống tự điền nhu cầu thật vào và đo sai số bằng <em>WAPE</em>, tức tổng ký đoán lệch chia tổng ký thật. Màn hình này cho thấy phương pháp nào đang thắng.',
     ],
-    show: '/admin/forecasts: biểu đồ 28 ngày qua + 7 ngày tới, bảng độ chính xác.',
-    demo: ['Chỉ vào đường dự báo nét đứt và vùng thấp–cao', 'Bấm qua 3 nút phương pháp', 'Chỉ nhãn "Sai số thấp nhất"'],
+    show: 'Slide 8 "Ứng dụng công nghệ" (tầng 2: AI dự báo), rồi /admin/forecasts: biểu đồ 28 ngày qua + 7 ngày tới, bảng độ chính xác.',
+    demo: ['Chỉ vào đường dự báo nét đứt và vùng thấp–cao', 'Bấm qua 3 nút phương pháp', 'Chỉ nhãn "Đoán sát nhất"'],
     key: 'Trung thực: thống kê là baseline có chủ đích, đo được, có kế hoạch nâng cấp. Giám khảo đánh giá cao sự trung thực hơn chữ "deep learning".' },
   { t: 255, title: 'Gợi ý thu hoạch: AI gợi ý, con người quyết định', short: 'Kế hoạch',
     say: [
       'Dự báo chưa phải quyết định. Hệ thống đổi nó thành <em>số ký nên thu</em>: lấy đơn đã đặt, cộng phần dự báo khách còn đặt thêm, trừ rau tồn còn hạn, rồi cộng <em>10% dự phòng</em>.',
-      'Sau đó <em>chia cho các nông hộ theo tỉ lệ</em> sản lượng họ đã báo. Nhà nhỏ cũng có phần, không dồn hết cho nhà lớn, và không ai bị giao quá số mình báo. <span class="pause">[ngừng]</span>',
-      'Nhưng <em>AI không tự quyết</em>. Người vận hành xem lại, sửa số được, chia một loại rau cho nhiều nhà được, nhưng <em>sửa thì phải ghi lý do</em>: trời mưa, rau xấu… Hệ thống lưu <em>cả số AI gợi ý lẫn số người chốt</em>, để biết AI đúng ở đâu, sai ở đâu.',
-      'Chốt xong, hệ thống soạn sẵn tin nhắn cho từng nhà. Người vận hành bấm mở Zalo, gửi. Nông hộ bấm "Tôi sẽ thu hoạch" là xác nhận.',
+      'Sau đó <em>chia cho các hợp tác xã theo tỉ lệ</em> sản lượng họ đã báo. HTX nhỏ cũng có phần, không dồn hết cho HTX lớn, và không ai bị giao quá số mình báo. <span class="pause">[ngừng]</span>',
+      'Nhưng <em>AI không tự quyết</em>. Người vận hành xem lại, sửa số được, chia một loại rau cho nhiều HTX được, nhưng <em>sửa thì phải ghi lý do</em>: trời mưa, rau xấu… Hệ thống lưu <em>cả số AI gợi ý lẫn số người chốt</em>, để biết AI đúng ở đâu, sai ở đâu.',
+      'Chốt xong, hệ thống soạn sẵn tin nhắn cho từng HTX. Người vận hành bấm mở Zalo, gửi. Đại diện HTX bấm "Tôi sẽ thu hoạch" trên link là xác nhận.',
     ],
-    show: 'Kế hoạch thu hoạch đang Nháp của ngày mai.',
-    demo: ['Chỉ cột Gợi ý và cột Chốt', 'Sửa 1 dòng +0,5 kg, gõ lý do "trời mưa"', 'Bấm "+ Thêm nông hộ" cho 1 loại rau', 'Lưu tất cả → Chốt kế hoạch → chỉ khung tin nhắn Zalo'],
+    show: 'Slide 6, khung "Công thức điều phối", rồi kế hoạch thu hoạch đang Nháp của ngày mai.',
+    demo: ['Chỉ cột Gợi ý và cột Chốt', 'Sửa 1 dòng +0,5 kg, gõ lý do "trời mưa"', 'Bấm "Thêm HTX" cho 1 loại rau', 'Lưu tất cả → Chốt kế hoạch → chỉ khung tin nhắn Zalo'],
     key: 'Human-in-the-loop là nguyên tắc cốt lõi. Nhấn: lưu cả suggested lẫn final + lý do.' },
   { t: 330, title: 'Truy xuất theo lô bằng mã QR', short: 'QR',
     say: [
-      'Sáng hôm sau rau về, người vận hành cân và nhập số thực nhận. Hệ thống tạo <em>một lô</em> cho mỗi loại rau của mỗi nhà, có mã riêng, in thành tem QR dán lên túi.',
-      'Khách quét là thấy: rau của nhà nào, trồng ở đâu, <em>thu hoạch lúc mấy giờ</em>, sơ chế, đóng gói lúc nào, bảo quản ra sao. Và khách chấm điểm ngay trên trang đó. <span class="pause">[ngừng]</span>',
-      'Một điều chúng em cố ý làm: <em>mã QR không phải chứng nhận</em>. Trang QR không ghi "100% sạch". Chứng nhận chỉ hiện khi nông hộ có giấy tờ thật và còn hạn. Chúng em chọn minh bạch thay vì quảng cáo.',
+      'Sáng hôm sau rau về, người vận hành cân và nhập số thực nhận. Hệ thống tạo <em>một lô</em> cho mỗi loại rau của mỗi HTX, có mã riêng, in thành tem QR dán lên túi.',
+      'Khách quét là thấy: rau của HTX nào, hộ trồng nào nếu HTX khai, trồng ở đâu, <em>thu hoạch lúc mấy giờ</em>, sơ chế, đóng gói lúc nào, bảo quản ra sao. Và khách chấm điểm ngay trên trang đó. <span class="pause">[ngừng]</span>',
+      'Một điều chúng em cố ý làm: <em>mã QR không phải chứng nhận</em>. Trang QR không ghi "100% sạch". Chứng nhận chỉ hiện khi HTX có giấy tờ thật và còn hạn. Chúng em chọn minh bạch thay vì quảng cáo.',
     ],
     show: 'Trang /lo/F2H-… trên điện thoại (hoặc tem QR in sẵn để giám khảo quét thử).',
     demo: ['Quét tem QR in sẵn bằng điện thoại', 'Cuộn xuống form phản hồi'],
-    key: 'Phản hồi gắn với mã lô → biết chính xác rau nhà nào, ngày nào có vấn đề.' },
+    key: 'Phản hồi gắn với mã lô → biết chính xác rau HTX nào, ngày nào có vấn đề.' },
   { t: 380, title: 'Đo được: mọi tính năng đều đổ về KPI', short: 'KPI', opt: true,
     say: [
       'Cuối cùng, mọi thao tác đều đổ về <em>một bảng KPI</em> để kiểm chứng mô hình kinh doanh trong pilot.',
       'Quan trọng nhất là hai con số đi cùng nhau: <em>ký rau dư mỗi tuần</em> phải giảm, mà <em>tỉ lệ giao đủ cho khách</em> không được giảm. Thu ít đi mà để khách thiếu rau thì không phải thành công.',
       'Bên cạnh đó là sai số dự báo, số lần người vận hành phải sửa gợi ý, khách mua lại, bao bì thu hồi. Chúng em <em>không tuyên bố giảm CO₂</em> vì chưa đo được khí thải vận chuyển.',
     ],
-    show: '/admin: Tổng quan, đã chọn khoảng ngày.',
+    show: '/admin: Tổng quan, đã chọn khoảng ngày (khớp slide 12 "Kế hoạch thử nghiệm 4 tuần").',
     demo: ['Chỉ ô Rau dư và Tỷ lệ giao đủ', 'Chỉ bảng WAPE và Số lần điều chỉnh'],
     key: 'Rau dư ↓ nhưng giao đủ không ↓. Không nói CO₂.' },
   { t: 420, title: 'Kết: chi phí thấp, mở rộng được', short: 'Kết',
     say: [
-      'Về kỹ thuật: web dựng bằng <em>Laravel, MySQL</em>, giao diện nhẹ thiết kế cho điện thoại trước, <em>cài được như một app</em> mà không qua kho ứng dụng. Có hơn <em>300 bài kiểm thử tự động</em> cho các luồng tiền, đơn và kế hoạch.',
-      'Lộ trình: <em>4 tuần pilot</em> với 2–3 nông hộ và 20–30 hộ gia đình ở Mỹ Tho để thu dữ liệu thật. Khi đủ dữ liệu, thêm mô hình học máy, và <em>chỉ đưa vào dùng nếu nó thắng</em> các phương pháp hiện tại. Sau đó mới gửi tin Zalo tự động, nhưng vẫn giữ bước người duyệt. <span class="pause">[ngừng]</span>',
-      'FARM2HOME AI không thay người nông dân hay người điều phối. Nó giúp họ <em>thu vừa đủ, bán hết, bớt bỏ phí</em>. Em xin cảm ơn.',
+      'Về kỹ thuật: web dựng bằng <em>Laravel, MySQL</em>, giao diện nhẹ thiết kế cho điện thoại trước, <em>cài được như một app</em> mà không qua kho ứng dụng. Có hơn <em>370 bài kiểm thử tự động</em> cho các luồng tiền, đơn và kế hoạch.',
+      'Lộ trình: <em>4 tuần pilot</em> với 2–3 hợp tác xã, 20–30 hộ gia đình và 5–7 loại rau chủ lực ở Mỹ Tho để thu dữ liệu thật. Giai đoạn 2, khi đủ dữ liệu, thử nghiệm mô hình dự báo học máy, và <em>chỉ đưa vào dùng nếu nó thắng</em> các phương pháp hiện tại; gửi gợi ý qua Zalo nhưng vẫn giữ bước người duyệt. Giai đoạn 3 mới tự động hoá và mở rộng theo cụm. <span class="pause">[ngừng]</span>',
+      'FARM2HOME không thay người nông dân hay người điều phối. Nó giúp họ <em>thu vừa đủ, bán hết, bớt bỏ phí</em>: kết nối nông sản với nhu cầu, giảm dư thừa. Em xin cảm ơn.',
     ],
-    show: 'Slide lộ trình 3 bước + câu kết.',
+    show: 'Slide 8, khung "Lộ trình triển khai" 3 giai đoạn + câu kết.',
     key: 'Câu kết nói chậm, nhìn giám khảo, không nhìn màn hình.' },
 ];
 const TOTAL = 450;
 
 const QA = [
   { q: 'AI của các bạn thực ra chỉ là trung bình cộng?',
-    a: 'Đúng là phần dự báo hiện là thống kê, và đó là chủ ý. Với 4 tuần dữ liệu, mô hình phức tạp dễ học thuộc nhiễu. Chúng em làm baseline trước, đo sai số mỗi ngày, và đặt luật: mô hình mới phải thắng baseline về WAPE trên đơn thật mới được dùng. Phần "AI" có giá trị là cả chuỗi: dự báo → gợi ý → chia cho nông hộ → đo lại.',
+    a: 'Đúng là phần dự báo hiện là thống kê, và đó là chủ ý. Với 4 tuần dữ liệu, mô hình phức tạp dễ học thuộc nhiễu. Chúng em làm baseline trước, đo sai số mỗi ngày, và đặt luật: mô hình mới phải thắng baseline về WAPE trên đơn thật mới được dùng. Phần "AI" có giá trị là cả chuỗi: dự báo → gợi ý → chia cho HTX → đo lại.',
     p: 'Đã có sẵn chỗ cho mô hình cây hồi quy (tree_regression) chạy thành service Python riêng.' },
   { q: 'Dự báo chính xác bao nhiêu phần trăm?',
     a: 'Chúng em chưa có con số trên đơn thật, sẽ đo trong pilot bằng WAPE. Trên dữ liệu mô phỏng có số, nhưng dữ liệu đó do chính chúng em sinh ra nên không dùng làm bằng chứng.',
@@ -318,22 +320,24 @@ const QA = [
   { q: 'Nếu AI gợi ý sai thì sao?',
     a: 'AI không tự quyết. Người vận hành duyệt từng dòng, sửa thì phải ghi lý do, và có 10% dự phòng. Hệ thống lưu cả số gợi ý lẫn số chốt nên mỗi lần sửa là một bài học: biết AI hay sai theo hướng nào.' },
   { q: 'Ít dữ liệu lúc mới bắt đầu thì dự báo thế nào?',
-    a: 'Những ngày đầu dự báo gần 0, nên gợi ý thu hoạch chỉ bằng đơn đã đặt cộng 10%. Nghĩa là hệ thống vẫn an toàn: không bảo nông hộ thu dư. Khoảng một tuần sau dự báo mới bắt đầu có ý nghĩa.' },
+    a: 'Những ngày đầu dự báo gần 0, nên gợi ý thu hoạch chỉ bằng đơn đã đặt cộng 10%. Nghĩa là hệ thống vẫn an toàn: không bảo HTX thu dư. Khoảng một tuần sau dự báo mới bắt đầu có ý nghĩa.' },
+  { q: 'Sao chỉ làm với hợp tác xã, không làm với từng hộ nông dân?',
+    a: 'HTX là một đầu mối có sản lượng ổn định, có quy trình và dễ có chứng nhận hơn hộ lẻ. FARM2HOME phân bổ, trả tiền và nhắn tin theo HTX; HTX tự chia việc cho hộ thành viên như họ vẫn làm. Khi nhận rau, người vận hành có thể ghi tên hộ trồng do HTX khai, và tên đó hiện trên trang QR, nên vẫn truy được tới hộ.' },
   { q: 'Nông dân lớn tuổi có dùng được không?',
-    a: 'Họ chỉ cần bấm một đường link trên Zalo và gõ số ký. Không tài khoản, không mật khẩu, không cài app. Không gõ được thì nhắn Zalo hoặc gọi, người vận hành nhập hộ. Tin nhắn thu hoạch gửi qua Zalo, kênh họ dùng hằng ngày.' },
+    a: 'Đại diện HTX chỉ cần bấm một đường link trên Zalo và gõ số ký. Không tài khoản, không mật khẩu, không cài app. Không gõ được thì nhắn Zalo hoặc gọi, người vận hành nhập hộ. Tin nhắn thu hoạch gửi qua Zalo, kênh họ dùng hằng ngày.' },
   { q: 'Sao không làm app di động?',
     a: 'Bắt người dân tải app là rào cản lớn nhất. Web chạy được trên mọi điện thoại, và ai muốn thì cài lên màn hình chính như app, không qua kho ứng dụng. Một bộ code, chi phí thấp.' },
   { q: 'Bảo mật dữ liệu khách hàng thế nào?',
-    a: 'Thu tối thiểu: tên, số điện thoại, địa chỉ giao, và khách phải đồng ý mới lưu. Địa chỉ được mã hoá trong cơ sở dữ liệu. Trang tra cứu đơn cố ý không hiện tên và địa chỉ vì ai biết số điện thoại cũng tra được. Link nông hộ lộ thì quản trị cấp link mới, link cũ hết hiệu lực ngay. Trang quản trị phải đăng nhập và phân quyền admin / người vận hành.' },
+    a: 'Thu tối thiểu: tên, số điện thoại, địa chỉ giao, và khách phải đồng ý mới lưu. Địa chỉ được mã hoá trong cơ sở dữ liệu. Trang tra cứu đơn cố ý không hiện tên và địa chỉ vì ai biết số điện thoại cũng tra được. Link của HTX lộ thì quản trị cấp link mới, link cũ hết hiệu lực ngay. Trang quản trị phải đăng nhập và phân quyền admin / người vận hành.' },
   { q: 'QR của các bạn có chứng minh rau sạch không?',
-    a: 'Không, và chúng em nói rõ điều đó. QR cho thấy sự thật về lô: nhà nào, thu lúc nào, sơ chế, bảo quản. Chứng nhận chỉ hiện khi có giấy tờ thật còn hạn. Chúng em không ghi "100% sạch". Mỗi link QR còn có một khoá ngẫu nhiên nên không đoán ra được mã của lô khác.' },
+    a: 'Không, và chúng em nói rõ điều đó. QR cho thấy sự thật về lô: HTX nào, thu lúc nào, sơ chế, bảo quản. Chứng nhận chỉ hiện khi có giấy tờ thật còn hạn. Chúng em không ghi "100% sạch". Mỗi link QR còn có một khoá ngẫu nhiên nên không đoán ra được mã của lô khác.' },
   { q: 'Chatbot Gemini có nói sai không?',
     a: 'Chatbot được đưa dữ liệu thật của hệ thống (rau, giỏ, giá, giờ giao) và chỉ trả lời về mua sắm, không tư vấn sức khoẻ. Không có mạng hoặc Gemini lỗi thì nó dùng câu trả lời soạn sẵn. Chatbot không tham gia quyết định thu hoạch.' },
   { q: 'Chi phí vận hành công nghệ bao nhiêu?',
     a: 'Web và cơ sở dữ liệu chạy trên một máy chủ nhỏ; chatbot dùng bản Gemini nhẹ; không có phí kho ứng dụng hay phí tin nhắn vì gửi Zalo thủ công. Con số chính xác chúng em sẽ ghi lại trong pilot.',
     p: 'Nếu nhóm đã có số chi phí hosting cụ thể thì thay câu này bằng số thật.' },
   { q: 'Mở rộng ra nhiều xã, nhiều loại rau được không?',
-    a: 'Được. Rau, giỏ, khu giao, nông hộ đều do quản trị thêm trên giao diện, không cần sửa code. Dự báo và phân bổ chạy theo từng loại rau, từng ngày, nên thêm loại rau là tự có dự báo riêng.' },
+    a: 'Được. Rau, giỏ, khu giao, hợp tác xã đều do quản trị thêm trên giao diện, không cần sửa code. Dự báo và phân bổ chạy theo từng loại rau, từng ngày, nên thêm loại rau là tự có dự báo riêng.' },
   { q: 'Sao không dùng microservices? Đông người dùng có bị sập không?',
     a: 'Chúng em dùng kiến trúc nguyên khối (một ứng dụng Laravel) vì phù hợp quy mô pilot và đội nhỏ: 20–30 hộ, vài chục đơn mỗi ngày, một người lập trình. Tách microservices lúc này chỉ tăng chi phí và lỗi vận hành. Khách đặt rải rác trong ngày cho ngày mai, hạn chót 18:00, nên không có giờ cao điểm dồn dập. Khi có mô hình học máy bằng Python, chúng em tách riêng dịch vụ dự báo; chỉ tách thêm khi có lý do cụ thể về tải hoặc đội ngũ.',
     p: 'Microservices = chia hệ thống thành nhiều chương trình nhỏ chạy riêng, như khu ẩm thực nhiều quầy; nguyên khối = một bếp làm hết, như quán ăn gia đình.' },
@@ -344,7 +348,7 @@ const QA = [
 const CHECK = [
   'Laragon: Start All (web server + MySQL đều xanh)',
   'Có dữ liệu để demo: nạp lại bản sao lưu storage/app/backups/… rồi chạy php artisan migrate (thêm khoá QR, mã hoá địa chỉ), hoặc chạy php artisan demo:orders (DB đang trống từ 17/10)',
-  'Có một kế hoạch Nháp cho ngày mai, có ít nhất 2 nông hộ đã báo sản lượng',
+  'Có một kế hoạch Nháp cho ngày mai, có ít nhất 2 HTX đã báo sản lượng',
   'Có một lô đã Đạt kiểm tra; in sẵn 2–3 tem QR của lô đó để giám khảo quét',
   'Đăng nhập admin sẵn trên laptop',
   'Link tạm thời HTTPS chạy được trên điện thoại (thử mở trước 10 phút)',
@@ -703,39 +707,39 @@ const MENTOR_QA = [
 const SEGS_EN = [
   { title: 'Opening: the problem is not selling vegetables', short: 'Opening',
     say: [
-      'In My Tho, small farmers often <em>harvest by guesswork</em>. Some days they cut too much, buyers order less, and the vegetables wilt and are thrown away. Other days buyers need more and there is not enough. Buyers and growers <em>cannot see each other</em>.',
-      'So FARM2HOME AI is <em>not an online vegetable shop</em>. It is a coordination tool. It turns pre-orders into one concrete number: <em>how many kilos of each vegetable each farm should harvest tomorrow</em>. <span class="pause">[pause]</span>',
+      'In My Tho, cooperatives and their growers often <em>harvest by guesswork</em>. Some days they cut too much, buyers order less, and the vegetables wilt and are thrown away. Other days buyers need more and there is not enough. Buyers and growers <em>cannot see each other</em>.',
+      'So FARM2HOME <em>does more than sell vegetables</em>. It is a coordination tool. It turns pre-orders into one concrete number: <em>how many kilos of each vegetable each cooperative should harvest tomorrow</em>. <span class="pause">[pause]</span>',
       'In this part, I will show what the web app does, where the AI is, and why we designed it this way.',
     ],
-    show: 'Title slide + one line: "Coordinating produce by demand, reducing waste".',
-    key: 'Say "not an online shop" clearly: it is what makes us different.' },
+    show: 'Slide 1 (title): "Connecting produce with demand, reducing waste", then slide 3 "Core problem: demand and harvest are out of sync".',
+    key: 'Say "more than selling vegetables" clearly: it is what makes us different (slide 4).' },
   { title: 'One closed data loop, four users', short: 'Architecture',
     say: [
-      'The system has <em>four users</em>: customers, farmers, the operator, and the admin.',
-      'Data moves in a closed loop: customers pre-order → the system forecasts → it suggests a harvest → the operator confirms → farmers harvest the exact amount → we pack with a <em>QR code per batch</em> → customers give feedback → and that data makes the next forecast better.',
-      'Our rule is <em>"just enough technology"</em>. Customers and farmers <em>install nothing and create no account</em>. Customers only need a phone number. Farmers only tap a link we send on Zalo, the app they already use every day.',
+      'The system has <em>four users</em>: households buying vegetables, supplying cooperatives, the operator, and the admin.',
+      'Data moves in a closed loop: customers pre-order → the system forecasts → it suggests a harvest → the operator confirms → cooperatives harvest the exact amount → we pack with a <em>QR code per batch</em> → customers give feedback → and that data makes the next forecast better.',
+      'Our rule is <em>"just enough technology"</em>. Customers and cooperatives <em>install nothing and create no account</em>. Customers only need a phone number. A cooperative representative only taps a link we send on Zalo, the app they already use every day.',
     ],
-    show: 'The "One day of operations" diagram in docs/kich-ban-su-dung.html; press ▶ Chạy (Play) and let it run.',
-    demo: ['Open the swimlane diagram', 'Press ▶ Chạy (Play) and let it run while you talk'],
+    show: 'Slide 6 "Solution model" (the 6-step loop), or the "One day of operations" diagram in docs/kich-ban-su-dung.html; press ▶ Chạy (Play) and let it run.',
+    demo: ['Show slide 6, or open the swimlane diagram', 'Press ▶ Chạy (Play) and let it run while you talk'],
     key: 'No app, no account = inclusive. This is one of the judging criteria.' },
   { title: 'Customers order on their phone', short: 'Customer',
     say: [
-      'This is what a customer sees on the phone. They pick a <em>ready-made basket</em> or single items, then the delivery date, time slot and area. The delivery fee is calculated by area, and it is free above a set amount.',
+      'Customers pre-order through <em>Zalo, Facebook or the website</em>. This is what a customer sees on the website on their phone. They pick a <em>ready-made basket</em> or single items, then the delivery date, time slot and area. The delivery fee is calculated by area, and it is free above a set amount.',
       'No sign-up, no password: <em>the phone number is the account</em>. Next time, the system recognises the customer.',
       'For questions, there is a <em>chatbot</em> powered by Gemini. It answers from real system data: prices, baskets, delivery times. It only gives shopping suggestions, never health advice. <span class="pause">[pause]</span>',
       'Orders close at <em>6 PM</em> for the next day, and those orders are the input for the AI.',
     ],
-    show: 'Phone mirrored on screen: /dat-hang (order page). The interface is in Vietnamese because our users are local.',
+    show: 'Slide 2 "Website introduction", then the phone mirrored on screen: /dat-hang (order page). The interface is in Vietnamese because our users are local.',
     demo: ['Choose «Giỏ Gia Đình» (Family basket)', 'Pick tomorrow, the 17–19h slot, «Cụm 1» (Zone 1)', 'Open the chatbot, ask "phí ship bao nhiêu?" (how much is delivery?)', 'No need to press «Gửi đơn» (Send order), to save time'],
     key: 'Little typing, big buttons, works on any phone: designed for people who are not tech-savvy.' },
-  { title: 'Farmers report supply with one link', short: 'Farmer',
+  { title: 'Cooperatives report supply with one link', short: 'Co-op',
     say: [
-      'Each farm has <em>its own private link</em>. The farmer taps it, sees the next 7 days, types how many kilos they can harvest, and taps Save. That is all.',
-      'If they cannot type, they send a Zalo message and the operator enters it. This number matters: it is a <em>hard limit</em>, so the system never asks a farm for more than it reported.',
+      'On the supply side, each cooperative has <em>its own private link</em>. The representative taps it, sees the next 7 days, types how many kilos the cooperative can harvest, and taps Save. That is all.',
+      'If typing is inconvenient, they send a Zalo message and the operator enters it. This number matters: it is a <em>hard limit</em>, so the system never asks a cooperative for more than it reported. FARM2HOME allocates, pays and messages per cooperative; <em>the cooperative splits the work among its member households</em>.',
     ],
-    show: 'Farmer link for NH01 on the phone.',
+    show: 'Link for HTX01 (/htx/…) on the phone.',
     demo: ['Type the kilos for tomorrow', 'Press «Lưu sản lượng» (Save supply)'],
-    key: 'Small and older farmers can still use it.' },
+    key: 'Working with cooperatives: one contact point, steadier supply; older people can still use it.' },
   { title: 'AI forecasting, and why not machine learning yet', short: 'Forecast',
     say: [
       'Now the AI. Every evening at <em>6:15 PM</em>, after orders close, the system forecasts demand for <em>the next 7 days, for each vegetable</em>.',
@@ -743,50 +747,50 @@ const SEGS_EN = [
       'Why not machine learning? Because a 4-week pilot <em>does not have enough data</em> to train a model. And we set one rule: a model only counts as better if it has <em>lower real-world error</em> than these simple methods.',
       'So every night at 9 PM, the system fills in actual demand and measures the error with <em>WAPE</em>: the total kilos we got wrong, divided by the total kilos actually ordered. This screen shows which method is winning.',
     ],
-    show: '/admin/forecasts: chart of the last 28 days + the next 7 days, and the accuracy table.',
-    demo: ['Point at the dashed forecast line and the low–high band', 'Click through the 3 method buttons', 'Point at the «Sai số thấp nhất» (Lowest error) label'],
+    show: 'Slide 8 "Technology" (layer 2: AI forecasting), then /admin/forecasts: chart of the last 28 days + the next 7 days, and the accuracy table.',
+    demo: ['Point at the dashed forecast line and the low–high band', 'Click through the 3 method buttons', 'Point at the «Đoán sát nhất» (Closest guess) label'],
     key: 'Honesty: statistics are a deliberate baseline, measured every day, with an upgrade plan. Judges value this more than the words "deep learning".' },
   { title: 'Harvest suggestion: AI suggests, people decide', short: 'Plan',
     say: [
       'A forecast is not a decision yet. The system turns it into <em>kilos to harvest</em>: confirmed orders, plus the extra demand we expect, minus usable stock, plus a <em>10% safety margin</em>.',
-      'Then it <em>splits the amount across farms in proportion</em> to what each one reported. Small farms get a share too, not only the big ones, and no farm is asked for more than it reported. <span class="pause">[pause]</span>',
-      'But <em>the AI does not decide</em>. The operator reviews every line, can change the numbers, and can split one vegetable across more farms, but <em>every change needs a reason</em>, like rain or poor quality. We store <em>both the AI number and the human number</em>, so we can see where the AI is right and where it is wrong.',
-      'After confirming, the system writes a ready-to-send message for each farm. The operator opens Zalo and sends it. The farmer taps "I will harvest" to confirm.',
+      'Then it <em>splits the amount across cooperatives in proportion</em> to what each one reported. Small cooperatives get a share too, not only the big ones, and none is asked for more than it reported. <span class="pause">[pause]</span>',
+      'But <em>the AI does not decide</em>. The operator reviews every line, can change the numbers, and can split one vegetable across more cooperatives, but <em>every change needs a reason</em>, like rain or poor quality. We store <em>both the AI number and the human number</em>, so we can see where the AI is right and where it is wrong.',
+      'After confirming, the system writes a ready-to-send message for each cooperative. The operator opens Zalo and sends it. The representative taps "I will harvest" on the link to confirm.',
     ],
-    show: 'Tomorrow\'s harvest plan in «Nháp» (Draft) status.',
-    demo: ['Point at the «Gợi ý» (Suggested) and «Chốt» (Final) columns', 'Change one line by +0.5 kg, type the reason "trời mưa" (rain)', 'Click «+ Thêm nông hộ» (Add farmer) for one vegetable', '«Lưu tất cả» (Save all) → «Chốt kế hoạch» (Confirm plan) → show the Zalo message box'],
+    show: 'Slide 6, the "Coordination formula" box, then tomorrow\'s harvest plan in «Nháp» (Draft) status.',
+    demo: ['Point at the «Gợi ý» (Suggested) and «Chốt» (Final) columns', 'Change one line by +0.5 kg, type the reason "trời mưa" (rain)', 'Click «Thêm HTX» (Add cooperative) for one vegetable', '«Lưu tất cả» (Save all) → «Chốt kế hoạch» (Confirm plan) → show the Zalo message box'],
     key: 'Human-in-the-loop is our core principle. Stress that we keep both the suggested and the final figure, with a reason.' },
   { title: 'Batch traceability with QR codes', short: 'QR',
     say: [
-      'The next morning the vegetables arrive. The operator weighs them and enters the actual amount. The system creates <em>one batch</em> per vegetable per farm, with its own code, printed as a QR label on each bag.',
-      'Customers scan it and see: which farm, where it was grown, <em>what time it was harvested</em>, when it was cleaned and packed, and how to store it. And they can rate it on the same page. <span class="pause">[pause]</span>',
-      'One thing we do on purpose: <em>a QR code is not a certificate</em>. The page never says "100% clean". A certificate only appears when the farm has a real, valid document. We choose transparency over marketing.',
+      'The next morning the vegetables arrive. The operator weighs them and enters the actual amount. The system creates <em>one batch</em> per vegetable per cooperative, with its own code, printed as a QR label on each bag.',
+      'Customers scan it and see: which cooperative, which grower if the cooperative declared one, where it was grown, <em>what time it was harvested</em>, when it was cleaned and packed, and how to store it. And they can rate it on the same page. <span class="pause">[pause]</span>',
+      'One thing we do on purpose: <em>a QR code is not a certificate</em>. The page never says "100% clean". A certificate only appears when the cooperative has a real, valid document. We choose transparency over marketing.',
     ],
     show: 'The /lo/F2H-… page on the phone (or a printed QR label for the judges to scan).',
     demo: ['Scan a pre-printed QR label with the phone', 'Scroll down to the feedback form'],
-    key: 'Feedback is tied to the batch code → we know exactly which farm and which day had a problem.' },
+    key: 'Feedback is tied to the batch code → we know exactly which cooperative and which day had a problem.' },
   { title: 'Measurable: every feature feeds the KPIs', short: 'KPI',
     say: [
       'Finally, every action feeds into <em>one KPI dashboard</em>, so we can test the business model during the pilot.',
       'The two most important numbers go together: <em>kilos of surplus per week</em> must go down, while the <em>share of orders delivered in full</em> must not go down. Harvesting less but leaving customers short is not success.',
       'We also track forecast error, how often the operator changes the AI suggestion, repeat customers and packaging returns. We <em>do not claim CO₂ savings</em>, because we do not measure transport emissions.',
     ],
-    show: '/admin: the dashboard with a date range selected.',
+    show: '/admin: the dashboard with a date range selected (matches slide 12 "4-week pilot plan").',
     demo: ['Point at «Rau dư» (Surplus) and «Tỷ lệ giao đủ» (Fill rate)', 'Point at the WAPE table and «Số lần operator điều chỉnh» (Operator adjustments)'],
     key: 'Surplus ↓ but fill rate not ↓. No CO₂ claims.' },
   { title: 'Closing: low cost, ready to scale', short: 'Close',
     say: [
-      'On the technical side, the app is built with <em>Laravel and MySQL</em>, with a light interface designed for phones first, and it <em>installs like an app</em> without any app store. We have more than <em>300 automated tests</em> for money, orders and planning.',
-      'Our roadmap: a <em>4-week pilot</em> with 2–3 farms and 20–30 households in My Tho, to collect real data. When we have enough data, we add machine learning, and we <em>only use it if it beats</em> our current methods. After that, automatic Zalo messages, but a person still approves before anything is sent. <span class="pause">[pause]</span>',
-      'FARM2HOME AI does not replace the farmer or the coordinator. It helps them <em>harvest just enough, sell it all, and waste less</em>. Thank you.',
+      'On the technical side, the app is built with <em>Laravel and MySQL</em>, with a light interface designed for phones first, and it <em>installs like an app</em> without any app store. We have more than <em>370 automated tests</em> for money, orders and planning.',
+      'Our roadmap: a <em>4-week pilot</em> with 2–3 cooperatives, 20–30 households and 5–7 core vegetables in My Tho, to collect real data. In phase 2, once we have enough data, we test a machine-learning forecast and <em>only use it if it beats</em> our current methods; suggestions go out on Zalo, but a person still approves first. Phase 3 brings automation and expansion by cluster. <span class="pause">[pause]</span>',
+      'FARM2HOME does not replace the farmer or the coordinator. It helps them <em>harvest just enough, sell it all, and waste less</em>: connecting produce with demand, reducing waste. Thank you.',
     ],
-    show: 'Roadmap slide with 3 steps + the closing line.',
+    show: 'Slide 8, the 3-phase "Roadmap" box + the closing line.',
     key: 'Say the last line slowly and look at the judges, not the screen.' },
 ];
 
 const QA_EN = [
   { q: 'Isn\'t your AI just an average?',
-    a: 'Yes, the forecasting part is statistical today, and that is deliberate. With 4 weeks of data, a complex model easily learns noise. We built the baseline first, we measure the error every day, and we set a rule: a new model must beat the baseline on WAPE with real orders before we use it. The valuable "AI" is the whole chain: forecast → suggestion → split across farms → measure again.',
+    a: 'Yes, the forecasting part is statistical today, and that is deliberate. With 4 weeks of data, a complex model easily learns noise. We built the baseline first, we measure the error every day, and we set a rule: a new model must beat the baseline on WAPE with real orders before we use it. The valuable "AI" is the whole chain: forecast → suggestion → split across cooperatives → measure again.',
     p: 'There is already a placeholder for a tree-regression model (tree_regression), to run as a separate Python service.' },
   { q: 'How accurate is the forecast?',
     a: 'We do not have a figure on real orders yet; we will measure it in the pilot with WAPE. We have numbers on simulated data, but we generated that data ourselves, so we do not use it as evidence.',
@@ -794,22 +798,24 @@ const QA_EN = [
   { q: 'What if the AI suggests the wrong amount?',
     a: 'The AI does not decide. The operator reviews every line, must give a reason for any change, and there is a 10% safety margin. We store both the suggested and the final number, so every change is a lesson: we learn in which direction the AI tends to be wrong.' },
   { q: 'How does it forecast with little data at the start?',
-    a: 'In the first days the forecast is close to zero, so the harvest suggestion equals confirmed orders plus 10%. That means the system stays safe: it never tells farmers to over-harvest. After about a week, the forecast starts to be meaningful.' },
+    a: 'In the first days the forecast is close to zero, so the harvest suggestion equals confirmed orders plus 10%. That means the system stays safe: it never tells cooperatives to over-harvest. After about a week, the forecast starts to be meaningful.' },
+  { q: 'Why only cooperatives, not individual farming households?',
+    a: 'A cooperative is one contact point with steadier volume, set procedures, and a better chance of certification than a single household. FARM2HOME allocates, pays and messages per cooperative; the cooperative splits the work among its member households as it already does. When receiving, the operator can record the grower name the cooperative declares, and it appears on the QR page, so traceability still reaches the household.' },
   { q: 'Can older farmers really use it?',
-    a: 'They only tap a link on Zalo and type the kilos. No account, no password, no app to install. If they cannot type, they message or call, and the operator enters it. The harvest list is sent on Zalo, which they use every day.' },
+    a: 'The cooperative representative only taps a link on Zalo and type the kilos. No account, no password, no app to install. If they cannot type, they message or call, and the operator enters it. The harvest list is sent on Zalo, which they use every day.' },
   { q: 'Why not build a mobile app?',
     a: 'Asking people to download an app is the biggest barrier. The web app works on any phone, and anyone who wants can add it to the home screen like an app, without an app store. One codebase, low cost.' },
   { q: 'How do you protect customer data?',
-    a: 'We collect the minimum: name, phone number and delivery address, and customers must consent before we store it. Addresses are encrypted in the database. The order lookup page deliberately hides name and address, because anyone who knows a phone number can use it. If a farmer\'s link leaks, the admin issues a new one and the old link stops working at once. The admin area needs a login with admin or operator roles.' },
+    a: 'We collect the minimum: name, phone number and delivery address, and customers must consent before we store it. Addresses are encrypted in the database. The order lookup page deliberately hides name and address, because anyone who knows a phone number can use it. If a cooperative\'s link leaks, the admin issues a new one and the old link stops working at once. The admin area needs a login with admin or operator roles.' },
   { q: 'Does your QR code prove the vegetables are clean?',
-    a: 'No, and we say so clearly. The QR shows facts about the batch: which farm, harvest time, cleaning, storage. A certificate only appears if there is a real, valid document. We never write "100% clean". Each QR link also has a random key, so nobody can guess the codes of other batches.' },
+    a: 'No, and we say so clearly. The QR shows facts about the batch: which cooperative, harvest time, cleaning, storage. A certificate only appears if there is a real, valid document. We never write "100% clean". Each QR link also has a random key, so nobody can guess the codes of other batches.' },
   { q: 'Can the Gemini chatbot give wrong answers?',
     a: 'The chatbot is given real system data (vegetables, baskets, prices, delivery times) and only answers shopping questions, never health advice. If there is no internet or Gemini fails, it uses scripted answers. The chatbot plays no part in harvest decisions.' },
   { q: 'How much does the technology cost to run?',
     a: 'The web app and database run on one small server; the chatbot uses a lightweight Gemini model; there are no app-store fees and no messaging fees, because Zalo messages are sent by hand. We will record the exact cost during the pilot.',
     p: 'If the team has a real hosting cost, replace this sentence with the number.' },
   { q: 'Can it scale to more communes and more vegetables?',
-    a: 'Yes. Vegetables, baskets, delivery zones and farms are all added by the admin in the interface, with no code changes. Forecasting and allocation run per vegetable and per day, so a new vegetable automatically gets its own forecast.' },
+    a: 'Yes. Vegetables, baskets, delivery zones and cooperatives are all added by the admin in the interface, with no code changes. Forecasting and allocation run per vegetable and per day, so a new vegetable automatically gets its own forecast.' },
   { q: 'Why not microservices? Will it crash with many users?',
     a: 'We use a monolith, one Laravel application, because it fits the pilot and a small team: 20–30 households, a few dozen orders a day, one developer. Microservices now would only add cost and operational problems. Customers order throughout the day for tomorrow, with a 6 PM cut-off, so there is no sudden rush hour. When we have a Python machine-learning model, we will split out the forecasting service; we only split further when there is a concrete reason, such as load or team size.',
     p: 'Microservices = many small programs running separately, like a food court with many stalls; a monolith = one kitchen that does everything, like a family restaurant.' },
@@ -820,7 +826,7 @@ const QA_EN = [
 const CHECK_EN = [
   'Laragon: Start All (web server and MySQL both green)',
   'Demo data ready: restore the backup in storage/app/backups/… then run php artisan migrate (adds QR keys, encrypts addresses), or run php artisan demo:orders (the database has been empty since 17/10)',
-  'A Draft harvest plan for tomorrow exists, with at least 2 farms that reported supply',
+  'A Draft harvest plan for tomorrow exists, with at least 2 cooperatives that reported supply',
   'One batch marked Passed; 2–3 of its QR labels printed for the judges to scan',
   'Admin already logged in on the laptop',
   'Temporary HTTPS link works on the phone (test it 10 minutes before)',
@@ -832,8 +838,8 @@ const CHECK_EN = [
 ];
 
 const STATIC_EN = {
-  h1: 'Pitch script: the technology behind FARM2HOME AI',
-  intro: 'The product and technology part of the pitch: what the web app does, where the AI is, and why it is designed this way. Each section has the <b>script</b> (large text, easy to read), and next to it what to <b>show on screen</b>, the <b>demo steps</b> and the <b>key point</b> to stress. The web app itself stays in Vietnamese because its users are local farmers and customers; the demo steps give the English meaning of each button.',
+  h1: 'Pitch script: the technology behind FARM2HOME',
+  intro: 'The product and technology part of the pitch: what the web app does, where the AI is, and why it is designed this way. Each section has the <b>script</b> (large text, easy to read), and next to it what to <b>show on screen</b>, the <b>demo steps</b> and the <b>key point</b> to stress. The web app itself stays in Vietnamese because its users are local cooperatives and customers; the demo steps give the English meaning of each button.',
   facts: '<span>⏱ about 7 minutes + Q&amp;A</span><span>🎤 1 speaker + 1 person running the demo</span><span>📱 1 phone + 1 laptop</span><span>hatched sections = skip if short on time</span>',
   reset: 'Reset',
   compact: 'Script only',
@@ -849,7 +855,8 @@ const STATIC_EN = {
   tabsTitle: 'Tabs to open, in demo order',
   tabs: `
         <li><b>Phone:</b> home page → <code>/dat-hang</code> (order page)</li>
-        <li><b>Phone or tab 2:</b> farmer link for NH01 <code>/nong-ho/{token}</code></li>
+        <li><b>Phone or tab 2:</b> link for HTX01 <code>/htx/{token}</code></li>
+        <li><b>Laptop:</b> the deck <code>Presentation_Vietnamese.pptx</code> (slides 2, 6, 8 used between demo steps)</li>
         <li><b>Laptop:</b> <code>/admin/forecasts</code> (Forecasts)</li>
         <li><b>Laptop:</b> tomorrow's harvest plan in <b>Nháp</b> (Draft)</li>
         <li><b>Laptop:</b> a batch marked <b>Đạt</b> (Passed) → QR page <code>/lo/F2H-…</code></li>
@@ -866,11 +873,12 @@ const STATIC_EN = {
       <li>"The AI decides the harvest" → wrong. The AI only suggests; the operator confirms.</li>
       <li>"A machine-learning / deep-learning model forecasts demand" → today it is a deliberate statistical baseline; machine learning comes later.</li>
       <li>"100% clean vegetables", "the QR certifies safety" → the QR only shows batch facts; certificates appear only with a valid file.</li>
+      <li>"Farmers report supply / FARM2HOME assigns work to each household" → our supply partners are <b>cooperatives</b>; each cooperative splits work among its members outside the system.</li>
       <li>"We cut X tonnes of CO₂" → we do not measure transport emissions.</li>
       <li>"The forecast is 96% accurate" → that figure comes from simulated data, it is not evidence.</li>
       <li>"Revenue of 500–700 thousand VND a day" as a fact → it is an assumption to test in the pilot.</li>
       <li>Health advice about vegetables → the chatbot only gives shopping suggestions.</li>`,
-  footer: 'Figures and features match the current code (October 2026). AI details: <code>docs/CHUC-NANG-AI.md</code> · user scenarios: <code>docs/kich-ban-su-dung.html</code>.',
+  footer: 'Figures and features match the current code and the deck <code>Presentation_Vietnamese.pptx</code> (November 2026). AI details: <code>docs/CHUC-NANG-AI.md</code> · user scenarios: <code>docs/kich-ban-su-dung.html</code>.',
 };
 
 const MENTOR_TOPIC_EN = ['Data threshold for machine learning', 'Garbage data control', 'QR anti-counterfeiting', 'Weather and safety margin', 'SQL or NoSQL', 'New users (cold start)', 'Available stock and overselling', 'Peak-hour load', 'Zalo Mini App for farmers', 'Personal data protection', 'Weak network, offline', 'Recommendation feedback loop', 'Certificate verification', 'Infrastructure cost', 'Delivery routing', 'IoT sensors', 'Filter bubble', 'Scaling to more provinces', 'Recovery after a crash', 'Continuous deployment (CI/CD)'];

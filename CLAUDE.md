@@ -1,4 +1,39 @@
-@docs/CLAUDE.md
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+Project brief, business rules and data conventions: @docs/CLAUDE.md (read it first). User-facing overview: `README.md`. Design decisions log: `docs/PLAN.md`; AI/forecast explanation: `docs/CHUC-NANG-AI.md`.
+
+## Commands
+
+`php`, `composer`, `mysql`, `node` are only on PATH inside the Laragon terminal. From Claude Code shells use full paths, e.g. `E:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe artisan ...`. MySQL must be running (Laragon started).
+
+```bash
+php artisan test --compact                                  # full suite (MySQL db `farm2home_test`, see phpunit.xml)
+php artisan test --compact tests/Feature/Harvest            # one folder/file
+php artisan test --compact --filter=test_name               # one test
+vendor/bin/pint --dirty --format agent                      # format changed PHP files
+npm run build                                               # Vite build (npm run dev while editing UI)
+composer run dev                                            # server + vite together
+php artisan migrate                                         # builds schema from database/farm2home.sql on an empty DB, then later migrations
+php artisan db:seed                                         # DemoSeeder; empty DB only
+php artisan demo:orders                                     # ~2,000 simulated orders over 12 weeks (for forecast/calendar demos)
+php artisan forecast:run | forecast:backfill | subscriptions:generate   # scheduled daily in routes/console.php
+```
+
+Never run `migrate:fresh` against the dev `farm2home` DB (it wipes imported data). Tests use `RefreshDatabase` on `farm2home_test`, which is safe.
+
+## Architecture
+
+- **Three entry surfaces, one app** (`routes/web.php`): public customer pages (no auth, Vietnamese URLs: `/dat-hang`, `/tra-cuu`, `/lo/{batch:code}/{key}`), supplier (HTX) portal bound by token (`/htx/{farmer:access_token}`; each `farmers` row is a cooperative, old `/nong-ho/` links redirect), and `/admin` behind `auth` + `role:admin,operator` (`EnsureRole` middleware), with admin-only catalog CRUD nested under `role:admin`. Controllers are split by surface: `Http/Controllers/{Public,Farmer,Admin}`. `/app` (`AppEntryController`) is the PWA start URL that redirects by role.
+- **Layering:** controllers stay thin → `app/Services/*` hold business workflows and DB transactions (orders, supply, forecast, harvest plan, batches, feedback, KPI, subscriptions, loyalty, chatbot, notifications) → `app/Support/*` hold pure math/helpers with no DB (`ForecastCalculator`, `HarvestMath`, `ShippingCalculator`, `OrderWindow`, `SubscriptionSchedule`, `Format`…). Put new pure logic in `Support` so it can be unit-tested without the DB.
+- **Tunable business parameters** live in `config/farm2home.php` (cutoff hour, time slots, safety margin, min allocation, forecast window/alpha/horizon, loyalty points and rewards, bank/VietQR). Read from config instead of hardcoding.
+- **Enums:** every DB ENUM column has a backed enum in `app/Enums` with Vietnamese labels for the UI.
+- **Schema:** the baseline migration executes `database/farm2home.sql` (skipped if tables already exist); every schema change after that is a normal new migration. Keep `farm2home.sql` as the baseline, don't edit it for new changes.
+- **QR page** URL needs both `batches.code` and `batches.qr_key`; customer addresses are encrypted (`Support/AddressEncryption`).
+- **Chatbot** (`ChatbotService`) calls Gemini when `GEMINI_API_KEY` is set, otherwise falls back to scripted answers; tests force the key empty.
+- **Frontend:** Blade views under `resources/views/{public,farmer,admin,components,partials}`, Tailwind 4 via Vite, Alpine.js, Chart.js for the dashboard (`resources/js/dashboard.js`). Admin polls for notifications every 15 s (no websockets/queues).
+- **Tests:** feature tests grouped by domain in `tests/Feature/*`; use the `Tests\Support\BuildsCatalog` trait for a minimal catalog (zones, products, farmers, basket, users) instead of the full demo seed.
 
 <laravel-boost-guidelines>
 === foundation rules ===

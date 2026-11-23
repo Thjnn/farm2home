@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Product extends Model
 {
+    public const UPLOAD_DIRECTORY = 'product-photos';
+
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
 
@@ -50,6 +52,18 @@ class Product extends Model
     public function supplyReports(): HasMany
     {
         return $this->hasMany(SupplyReport::class);
+    }
+
+    /**
+     * Ảnh admin tải lên nằm trên disk "public" (thư mục product-photos); ảnh mẫu đi kèm code nằm trong public/images.
+     */
+    public function imageUrl(): ?string
+    {
+        if (blank($this->image)) {
+            return null;
+        }
+
+        return str_starts_with($this->image, self::UPLOAD_DIRECTORY.'/') ? asset('storage/'.$this->image) : asset('images/'.$this->image);
     }
 
     public function forecasts(): HasMany

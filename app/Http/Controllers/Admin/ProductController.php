@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Support\PhotoStore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -56,7 +57,19 @@ class ProductController extends Controller
             'cost_price_per_kg' => ['required', 'integer', 'min:0'],
             'shelf_life_days' => ['required', 'integer', 'min:1', 'max:30'],
             'storage_guide' => ['nullable', 'string', 'max:1000'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);
+
+        unset($data['photo']);
+
+        if ($request->hasFile('photo')) {
+            // Chỉ xoá ảnh cũ do admin tải lên, không đụng ảnh mẫu trong public/images.
+            if (str_starts_with((string) $product->image, Product::UPLOAD_DIRECTORY.'/')) {
+                PhotoStore::delete($product->image);
+            }
+
+            $data['image'] = PhotoStore::store($request->file('photo'), Product::UPLOAD_DIRECTORY);
+        }
 
         $data['is_active'] = $request->boolean('is_active');
         $data['slug'] = $this->uniqueSlug($data['name'], $product);

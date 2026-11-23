@@ -80,6 +80,54 @@ class MasterDataTest extends TestCase
         $this->assertSame([13000, false], [$product->refresh()->price, $product->is_active]);
     }
 
+    public function test_admin_uploads_and_replaces_a_product_photo(): void
+    {
+        Storage::fake('public');
+        $this->actingAs($this->admin);
+        $fields = ['code' => 'MT', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 12000, 'cost_price_per_kg' => 14000, 'shelf_life_days' => 2];
+
+        $this->post('/admin/products', [...$fields, 'photo' => UploadedFile::fake()->image('mt.jpg', 2000, 2000)])->assertRedirect('/admin/products');
+
+        $product = Product::where('code', 'MT')->firstOrFail();
+        $first = $product->image;
+        $this->assertStringStartsWith('product-photos/', $first);
+        Storage::disk('public')->assertExists($first);
+        $this->assertStringEndsWith('/storage/'.$first, $product->imageUrl());
+
+        // Sửa mà không chọn ảnh thì giữ ảnh cũ; chọn ảnh mới thì thay và xoá file cũ.
+        $this->put('/admin/products/'.$product->id, $fields);
+        $this->assertSame($first, $product->refresh()->image);
+
+        $this->put('/admin/products/'.$product->id, [...$fields, 'photo' => UploadedFile::fake()->image('moi.png', 600, 600)]);
+        $this->assertNotSame($first, $product->refresh()->image);
+        Storage::disk('public')->assertMissing($first);
+        Storage::disk('public')->assertExists($product->image);
+    }
+
+    public function test_bundled_sample_photo_is_kept_and_served_from_public_images(): void
+    {
+        Storage::fake('public');
+        $this->rm->update(['image' => 'products/rau-muong.jpg']);
+
+        $this->assertStringEndsWith('/images/products/rau-muong.jpg', $this->rm->imageUrl());
+
+        $this->actingAs($this->admin)->put('/admin/products/'.$this->rm->id, [
+            'code' => 'RM', 'name' => 'Rau muống', 'pack_weight_kg' => '0.5', 'price' => 12000, 'cost_price_per_kg' => 14000, 'shelf_life_days' => 2,
+            'photo' => UploadedFile::fake()->image('rm.jpg'),
+        ]);
+
+        $this->assertStringStartsWith('product-photos/', $this->rm->refresh()->image);
+        $this->assertFileExists(public_path('images/products/rau-muong.jpg'));
+    }
+
+    public function test_product_photo_must_be_an_image(): void
+    {
+        $this->actingAs($this->admin)->post('/admin/products', [
+            'code' => 'MT', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 1, 'cost_price_per_kg' => 1, 'shelf_life_days' => 2,
+            'photo' => UploadedFile::fake()->create('mt.pdf', 100, 'application/pdf'),
+        ])->assertSessionHasErrors('photo');
+    }
+
     public function test_product_code_must_be_unique(): void
     {
         $this->actingAs($this->admin)->post('/admin/products', [

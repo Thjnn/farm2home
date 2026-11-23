@@ -17,12 +17,15 @@
 
     <section class="rounded-xl border border-stone-200 bg-white p-4" aria-label="Dữ kiện của lô">
         <dl class="divide-y divide-stone-100 text-sm">
-            <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Nông hộ</dt><dd class="text-right font-medium">{{ $batch->farmer->name }}</dd></div>
+            <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Hợp tác xã</dt><dd class="text-right font-medium">{{ $batch->farmer->name }}</dd></div>
+            @if ($batch->grower_name)
+                <div class="flex justify-between gap-4 py-2"><dt class="shrink-0 text-stone-600">Hộ trồng (theo HTX khai)</dt><dd class="text-right">{{ $batch->grower_name }}</dd></div>
+            @endif
             @if ($batch->farmer->growing_area)
                 <div class="flex justify-between gap-4 py-2"><dt class="shrink-0 text-stone-600">Khu vực trồng</dt><dd class="text-right">{{ $batch->farmer->growing_area }}</dd></div>
             @endif
             @if ($batch->farmer->farming_method)
-                <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Cách canh tác (theo nông hộ khai)</dt><dd class="text-right">{{ $batch->farmer->farming_method }}</dd></div>
+                <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Cách canh tác (theo HTX khai)</dt><dd class="text-right">{{ $batch->farmer->farming_method }}</dd></div>
             @endif
             <div class="flex justify-between gap-4 py-2"><dt class="text-stone-600">Thu hoạch</dt><dd class="text-right">{{ $batch->harvested_at->format('d/m/Y H:i') }}</dd></div>
             @if ($batch->processed_at)
@@ -45,7 +48,7 @@
 
     @if ($batch->farmer->farm_photos || $batch->farmer->hasEnoughRatingsToShow($farmerRating['count']))
         <section class="mt-4 rounded-xl border border-stone-200 bg-white p-4 text-sm" aria-labelledby="farm-heading">
-            <h2 id="farm-heading" class="font-semibold">Vườn rau của {{ $batch->farmer->name }}</h2>
+            <h2 id="farm-heading" class="font-semibold">Vùng trồng của {{ $batch->farmer->name }}</h2>
             @if ($batch->farmer->hasEnoughRatingsToShow($farmerRating['count']))
                 <p class="mt-1 text-stone-700">
                     Khách đánh giá <span class="font-semibold text-stone-900">{{ number_format($farmerRating['rating'], 1, ',', '.') }}★</span>
@@ -55,7 +58,7 @@
             @if ($batch->farmer->farm_photos)
                 <div class="mt-3 grid grid-cols-2 gap-2">
                     @foreach ($batch->farmer->farmPhotoUrls() as $url)
-                        <img src="{{ $url }}" alt="Ảnh vườn rau của nông hộ {{ $batch->farmer->name }}" loading="lazy" class="aspect-square w-full rounded-lg object-cover">
+                        <img src="{{ $url }}" alt="Ảnh vùng trồng của {{ $batch->farmer->name }}" loading="lazy" class="aspect-square w-full rounded-lg object-cover">
                     @endforeach
                 </div>
             @endif
@@ -65,6 +68,7 @@
     <section class="mt-4 rounded-xl border border-stone-200 bg-white p-4 text-sm" aria-label="Chứng nhận">
         @if ($batch->farmer->hasValidCertificate())
             <p class="font-medium">Chứng nhận: {{ $batch->farmer->certificate_name }}</p>
+            <p class="text-stone-600">Cấp cho {{ $batch->farmer->name }}</p>
             @if ($batch->farmer->certificate_expires_at)
                 <p class="text-stone-600">Hiệu lực đến {{ $batch->farmer->certificate_expires_at->format('d/m/Y') }}</p>
             @endif

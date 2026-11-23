@@ -21,7 +21,7 @@
                 <tr>
                     <th class="px-3 py-2 font-medium">Mã lô</th>
                     <th class="px-3 py-2 font-medium">Rau</th>
-                    <th class="px-3 py-2 font-medium">Nông hộ</th>
+                    <th class="px-3 py-2 font-medium">HTX</th>
                     <th class="px-3 py-2 text-right font-medium">Đã nhận</th>
                     <th class="px-3 py-2 text-right font-medium">Còn lại</th>
                     <th class="px-3 py-2 font-medium">Chất lượng</th>

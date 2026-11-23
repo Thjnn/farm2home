@@ -93,7 +93,7 @@
             @if ($weeks !== [])
                 <figure class="mt-3 rounded-xl border border-stone-200 bg-white p-4">
                     <figcaption class="mb-2 text-sm font-medium text-stone-700">Hàng nhận và rau dư theo tuần (kg)</figcaption>
-                    <div class="h-56"><canvas id="chart-waste" role="img" aria-label="Biểu đồ cột: hàng nhận từ nông hộ và rau dư theo tuần"></canvas></div>
+                    <div class="h-56"><canvas id="chart-waste" role="img" aria-label="Biểu đồ cột: hàng nhận từ HTX và rau dư theo tuần"></canvas></div>
                     <details class="mt-2 text-sm">
                         <summary class="cursor-pointer text-stone-600">Xem dạng bảng</summary>
                         <table class="mt-2 w-full max-w-md text-left">
@@ -130,9 +130,9 @@
             </section>
 
             <section aria-labelledby="kpi-farmers">
-                <h2 id="kpi-farmers" class="mb-2 font-semibold">Nông hộ</h2>
+                <h2 id="kpi-farmers" class="mb-2 font-semibold">HTX</h2>
                 <div class="grid grid-cols-2 gap-3">
-                    <x-stat label="Nông hộ đang hợp tác" :value="$farmers['active_farmers']" />
+                    <x-stat label="HTX đang hợp tác" :value="$farmers['active_farmers']" />
                     <x-stat label="Sản lượng được xác nhận trước" :value="\App\Support\Format::pct($farmers['advance_confirmed_pct'])" />
                 </div>
             </section>

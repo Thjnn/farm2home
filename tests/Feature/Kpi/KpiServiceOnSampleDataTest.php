@@ -70,7 +70,7 @@ class KpiServiceOnSampleDataTest extends TestCase
 
     public function test_farmer_kpis(): void
     {
-        $this->assertSame(['active_farmers' => 3, 'advance_confirmed_pct' => 100.0], $this->kpi->farmers($this->from, $this->to));
+        $this->assertSame(['active_farmers' => 1, 'advance_confirmed_pct' => 100.0], $this->kpi->farmers($this->from, $this->to));
     }
 
     public function test_environment_kpis(): void

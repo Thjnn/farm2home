@@ -27,7 +27,7 @@ Subscription baskets ───────────┘                       
 - **Measurable**: every feature should feed the pilot KPIs (section 7).
 
 ## 2. Pilot scope (MVP target)
-- 4 weeks in Mỹ Tho area · 2–3 farmer households · 20–30 customer households · 5–7 vegetable types
+- 4 weeks in Mỹ Tho area · supply partners are **cooperatives (HTX) only**, no independent households (first sample: HTX Long Bình, Gò Công, not yet confirmed) · 20–30 customer households · 5–7 vegetable types
 - Supply sources: prioritise farmers in Châu Thành, Cai Lậy, Chợ Gạo and nearby areas (sample data still uses Thân Cửu Nghĩa / Gò Công)
 - Revenue: subscription baskets + single orders + delivery fee. Target is 500k–700k VND/day (an assumption to validate, not a fact)
 
@@ -42,7 +42,7 @@ Subscription baskets ───────────┘                       
 
 The schema and sample data come from **`database/farm2home.sql`**, which was imported directly (MySQL 8 / MariaDB). It has 24 tables: Laravel core (`users`, `password_reset_tokens`, `sessions`, `cache`, `cache_locks`) plus 19 domain tables.
 
-⚠️ **Do NOT run `php artisan migrate:fresh`** or the default Laravel migrations: the tables already exist. If migrations are needed later, first delete the default `0001_01_01_*` migration files, then add **new** migration files only for schema changes. Set `QUEUE_CONNECTION=sync` (there is no `jobs` table).
+⚠️ **Do NOT run `php artisan migrate:fresh`** on the dev DB. The baseline migration (`2026_10_02_000000_create_farm2home_schema.php`) builds the schema from `farm2home.sql` only on an empty DB; add **new** migration files for schema changes. Set `QUEUE_CONNECTION=sync` (there is no `jobs` table).
 
 Sample login: `admin@farm2home.vn` / `password` (role admin) · `operator@farm2home.vn` / `password` (role operator).
 Sample data covers 2026-09-10 → 2026-10-03. Orders up to 10/01 are `delivered`, orders for 10/02–10/03 are `pending`/`confirmed`, and the harvest plan for 10/03 is `draft`.
@@ -50,7 +50,7 @@ Sample data covers 2026-09-10 → 2026-10-03. Orders up to 10/01 are `delivered`
 ### Tables by domain
 | Domain | Tables |
 |---|---|
-| Master | `delivery_zones`, `farmers`, `products`, `farmer_products` (pivot + `typical_weekly_kg`), `baskets`, `basket_items` |
+| Master | `delivery_zones`, `farmers` (each row is one **HTX**; table/model keep the name `farmers`), `products`, `farmer_products` (pivot + `typical_weekly_kg`), `baskets`, `basket_items` |
 | Demand | `customers` (unique `phone`, `preferences` JSON), `subscriptions`, `orders`, `order_items` |
 | Supply | `supply_reports` (unique farmer+product+available_date) |
 | Coordination | `forecasts`, `harvest_plans` (unique `delivery_date`), `harvest_plan_items` |
@@ -76,7 +76,7 @@ Sample data covers 2026-09-10 → 2026-10-03. Orders up to 10/01 are `delivered`
 - `order_items.quantity` = number of packs. For basket orders, items have `basket_id` set with `unit_price = 0`, and the basket price goes into `orders.subtotal`
 - `order_items.fulfilled_quantity` = packs actually delivered (used for the fill-rate KPI)
 - Codes: order `DH{yymmdd}-{seq:03d}` (e.g. `DH261002-001`, by delivery date) · batch `F2H-{yymmdd}-{product.code}-{farmer.code}` (e.g. `F2H-260930-RM-NH01`). The batch code is the QR payload
-- Product codes: RM rau muống, CN cải ngọt, CX cải bẹ xanh, MT mồng tơi, RD rau dền, XL xà lách, HL hành lá. Farmer codes: NH01…
+- Product codes: RM rau muống, CN cải ngọt, CX cải bẹ xanh, MT mồng tơi, RD rau dền, XL xà lách, HL hành lá. HTX codes: HTX01… (old sample households NH02/NH03 are `inactive`, kept for history)
 - Shipping fee: from `delivery_zones.shipping_fee`, free when `subtotal >= free_ship_from`, and 0 for pickup zones
 
 ## 5. Core business logic
@@ -103,7 +103,7 @@ suggested_kg = ceil_to_0.5( max(0, confirmed_order_kg + forecast_extra_kg − av
 | Actor | Auth | Main screens |
 |---|---|---|
 | Customer | none (phone) | Landing · Đặt hàng (basket/single, date, time slot, zone) · Tra cứu đơn by phone · `/lo/{code}` QR page + feedback form |
-| Farmer | `access_token` link, e.g. `/nong-ho/{token}` | Báo sản lượng for the next days · View/confirm harvest list |
+| HTX rep | `farmers.access_token` link `/htx/{token}` (old `/nong-ho/{token}` 301-redirects) | Official supply report for the next days · View/confirm harvest list. F2H allocates, pays and messages per HTX; the HTX splits work among its member households outside the system. Operator may type an optional `batches.grower_name` ("Hộ trồng, HTX khai") when receiving, shown on the QR page |
 | Operator | login | Dashboard · Đơn hàng · Dự báo & Kế hoạch thu hoạch · Lô hàng & in tem QR · Feedback · Rau dư / bao bì |
 | Admin | login | Everything above + CRUD products, baskets, farmers, zones, users |
 

@@ -96,7 +96,7 @@ class HarvestPlanController extends Controller
         return $this->attempt(function () use ($request, $plan, $plans) {
             $plans->confirm($plan, $request->user());
 
-            return redirect()->route('admin.harvest-plans.show', $plan)->with('status', 'Đã chốt kế hoạch. Gửi tin Zalo cho từng nông hộ bên dưới.');
+            return redirect()->route('admin.harvest-plans.show', $plan)->with('status', 'Đã chốt kế hoạch. Gửi tin Zalo cho từng HTX bên dưới.');
         });
     }
 
@@ -105,7 +105,7 @@ class HarvestPlanController extends Controller
         return $this->attempt(function () use ($plan, $plans) {
             $plans->markSent($plan);
 
-            return redirect()->route('admin.harvest-plans.show', $plan)->with('status', 'Đã đánh dấu là đã gửi nông hộ.');
+            return redirect()->route('admin.harvest-plans.show', $plan)->with('status', 'Đã đánh dấu là đã gửi HTX.');
         });
     }
 
@@ -120,10 +120,13 @@ class HarvestPlanController extends Controller
 
     public function receive(Request $request, HarvestPlanItem $item, BatchService $batches): RedirectResponse
     {
-        $data = $request->validate(['received_kg' => ['required', 'numeric', 'min:0', 'max:1000']]);
+        $data = $request->validate([
+            'received_kg' => ['required', 'numeric', 'min:0', 'max:1000'],
+            'grower_name' => ['nullable', 'string', 'max:150'],
+        ]);
 
         return $this->attempt(function () use ($data, $item, $batches) {
-            $batch = $batches->receive($item, (float) $data['received_kg']);
+            $batch = $batches->receive($item, (float) $data['received_kg'], growerName: $data['grower_name'] ?? null);
 
             return redirect()->route('admin.harvest-plans.show', $item->harvest_plan_id)->with('status', "Đã nhận hàng, tạo lô {$batch->code}.");
         });

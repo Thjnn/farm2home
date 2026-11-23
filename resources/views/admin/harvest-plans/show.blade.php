@@ -18,7 +18,7 @@
 
     @if ($isDraft)
         <p class="mb-4 text-sm text-stone-600">
-            Phần của mỗi nông hộ được chia theo tỉ lệ sản lượng họ đã báo, không ai bị giao quá số mình báo.
+            Phần của mỗi HTX được chia theo tỉ lệ sản lượng họ đã báo, không ai bị giao quá số mình báo.
             Nhà được chia dưới {{ (float) config('farm2home.min_allocation_kg') }} kg thì nhường phần cho nhà khác (nếu các nhà còn lại đủ rau).
         </p>
     @endif
@@ -38,7 +38,7 @@
             <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                 <tr>
                     <th class="px-3 py-2 font-medium">Loại rau</th>
-                    <th class="px-3 py-2 font-medium">Nông hộ</th>
+                    <th class="px-3 py-2 font-medium">HTX</th>
                     <th class="px-3 py-2 text-right font-medium">Đã đặt</th>
                     <th class="px-3 py-2 text-right font-medium">Dự báo thêm</th>
                     <th class="px-3 py-2 text-right font-medium">Tồn</th>
@@ -73,9 +73,9 @@
                                         class="h-11 w-20 rounded-lg border border-stone-300 px-2 text-right">
                                     <input form="save-all-items" name="items[{{ $item->id }}][adjust_reason]" value="{{ old("items.{$item->id}.adjust_reason", $item->adjust_reason) }}" placeholder="Lý do nếu khác gợi ý" aria-label="Lý do điều chỉnh"
                                         class="h-11 min-w-40 flex-1 rounded-lg border border-stone-300 px-2">
-                                    <select form="save-all-items" name="items[{{ $item->id }}][farmer_id]" aria-label="Nông hộ" class="h-11 rounded-lg border border-stone-300 bg-white px-2">
+                                    <select form="save-all-items" name="items[{{ $item->id }}][farmer_id]" aria-label="HTX" class="h-11 rounded-lg border border-stone-300 bg-white px-2">
                                         @unless ($item->farmer_id)
-                                            <option value="">— chọn nông hộ —</option>
+                                            <option value="">— chọn HTX —</option>
                                         @endunless
                                         {{-- Chỉ nhà đã đăng ký trồng loại rau này (giữ nhà đang được chia dù chưa đăng ký). --}}
                                         @foreach ($allFarmers->filter(fn ($farmer) => $farmer->id === $item->farmer_id || $farmer->products->contains('id', $item->product_id)) as $farmer)
@@ -94,7 +94,7 @@
                                     <span class="block text-xs text-stone-600">{{ $item->adjust_reason }}</span>
                                 @endif
                                 <span class="block text-xs {{ $item->farmer_confirmed_at ? 'text-emerald-800' : 'text-stone-500' }}">
-                                    {{ $item->farmer_confirmed_at ? 'Nông hộ xác nhận '.$item->farmer_confirmed_at->format('H:i d/m') : 'Chưa xác nhận' }}
+                                    {{ $item->farmer_confirmed_at ? 'HTX xác nhận '.$item->farmer_confirmed_at->format('H:i d/m') : 'Chưa xác nhận' }}
                                 </span>
                             </td>
                             <td class="px-3 py-2">
@@ -105,10 +105,12 @@
                                     @kg($item->received_kg)
                                 @endif
                                 @if ($canReceive && $item->farmer_id)
-                                    <form method="POST" action="{{ route('admin.harvest-plan-items.receive', $item) }}" class="mt-1 flex items-center gap-2">
+                                    <form method="POST" action="{{ route('admin.harvest-plan-items.receive', $item) }}" class="mt-1 flex flex-wrap items-center gap-2">
                                         @csrf
                                         <input type="number" step="0.1" min="0" name="received_kg" value="{{ (float) ($item->received_kg ?? $item->final_kg) }}" aria-label="Số kg thực nhận {{ $item->product->name }}"
                                             class="h-11 w-20 rounded-lg border border-stone-300 px-2 text-right">
+                                        <input type="text" name="grower_name" value="{{ $item->batch?->grower_name }}" maxlength="150" placeholder="Hộ trồng (nếu HTX khai)" aria-label="Hộ trồng {{ $item->product->name }} (nếu HTX khai)"
+                                            class="h-11 w-44 rounded-lg border border-stone-300 px-2">
                                         <button class="h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100">{{ $item->batch ? 'Sửa' : 'Nhận' }}</button>
                                     </form>
                                 @endif
@@ -119,7 +121,7 @@
                         <tr>
                             <td></td>
                             <td class="px-3 pb-2" colspan="7">
-                                <button form="save-all-items" name="add_product_id" value="{{ $item->product_id }}" class="min-h-11 text-sm font-medium text-emerald-800 hover:underline">+ Thêm nông hộ cho {{ $item->product->name }}</button>
+                                <button form="save-all-items" name="add_product_id" value="{{ $item->product_id }}" class="min-h-11 text-sm font-medium text-emerald-800 hover:underline">+ Thêm HTX cho {{ $item->product->name }}</button>
                             </td>
                         </tr>
                     @endif
@@ -171,7 +173,7 @@
 
     @if ($messages->isNotEmpty())
         <section class="mt-6">
-            <h2 class="mb-2 font-semibold">Tin nhắn cho nông hộ</h2>
+            <h2 class="mb-2 font-semibold">Tin nhắn cho HTX</h2>
             <div class="grid gap-3 md:grid-cols-2">
                 @foreach ($farmers as $farmer)
                     <article class="rounded-xl border border-stone-200 bg-white p-4" x-data="{ copied: false }">

@@ -30,7 +30,7 @@ class FarmerController extends Controller
     {
         $this->save($request, new Farmer);
 
-        return redirect()->route('admin.farmers.index')->with('status', 'Đã thêm nông hộ.');
+        return redirect()->route('admin.farmers.index')->with('status', 'Đã thêm HTX.');
     }
 
     public function edit(Farmer $farmer): View
@@ -42,14 +42,14 @@ class FarmerController extends Controller
     {
         $this->save($request, $farmer);
 
-        return redirect()->route('admin.farmers.index')->with('status', 'Đã cập nhật nông hộ.');
+        return redirect()->route('admin.farmers.index')->with('status', 'Đã cập nhật HTX.');
     }
 
     public function regenerateToken(Farmer $farmer): RedirectResponse
     {
         $farmer->update(['access_token' => $this->newToken()]);
 
-        return back()->with('status', 'Đã cấp link mới. Link cũ không còn dùng được; hãy gửi link mới cho nông hộ.');
+        return back()->with('status', 'Đã cấp link mới. Link cũ không còn dùng được; hãy gửi link mới cho HTX.');
     }
 
     private function form(Farmer $farmer): View
@@ -70,11 +70,13 @@ class FarmerController extends Controller
         $data = $request->validate([
             'code' => ['required', 'string', 'max:20', Rule::unique('farmers', 'code')->ignore($farmer->id)],
             'name' => ['required', 'string', 'max:150'],
+            'representative_name' => ['nullable', 'string', 'max:150'],
             'phone' => ['required', 'regex:/^0\d{9}$/'],
             'zalo_phone' => ['nullable', 'regex:/^0\d{9}$/'],
             'address' => ['nullable', 'string', 'max:255'],
             'growing_area' => ['nullable', 'string', 'max:255'],
             'area_m2' => ['nullable', 'integer', 'min:0'],
+            'member_households' => ['nullable', 'integer', 'min:0', 'max:10000'],
             'farming_method' => ['nullable', 'string', 'max:150'],
             'bank_name' => ['nullable', 'string', 'max:100'],
             'bank_account_number' => ['nullable', 'regex:/^\d{6,20}$/'],

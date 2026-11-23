@@ -32,8 +32,8 @@ class ChatbotService
 
     private const LOOKUP_REPLY = 'Bạn bấm "Tra cứu đơn" ở đầu trang rồi nhập số điện thoại đã dùng khi đặt để xem tình trạng đơn.';
 
-    private const ORIGIN_REPLY = 'Mỗi lô rau có mã QR trên tem. Quét mã sẽ thấy nông hộ trồng, vùng trồng, giờ thu hoạch, đóng gói và cách bảo quản. '
-        .'Chứng nhận (như VietGAP) chỉ hiện khi nông hộ có giấy còn hạn. Bạn cũng gửi được đánh giá cho từng lô ngay trên trang đó.';
+    private const ORIGIN_REPLY = 'Mỗi lô rau có mã QR trên tem. Quét mã sẽ thấy hợp tác xã cung cấp (kèm hộ trồng nếu HTX khai), vùng trồng, giờ thu hoạch, đóng gói và cách bảo quản. '
+        .'Chứng nhận (như VietGAP) chỉ hiện khi HTX có giấy còn hạn. Bạn cũng gửi được đánh giá cho từng lô ngay trên trang đó.';
 
     /**
      * Gợi ý rau theo món (mã sản phẩm), chỉ là gợi ý mua sắm. Món phải viết có dấu vì "lẩu"/"lâu", "gỏi"/"gói" trùng khi bỏ dấu.
@@ -49,7 +49,7 @@ class ChatbotService
 
     private const FORECAST_KEYWORDS = ['du bao', 'du kien', 'du doan', 'nhu cau', 'san luong', 'bao nhieu kg', 'ban duoc bao nhieu', 'chuan bi bao nhieu'];
 
-    private const FORECAST_NOTE = 'Đây là số dự kiến khách sẽ đặt, không phải số rau đang còn. Nông hộ chỉ thu hoạch theo danh sách FARM2HOME gửi.';
+    private const FORECAST_NOTE = 'Đây là số dự kiến khách sẽ đặt, không phải số rau đang còn. HTX chỉ thu hoạch theo danh sách FARM2HOME gửi.';
 
     private const TIME_KEYWORDS = ['may gio', 'khung gio', 'gio giao', 'bao gio', 'khi nao', 'luc nao', 'ngay nao', 'ngay giao', 'dat truoc', 'chot don', 'hom nay', 'ngay mai'];
 
@@ -235,7 +235,7 @@ class ChatbotService
         - Đường link zalo.me phải chép nguyên văn, không sửa, không bọc trong dấu ngoặc.
         - Nếu khách nhắc tên phường/xã, hãy đối chiếu với mô tả từng cụm giao hàng để trả lời đúng cụm. Không thấy trong danh sách thì nói khu vực đó chưa có trong danh sách giao.
         - Khách hỏi nấu món gì (lẩu, canh, xào, gỏi, đãi tiệc...) thì gợi ý vài loại rau hợp món trong danh sách đang bán kèm giá, có thể gợi ý giỏ rau; nếu khách cần rau vào ngày cụ thể thì nhắc ngày giao sớm nhất. Không gợi ý loại rau không có trong danh sách.
-        - Khách hoặc nông hộ hỏi dự báo, nhu cầu, cần chuẩn bị bao nhiêu kg thì dùng phần "Dự kiến nhu cầu" trong DỮ LIỆU: nêu tổng kg, ngày đông nhất và lý do có sẵn ở đó, không tự thêm lý do khác.
+        - Khách hoặc HTX hỏi dự báo, nhu cầu, cần chuẩn bị bao nhiêu kg thì dùng phần "Dự kiến nhu cầu" trong DỮ LIỆU: nêu tổng kg, ngày đông nhất và lý do có sẵn ở đó, không tự thêm lý do khác.
           Luôn nói rõ: {$forecastNote}
         - Không tư vấn sức khỏe, bệnh, chế độ ăn hay mang thai; mời khách hỏi bác sĩ.
         - Không quảng cáo rau "100% sạch", "hữu cơ" hay có chứng nhận; chỉ giải thích về mã QR truy xuất lô như trong dữ liệu.

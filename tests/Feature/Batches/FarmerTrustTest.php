@@ -110,7 +110,7 @@ class FarmerTrustTest extends TestCase
 
         $this->rate([5]);
         $this->get('/lo/F2H-261003-RM-NH01/KHOA123')
-            ->assertSee('Vườn rau của Nguyễn Văn Tâm')
+            ->assertSee('Vùng trồng của Nguyễn Văn Tâm')
             ->assertSee('4,6★')
             ->assertSee('(5 lượt)')
             ->assertSee('độ tươi 4,0★');
@@ -120,7 +120,7 @@ class FarmerTrustTest extends TestCase
     {
         $this->nh01->update(['farm_photos' => ['farms/vuon.jpg']]);
 
-        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')->assertSee('farms/vuon.jpg')->assertSee('Ảnh vườn rau của nông hộ');
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')->assertSee('farms/vuon.jpg')->assertSee('Ảnh vùng trồng của');
     }
 
     public function test_farmer_page_shows_rating_comments_and_a_masked_bank_account(): void
@@ -129,7 +129,7 @@ class FarmerTrustTest extends TestCase
         $this->rate([5, 3]);
         Feedback::factory()->create(['batch_id' => $this->batch->id, 'rating' => 4, 'comment' => 'Rau muống giòn, tươi']);
 
-        $this->get('/nong-ho/'.$this->nh01->access_token)
+        $this->get('/htx/'.$this->nh01->access_token)
             ->assertSee('Khách đánh giá rau của cô chú')
             ->assertSee('(3 lượt đánh giá)')
             ->assertSee('Rau muống giòn, tươi')
@@ -158,6 +158,6 @@ class FarmerTrustTest extends TestCase
     {
         $other = Farmer::factory()->create(['code' => 'NH09']);
 
-        $this->get('/nong-ho/'.$other->access_token)->assertSee('Chưa có lượt đánh giá nào.');
+        $this->get('/htx/'.$other->access_token)->assertSee('Chưa có lượt đánh giá nào.');
     }
 }

@@ -22,7 +22,12 @@ class FarmerPortalTest extends TestCase
         parent::setUp();
         $this->travelTo('2026-10-02 10:00:00');
         $this->buildCatalog();
-        $this->url = '/nong-ho/'.$this->nh01->access_token;
+        $this->url = '/htx/'.$this->nh01->access_token;
+    }
+
+    public function test_old_farmer_link_redirects_to_the_htx_link(): void
+    {
+        $this->get('/nong-ho/'.$this->nh01->access_token)->assertRedirect($this->url)->assertStatus(301);
     }
 
     public function test_farmer_sees_own_products_for_the_next_seven_days_without_login(): void
@@ -60,7 +65,7 @@ class FarmerPortalTest extends TestCase
 
     public function test_unknown_token_and_inactive_farmer_get_404(): void
     {
-        $this->get('/nong-ho/'.str_repeat('z', 40))->assertNotFound();
+        $this->get('/htx/'.str_repeat('z', 40))->assertNotFound();
 
         $this->nh01->update(['status' => 'inactive']);
         $this->get($this->url)->assertNotFound();

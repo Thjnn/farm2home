@@ -49,6 +49,17 @@ class PublicBatchPageTest extends TestCase
             ->assertSee('Gửi phản hồi');
     }
 
+    public function test_grower_declared_by_the_htx_shows_only_when_filled(): void
+    {
+        $batch = $this->batch($this->nh01);
+
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')->assertSee('Hợp tác xã')->assertDontSee('Hộ trồng');
+
+        $batch->update(['grower_name' => 'Hộ bà Năm']);
+
+        $this->get('/lo/F2H-261003-RM-NH01/KHOA123')->assertSee('Hộ trồng (theo HTX khai)')->assertSee('Hộ bà Năm');
+    }
+
     public function test_page_makes_no_marketing_or_health_claims(): void
     {
         $this->batch($this->nh01);

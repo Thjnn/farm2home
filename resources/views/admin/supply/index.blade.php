@@ -1,4 +1,4 @@
-<x-layouts.admin title="Sản lượng nông hộ báo">
+<x-layouts.admin title="Sản lượng HTX báo">
     <form method="GET" action="{{ route('admin.supply.index') }}" class="mb-4 flex flex-wrap items-end gap-3">
         <div>
             <label for="date" class="mb-1 block text-sm font-medium text-stone-700">Ngày thu hoạch</label>
@@ -18,7 +18,7 @@
     <section class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
         <h2 class="mb-2 text-sm font-semibold text-stone-700">Tổng nguồn cung ngày {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</h2>
         @if ($totals->isEmpty())
-            <p class="text-sm text-stone-500">Chưa có nông hộ nào báo sản lượng cho ngày này.</p>
+            <p class="text-sm text-stone-500">Chưa có HTX nào báo sản lượng cho ngày này.</p>
         @else
             <ul class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
                 @foreach ($totals as $productId => $kg)
@@ -52,11 +52,11 @@
                                 value="{{ isset($reports[$farmer->id][$product->id]) ? (float) $reports[$farmer->id][$product->id] : '' }}"
                                 class="block min-h-11 w-full rounded-lg border {{ isset($unusual["{$farmer->id}-{$product->id}"]) ? 'border-amber-500 bg-amber-50' : 'border-stone-300' }} px-3">
                             @isset($unusual["{$farmer->id}-{$product->id}"])
-                                <span class="mt-1 block text-amber-800">⚠ Cao bất thường: thường khoảng @kg($unusual["{$farmer->id}-{$product->id}"]['usual_kg'])/ngày. Gọi hỏi lại nông hộ.</span>
+                                <span class="mt-1 block text-amber-800">⚠ Cao bất thường: thường khoảng @kg($unusual["{$farmer->id}-{$product->id}"]['usual_kg'])/ngày. Gọi hỏi lại HTX.</span>
                             @endisset
                         </label>
                     @empty
-                        <p class="text-sm text-stone-500">Nông hộ này chưa được gắn loại rau nào.</p>
+                        <p class="text-sm text-stone-500">HTX này chưa được gắn loại rau nào.</p>
                     @endforelse
                 </div>
             </fieldset>

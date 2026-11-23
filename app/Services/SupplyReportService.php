@@ -71,7 +71,7 @@ class SupplyReportService
 
                 foreach ($byProduct as $productId => $kg) {
                     if (! in_array((int) $productId, $ownProductIds, true)) {
-                        throw ValidationException::withMessages(['supply' => 'Loại rau không thuộc danh sách của nông hộ.']);
+                        throw ValidationException::withMessages(['supply' => 'Loại rau không thuộc danh sách của HTX.']);
                     }
 
                     $key = ['farmer_id' => $farmer->id, 'product_id' => (int) $productId, 'available_date' => $date];

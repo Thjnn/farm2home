@@ -29,7 +29,7 @@ Hiện bán 5 loại rau: **Rau muống, Cải xanh, Cải ngọt, Xà lách, H�
 | Người dùng | Cách vào | Chức năng |
 |---|---|---|
 | **Khách** | Không cần tài khoản, định danh bằng số điện thoại | Đặt giỏ rau hoặc rau lẻ theo ngày, khung giờ, cụm giao · tra cứu đơn và điểm thưởng bằng SĐT · đổi điểm lấy quà khi đặt · hỏi chatbot · quét QR xem thông tin lô và gửi phản hồi |
-| **Nông hộ** | Link riêng gửi qua Zalo, không cài app, không đăng nhập | Báo sản lượng có thể thu những ngày tới · xem nhu cầu dự kiến · xem và xác nhận danh sách thu hoạch |
+| **Hợp tác xã (HTX)** | Link riêng gửi qua Zalo, không cài app, không đăng nhập | Báo sản lượng có thể thu những ngày tới · xem nhu cầu dự kiến · xem và xác nhận danh sách thu hoạch |
 | **Người điều phối** (operator) | Đăng nhập | Quản lý đơn · chạy dự báo · xem lịch dự báo · tạo, chỉnh, chốt kế hoạch thu hoạch · soạn tin Zalo cho từng nông hộ · nhận hàng, tạo lô, in tem QR · xử lý phản hồi · ghi rau dư, bao bì thu hồi · giỏ định kỳ · điểm thành viên · dashboard KPI |
 | **Quản trị** (admin) | Đăng nhập | Mọi việc của người điều phối + quản lý sản phẩm, giỏ rau, nông hộ, cụm giao, tài khoản |
 
@@ -43,7 +43,7 @@ Trang quản trị có menu bên trái chia 2 nhóm *Vận hành* và *Danh mụ
 
 - **Con người quyết định cuối cùng.** Hệ thống chỉ *gợi ý*; người điều phối luôn xem lại và chốt trước khi gửi gì cho nông hộ. Lưu cả số gợi ý (`suggested_kg`) và số chốt (`final_kg`), kèm lý do khi khác nhau.
 - **Ai cũng dùng được.** Nông hộ và khách không cài app, không tạo tài khoản. Giao diện ưu tiên điện thoại, nút lớn, ít phải gõ.
-- **QR không phải chứng nhận.** Trang QR chỉ hiện dữ kiện của lô: nông hộ, vùng trồng, giờ thu hoạch / sơ chế / đóng gói, cách bảo quản. Chứng nhận chỉ hiện khi nông hộ có file chứng nhận còn hạn. Không có câu kiểu "100% sạch".
+- **QR không phải chứng nhận.** Trang QR chỉ hiện dữ kiện của lô: HTX cung cấp (kèm hộ trồng nếu HTX khai), vùng trồng, giờ thu hoạch / sơ chế / đóng gói, cách bảo quản. Chứng nhận chỉ hiện khi HTX có file chứng nhận còn hạn. Không có câu kiểu "100% sạch".
 - **Công nghệ vừa đủ.** Một ứng dụng Laravel, không SPA, không hàng đợi, không dịch vụ ML riêng.
 - **Không tư vấn sức khỏe, không tuyên bố giảm CO₂.** Dự án không đo phát thải vận chuyển.
 - **Đo được.** Mỗi chức năng đều cấp số liệu cho bộ KPI của pilot.
@@ -111,7 +111,7 @@ Dashboard `/admin`:
 | Nông hộ | Số nông hộ đang hợp tác, tỷ lệ sản lượng được xác nhận trước |
 | Môi trường | Kg rau dư theo tuần, tỷ lệ thu hồi và tái sử dụng bao bì |
 
-**Phạm vi pilot dự kiến:** 4 tuần tại Mỹ Tho · 2–3 nông hộ (ưu tiên Châu Thành, Cai Lậy, Chợ Gạo và vùng lân cận) · 20–30 hộ khách · 5 loại rau.
+**Phạm vi pilot dự kiến:** 4 tuần tại Mỹ Tho · đối tác cung ứng là HTX, không nhận hộ độc lập (mẫu đầu tiên: HTX Long Bình, Gò Công) · 20–30 hộ khách · 5 loại rau.
 
 ## Công nghệ
 
@@ -193,12 +193,12 @@ Chỉ dùng cho demo. Khi đưa lên địa chỉ công khai, hãy đổi mật 
 | Ai dùng | Đường dẫn |
 |---|---|
 | Khách | `/` · `/dat-hang` · `/tra-cuu` · `/lo/{mã lô}` (trang QR + phản hồi) |
-| Nông hộ | `/nong-ho/{token}` (báo sản lượng, xác nhận thu hoạch) |
+| HTX | `/htx/{token}` (báo sản lượng, xác nhận thu hoạch; link cũ `/nong-ho/{token}` tự chuyển sang) |
 | Người điều phối / Quản trị | `/login` → `/admin` |
 
 ## Dữ liệu mẫu
 
-`database/farm2home.sql` chứa dữ liệu **giả lập** từ 10/09 đến 03/10/2026 để demo và kiểm thử; `demo:orders` sinh thêm đơn mô phỏng có nhịp cuối tuần. Đây không phải số liệu pilot thật. Giá, giỏ, cụm giao và thông tin nông hộ đều là giá trị tạm; chứng nhận VietGAP của nông hộ NH02 là giả, chỉ để thử giao diện.
+`database/farm2home.sql` chứa dữ liệu **giả lập** từ 10/09 đến 03/10/2026 để demo và kiểm thử; `demo:orders` sinh thêm đơn mô phỏng có nhịp cuối tuần. Đây không phải số liệu pilot thật. Giá, giỏ, cụm giao và thông tin nông hộ đều là giá trị tạm; chứng nhận VietGAP của NH02 là giả, chỉ để thử giao diện. HTX Long Bình (HTX01) là tên thật nhưng chưa xác nhận hợp tác; người đại diện và số điện thoại là giả. NH02, NH03 đã chuyển sang ngừng hợp tác.
 
 ## Lệnh hữu ích
 

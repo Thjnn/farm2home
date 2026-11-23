@@ -30,9 +30,9 @@ class SmokeTest extends TestCase
 
     public function test_public_and_farmer_pages_render_with_sample_data(): void
     {
-        $farmer = Farmer::where('code', 'NH01')->firstOrFail();
+        $farmer = Farmer::where('code', 'HTX01')->firstOrFail();
 
-        foreach (['/', '/dat-hang', '/tra-cuu', '/login', Batch::where('code', 'F2H-260917-RM-NH01')->firstOrFail()->publicUrl(), '/nong-ho/'.$farmer->access_token] as $url) {
+        foreach (['/', '/dat-hang', '/tra-cuu', '/login', Batch::where('code', 'F2H-260917-RM-NH01')->firstOrFail()->publicUrl(), '/htx/'.$farmer->access_token] as $url) {
             $this->get($url)->assertOk();
         }
 

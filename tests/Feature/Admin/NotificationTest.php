@@ -52,7 +52,7 @@ class NotificationTest extends TestCase
         $texts = collect($response->json('events'))->pluck('text');
         $this->assertTrue($texts->contains("Đơn mới {$newOrder->code} · Nguyễn Thị Lan · giao 04/10"));
         $this->assertTrue($texts->contains("Đơn {$oldOrder->code} → Đã xác nhận"));
-        $this->assertTrue($texts->contains("Nông hộ {$this->nh01->name} vừa báo sản lượng (1 dòng)"));
+        $this->assertTrue($texts->contains("HTX {$this->nh01->name} vừa báo sản lượng (1 dòng)"));
         $this->assertFalse($texts->contains(fn (string $text) => str_contains($text, $this->nh02->name)), 'Operator tự nhập thì không báo.');
         $this->assertTrue($texts->contains('Phản hồi mới: 4★ · Rau tươi'));
         $this->assertSame(1, $response->json('badges.orders'));

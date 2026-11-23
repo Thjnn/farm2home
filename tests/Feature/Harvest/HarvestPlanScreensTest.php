@@ -96,7 +96,7 @@ class HarvestPlanScreensTest extends TestCase
 
         // Chỉ nhà đã đăng ký trồng rau muống được hiện trong ô chọn.
         $this->nh02->products()->detach($this->rm->id);
-        $this->get($url)->assertSee('+ Thêm nông hộ cho Rau muống')->assertSee($this->nh01->name)->assertDontSee($this->nh02->name);
+        $this->get($url)->assertSee('+ Thêm HTX cho Rau muống')->assertSee($this->nh01->name)->assertDontSee($this->nh02->name);
         $this->nh02->products()->attach($this->rm->id, ['typical_weekly_kg' => 10]);
 
         $this->patch($url.'/items', ['items' => [$first->id => $row('8', '', $first->farmer_id)], 'add_product_id' => $this->rm->id])->assertRedirect($url);
@@ -110,7 +110,7 @@ class HarvestPlanScreensTest extends TestCase
         $this->patch($url.'/items', ['items' => [
             $first->id => $row('6', 'Chia cho nhà khác', $first->farmer_id), $added->id => $row('2', '', $this->nh02->id),
         ]])->assertRedirect($url);
-        $this->assertSame(['2.00', $this->nh02->id, 'Chia thêm nông hộ'], [$added->refresh()->final_kg, $added->farmer_id, $added->adjust_reason]);
+        $this->assertSame(['2.00', $this->nh02->id, 'Chia thêm HTX'], [$added->refresh()->final_kg, $added->farmer_id, $added->adjust_reason]);
 
         $this->patch($url.'/items', ['items' => [$added->id => $row('2', '', $this->nh02->id)], 'remove_item_id' => $added->id])->assertRedirect($url);
         $this->assertModelMissing($added);
@@ -140,13 +140,13 @@ class HarvestPlanScreensTest extends TestCase
         $this->post('/admin/harvest-plans/'.$plan->id.'/sent')->assertRedirect();
 
         $this->assertSame(HarvestPlanStatus::Sent, $plan->refresh()->status);
-        $this->get('/admin/harvest-plans')->assertOk()->assertSee('03/10/2026')->assertSee('Đã gửi nông hộ');
+        $this->get('/admin/harvest-plans')->assertOk()->assertSee('03/10/2026')->assertSee('Đã gửi HTX');
     }
 
     public function test_farmer_sees_the_list_only_after_confirmation_and_can_confirm(): void
     {
         $plan = $this->generate();
-        $url = '/nong-ho/'.$this->nh01->access_token;
+        $url = '/htx/'.$this->nh01->access_token;
 
         $this->get($url)->assertDontSee('Danh sách thu hoạch');
         $this->post($url.'/thu-hoach/'.$plan->id)->assertSessionHasErrors('action');

@@ -54,7 +54,7 @@
                 @endforeach
             </ul>
             <p class="mt-3 rounded-lg bg-white px-3 py-2 text-base font-medium text-amber-900">
-                Đây là tổng số khách cả vùng dự kiến đặt, chia cho nhiều nông hộ. Cô chú dùng để chăm rau và báo sản lượng.
+                Đây là tổng số khách cả vùng dự kiến đặt, chia cho nhiều HTX. Cô chú dùng để chăm rau và báo sản lượng.
                 Chỉ cắt rau theo <strong>số kg FARM2HOME gửi</strong> trong danh sách thu hoạch.
             </p>
         </section>

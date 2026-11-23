@@ -46,7 +46,7 @@ class SampleDataRelationsTest extends TestCase
     public function test_farmer_products_and_certificate(): void
     {
         $nh02 = Farmer::where('code', 'NH02')->firstOrFail();
-        $nh01 = Farmer::where('code', 'NH01')->firstOrFail();
+        $nh01 = Farmer::where('code', 'HTX01')->firstOrFail();
 
         $this->assertCount(4, $nh02->products);
         $this->assertSame('35.00', $nh02->products->firstWhere('code', 'CN')->pivot->typical_weekly_kg);
@@ -68,7 +68,7 @@ class SampleDataRelationsTest extends TestCase
     {
         $batch = Batch::where('code', 'F2H-260917-RM-NH01')->firstOrFail();
 
-        $this->assertSame('NH01', $batch->farmer->code);
+        $this->assertSame('HTX01', $batch->farmer->code);
         $this->assertSame('RM', $batch->product->code);
         $this->assertSame(1, $batch->planItem->id);
         $this->assertSame('2026-09-19', $batch->best_before->toDateString());

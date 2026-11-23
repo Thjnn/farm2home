@@ -11,7 +11,7 @@
                     <div class="mx-auto w-28 [&>svg]:h-auto [&>svg]:w-full">{!! $qrSvg !!}</div>
                     <p class="mt-1 text-sm font-bold">{{ $batch->product->name }}</p>
                     <p class="font-semibold">{{ $batch->code }}</p>
-                    <p>Nông hộ: {{ $batch->farmer->name }}</p>
+                    <p>HTX: {{ $batch->farmer->name }}</p>
                     @if ($batch->packed_at)
                         <p>Đóng gói: {{ $batch->packed_at->format('d/m/Y') }}</p>
                     @endif

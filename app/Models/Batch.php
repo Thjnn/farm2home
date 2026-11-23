@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 #[Fillable([
-    'code', 'harvest_plan_item_id', 'farmer_id', 'product_id', 'quantity_kg',
+    'code', 'harvest_plan_item_id', 'farmer_id', 'grower_name', 'product_id', 'quantity_kg',
     'harvested_at', 'received_at', 'processed_at', 'packed_at', 'processing_note',
     'storage_guide', 'best_before', 'quality_status', 'qc_note', 'photo',
 ])]

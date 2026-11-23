@@ -43,11 +43,13 @@ Route::get('/tra-cuu', [OrderLookupController::class, 'show'])->name('lookup.sho
 Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('throttle:10,1')->name('lookup.search');
 Route::post('/diem-thuong', [OrderLookupController::class, 'points'])->middleware('throttle:20,1')->name('lookup.points');
 
-Route::prefix('nong-ho/{farmer:access_token}')->name('farmer.')->middleware('throttle:30,1')->group(function () {
+Route::prefix('htx/{farmer:access_token}')->name('farmer.')->middleware('throttle:30,1')->group(function () {
     Route::get('/', [FarmerPortalController::class, 'show'])->name('show');
     Route::post('/san-luong', [FarmerPortalController::class, 'storeSupply'])->name('supply.store');
     Route::post('/thu-hoach/{plan}', [FarmerPortalController::class, 'confirmHarvest'])->name('harvest.confirm');
 });
+// Link cũ đã gửi qua Zalo trước khi đổi sang HTX.
+Route::permanentRedirect('nong-ho/{token}', '/htx/{token}');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

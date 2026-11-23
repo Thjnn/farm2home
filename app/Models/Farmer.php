@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 #[Fillable([
-    'code', 'name', 'phone', 'zalo_phone', 'address', 'growing_area', 'area_m2', 'farming_method',
+    'code', 'name', 'representative_name', 'phone', 'zalo_phone', 'address', 'growing_area', 'area_m2', 'member_households', 'farming_method',
     'bank_name', 'bank_account_number', 'bank_account_holder', 'farm_photos',
     'certificate_name', 'certificate_file', 'certificate_expires_at', 'access_token', 'status', 'note',
 ])]
@@ -31,6 +31,7 @@ class Farmer extends Model
             'status' => FarmerStatus::class,
             'certificate_expires_at' => 'date',
             'area_m2' => 'integer',
+            'member_households' => 'integer',
             'bank_account_number' => 'encrypted',
             'farm_photos' => 'array',
         ];
@@ -78,7 +79,7 @@ class Farmer extends Model
     }
 
     /**
-     * Nông hộ đang hợp tác có chứng nhận sắp hết hạn hoặc đã hết hạn, cần nhắc gia hạn.
+     * HTX đang hợp tác có chứng nhận sắp hết hạn hoặc đã hết hạn, cần nhắc gia hạn.
      *
      * @return Collection<int, Farmer>
      */

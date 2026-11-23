@@ -31,7 +31,7 @@ class AdminSupplyTest extends TestCase
             ->assertSee('Nguyễn Văn Tâm')
             ->assertSee('Trần Thị Hồng')
             ->assertSee('value="6.5"', false)
-            ->assertSee('/nong-ho/'.$this->nh01->access_token)
+            ->assertSee('/htx/'.$this->nh01->access_token)
             ->assertSee('Tổng nguồn cung');
     }
 

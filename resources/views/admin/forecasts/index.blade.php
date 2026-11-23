@@ -28,7 +28,7 @@
         <h2 class="mb-1 text-lg font-semibold">Mấy ngày tới cần bao nhiêu rau?</h2>
         <p class="leading-relaxed">
             Máy xem <strong>khách đã đặt bao nhiêu</strong> và <strong>những ngày trước bán được bao nhiêu</strong>,
-            rồi đoán mỗi loại rau cần khoảng bao nhiêu kg. Đây chỉ là gợi ý: người điều phối luôn xem lại rồi mới báo cho nông hộ.
+            rồi đoán mỗi loại rau cần khoảng bao nhiêu kg. Đây chỉ là gợi ý: người điều phối luôn xem lại rồi mới báo cho HTX.
         </p>
         <p class="mt-2 text-sm text-stone-600">
             Cách đoán đang xem: <strong>{{ $method->plainExplanation() }}</strong>

@@ -60,6 +60,15 @@ class BatchScreensTest extends TestCase
         $this->get('/admin/harvest-plans/'.$this->item->harvest_plan_id)->assertSee('F2H-261003-RM-NH01')->assertSee('7,8 kg');
     }
 
+    public function test_receiving_records_the_grower_the_htx_declares(): void
+    {
+        $this->post('/admin/harvest-plan-items/'.$this->item->id.'/receive', ['received_kg' => '7.8', 'grower_name' => '  Hộ bà Năm ']);
+        $this->assertSame('Hộ bà Năm', Batch::firstOrFail()->grower_name);
+
+        $this->post('/admin/harvest-plan-items/'.$this->item->id.'/receive', ['received_kg' => '7.8', 'grower_name' => '']);
+        $this->assertNull(Batch::firstOrFail()->grower_name);
+    }
+
     public function test_received_kg_is_validated(): void
     {
         $this->post('/admin/harvest-plan-items/'.$this->item->id.'/receive', ['received_kg' => 'abc'])->assertSessionHasErrors('received_kg');

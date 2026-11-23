@@ -41,7 +41,7 @@ class MasterDataTest extends TestCase
 
         $this->get('/admin/products')->assertOk()->assertSee('Rau muống')->assertSee('12.000đ');
         $this->get('/admin/baskets')->assertOk()->assertSee('Giỏ Mini');
-        $this->get('/admin/farmers')->assertOk()->assertSee('Nguyễn Văn Tâm')->assertSee('/nong-ho/'.$this->nh01->access_token);
+        $this->get('/admin/farmers')->assertOk()->assertSee('Nguyễn Văn Tâm')->assertSee('/htx/'.$this->nh01->access_token);
         $this->get('/admin/zones')->assertOk()->assertSee('Cụm 1 – Trung tâm');
         $this->get('/admin/users')->assertOk()->assertSee('operator@example.test');
     }
@@ -193,8 +193,8 @@ class MasterDataTest extends TestCase
 
         $this->assertNotSame($old, $this->nh01->refresh()->access_token);
         auth()->logout();
-        $this->get('/nong-ho/'.$old)->assertNotFound();
-        $this->get('/nong-ho/'.$this->nh01->access_token)->assertOk();
+        $this->get('/htx/'.$old)->assertNotFound();
+        $this->get('/htx/'.$this->nh01->access_token)->assertOk();
     }
 
     public function test_admin_manages_zones(): void

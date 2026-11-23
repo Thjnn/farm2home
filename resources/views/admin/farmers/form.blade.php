@@ -1,18 +1,20 @@
-<x-layouts.admin :title="$farmer->exists ? 'Sửa nông hộ' : 'Thêm nông hộ'">
+<x-layouts.admin :title="$farmer->exists ? 'Sửa HTX' : 'Thêm HTX'">
     <form method="POST" enctype="multipart/form-data" action="{{ $farmer->exists ? route('admin.farmers.update', $farmer) : route('admin.farmers.store') }}" class="max-w-3xl space-y-4">
         @csrf
         @if ($farmer->exists)
             @method('PUT')
         @endif
         <div class="grid gap-4 sm:grid-cols-2">
-            <x-field name="code" label="Mã (vd NH01, dùng trong mã lô)" :value="$farmer->code" maxlength="20" required />
-            <x-field name="name" label="Họ tên" :value="$farmer->name" required />
-            <x-field name="phone" label="Số điện thoại" type="tel" inputmode="numeric" :value="$farmer->phone" required />
+            <x-field name="code" label="Mã (vd HTX01, dùng trong mã lô)" :value="$farmer->code" maxlength="20" required />
+            <x-field name="name" label="Tên HTX" :value="$farmer->name" required />
+            <x-field name="representative_name" label="Người đại diện (nhận tin Zalo)" :value="$farmer->representative_name" />
+            <x-field name="phone" label="Số điện thoại người đại diện" type="tel" inputmode="numeric" :value="$farmer->phone" required />
             <x-field name="zalo_phone" label="Số Zalo (để trống nếu trùng số điện thoại)" type="tel" inputmode="numeric" :value="$farmer->zalo_phone" />
             <x-field name="address" label="Địa chỉ (không hiện công khai)" :value="$farmer->address" />
             <x-field name="growing_area" label="Khu vực trồng (hiện trên trang QR)" :value="$farmer->growing_area" />
-            <x-field name="area_m2" label="Diện tích (m²)" type="number" min="0" :value="$farmer->area_m2" />
-            <x-field name="farming_method" label="Cách canh tác (theo nông hộ khai)" :value="$farmer->farming_method" />
+            <x-field name="member_households" label="Số hộ thành viên" type="number" min="0" :value="$farmer->member_households" />
+            <x-field name="area_m2" label="Tổng diện tích (m²)" type="number" min="0" :value="$farmer->area_m2" />
+            <x-field name="farming_method" label="Cách canh tác (theo HTX khai)" :value="$farmer->farming_method" />
             <div>
                 <label for="status" class="mb-1 block text-sm font-medium text-stone-700">Trạng thái</label>
                 <select id="status" name="status" class="block min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3">
@@ -29,7 +31,7 @@
 
         <fieldset class="rounded-xl border border-stone-200 bg-white p-4">
             <legend class="px-1 text-sm font-medium text-stone-700">Tài khoản nhận tiền thu mua</legend>
-            <p class="mb-3 text-sm text-stone-600">Không hiện công khai. Số tài khoản được lưu mã hoá; trang của nông hộ chỉ hiện 4 số cuối.</p>
+            <p class="mb-3 text-sm text-stone-600">Không hiện công khai. Số tài khoản được lưu mã hoá; trang của HTX chỉ hiện 4 số cuối.</p>
             <div class="grid gap-4 sm:grid-cols-3">
                 <x-field name="bank_name" label="Ngân hàng (vd Agribank)" :value="$farmer->bank_name" />
                 <x-field name="bank_account_number" label="Số tài khoản" inputmode="numeric" :value="$farmer->bank_account_number" />
@@ -38,8 +40,8 @@
         </fieldset>
 
         <fieldset class="rounded-xl border border-stone-200 bg-white p-4">
-            <legend class="px-1 text-sm font-medium text-stone-700">Ảnh vườn rau (hiện trên trang QR)</legend>
-            <p class="mb-3 text-sm text-stone-600">Chỉ dùng ảnh thật chụp tại vườn, khi nông hộ đồng ý. Tối đa 4 ảnh; chọn ảnh mới sẽ thay cả bộ ảnh cũ.</p>
+            <legend class="px-1 text-sm font-medium text-stone-700">Ảnh vùng trồng (hiện trên trang QR)</legend>
+            <p class="mb-3 text-sm text-stone-600">Chỉ dùng ảnh thật chụp tại vùng trồng, khi HTX đồng ý. Tối đa 4 ảnh; chọn ảnh mới sẽ thay cả bộ ảnh cũ.</p>
             @if ($farmer->farm_photos)
                 <div class="mb-3 grid grid-cols-4 gap-2">
                     @foreach ($farmer->farmPhotoUrls() as $url)
@@ -48,10 +50,10 @@
                 </div>
                 <label class="mb-3 flex items-center gap-2 text-sm">
                     <input type="checkbox" name="remove_farm_photos" value="1" class="size-5">
-                    Xoá hết ảnh vườn
+                    Xoá hết ảnh vùng trồng
                 </label>
             @endif
-            <input id="farm_photos" type="file" name="farm_photos[]" accept="image/*" multiple class="block w-full text-sm" aria-label="Chọn ảnh vườn rau">
+            <input id="farm_photos" type="file" name="farm_photos[]" accept="image/*" multiple class="block w-full text-sm" aria-label="Chọn ảnh vùng trồng">
             @error('farm_photos')
                 <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
             @enderror

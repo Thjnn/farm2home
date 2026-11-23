@@ -49,7 +49,7 @@ class DashboardTest extends TestCase
             // Kinh tế
             ->assertSee('Kinh tế')->assertSee('7.773.000đ')->assertSee('59.336đ')->assertSee('12,7%')
             // Nông hộ
-            ->assertSee('Nông hộ')->assertSee('100%')
+            ->assertSee('HTX đang hợp tác')->assertSee('100%')
             // Môi trường
             ->assertSee('Môi trường')->assertSee('87,7 kg')->assertSee('27,2%')->assertSee('83,3%')
             ->assertDontSee('CO₂')->assertDontSee('CO2');

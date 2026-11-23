@@ -53,11 +53,11 @@ class BatchService
     }
 
     /**
-     * Nhận rau từ nông hộ và tạo lô. Mỗi nông hộ + loại rau + ngày thu hoạch chỉ có một lô: nhận lại là sửa số.
+     * Nhận rau từ HTX và tạo lô. Mỗi HTX + loại rau + ngày thu hoạch chỉ có một lô: nhận lại là sửa số.
      *
-     * @throws DomainException khi kế hoạch chưa chốt, dòng chưa có nông hộ, hoặc khối lượng không dương
+     * @throws DomainException khi kế hoạch chưa chốt, dòng chưa có HTX, hoặc khối lượng không dương
      */
-    public function receive(HarvestPlanItem $item, float $receivedKg, ?CarbonInterface $harvestedAt = null): Batch
+    public function receive(HarvestPlanItem $item, float $receivedKg, ?CarbonInterface $harvestedAt = null, ?string $growerName = null): Batch
     {
         $item->loadMissing('plan', 'product', 'farmer');
 
@@ -66,14 +66,14 @@ class BatchService
         }
 
         if ($item->farmer === null) {
-            throw new DomainException('Dòng kế hoạch chưa có nông hộ.');
+            throw new DomainException('Dòng kế hoạch chưa có HTX.');
         }
 
         if ($receivedKg <= 0) {
             throw new DomainException('Khối lượng nhận phải lớn hơn 0.');
         }
 
-        return DB::transaction(function () use ($item, $receivedKg, $harvestedAt) {
+        return DB::transaction(function () use ($item, $receivedKg, $harvestedAt, $growerName) {
             $harvestedAt = CarbonImmutable::parse(
                 $harvestedAt ?? $item->plan->harvest_date->toDateString().' '.config('farm2home.batch.harvest_time')
             );
@@ -85,6 +85,7 @@ class BatchService
                 [
                     'harvest_plan_item_id' => $item->id,
                     'farmer_id' => $item->farmer_id,
+                    'grower_name' => filled($growerName) ? trim($growerName) : null,
                     'product_id' => $item->product_id,
                     'quantity_kg' => $receivedKg,
                     'harvested_at' => $harvestedAt,

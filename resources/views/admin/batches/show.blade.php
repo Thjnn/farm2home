@@ -4,7 +4,10 @@
             <div class="mb-2"><x-status-badge :status="$batch->quality_status" /></div>
             <dl class="space-y-1">
                 <div><dt class="inline text-stone-600">Rau:</dt> <dd class="inline font-medium">{{ $batch->product->name }}</dd></div>
-                <div><dt class="inline text-stone-600">Nông hộ:</dt> <dd class="inline">{{ $batch->farmer->name }}</dd></div>
+                <div><dt class="inline text-stone-600">HTX:</dt> <dd class="inline">{{ $batch->farmer->name }}</dd></div>
+                @if ($batch->grower_name)
+                    <div><dt class="inline text-stone-600">Hộ trồng (HTX khai):</dt> <dd class="inline">{{ $batch->grower_name }}</dd></div>
+                @endif
                 <div><dt class="inline text-stone-600">Đã nhận:</dt> <dd class="inline font-medium">@kg($batch->quantity_kg)</dd></div>
                 <div><dt class="inline text-stone-600">Còn lại:</dt> <dd class="inline font-medium">@kg($remainingKg)</dd></div>
                 <div><dt class="inline text-stone-600">Thu hoạch:</dt> <dd class="inline">{{ $batch->harvested_at->format('d/m/Y H:i') }}</dd></div>

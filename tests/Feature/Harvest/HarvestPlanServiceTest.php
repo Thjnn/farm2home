@@ -144,7 +144,7 @@ class HarvestPlanServiceTest extends TestCase
             $this->plans->confirm($plan, $this->operator);
             $this->fail('Expected DomainException');
         } catch (DomainException $e) {
-            $this->assertSame('Còn dòng chưa có nông hộ. Hãy chọn nông hộ hoặc đặt số chốt về 0.', $e->getMessage());
+            $this->assertSame('Còn dòng chưa có HTX. Hãy chọn HTX hoặc đặt số chốt về 0.', $e->getMessage());
         }
 
         $this->assertSame(HarvestPlanStatus::Draft, $plan->refresh()->status);
@@ -222,7 +222,7 @@ class HarvestPlanServiceTest extends TestCase
         $this->assertStringContainsString('- Rau muống: 4 kg', $message);
         $this->assertStringContainsString('- Cải ngọt: 2,5 kg', $message);
         $this->assertStringNotContainsString('4,5 kg', $message);
-        $this->assertStringContainsString('/nong-ho/'.$this->nh02->access_token, $message);
+        $this->assertStringContainsString('/htx/'.$this->nh02->access_token, $message);
     }
 
     public function test_sent_farmer_confirmation_and_completion(): void

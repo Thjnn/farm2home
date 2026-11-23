@@ -1,5 +1,5 @@
-<x-layouts.admin title="Nông hộ">
-    <p class="mb-4"><a href="{{ route('admin.farmers.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm nông hộ</a></p>
+<x-layouts.admin title="HTX">
+    <p class="mb-4"><a href="{{ route('admin.farmers.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm HTX</a></p>
 
     <div class="space-y-3">
         @foreach ($farmers as $farmer)
@@ -10,7 +10,7 @@
                     <a href="{{ route('admin.farmers.edit', $farmer) }}" class="ml-auto text-emerald-800 underline">Sửa</a>
                 </div>
                 <p class="mt-1 text-stone-700">
-                    {{ $farmer->phone }} · {{ $farmer->growing_area ?? 'Chưa ghi khu vực trồng' }} ·
+                    {{ $farmer->representative_name ? $farmer->representative_name.' · ' : '' }}{{ $farmer->phone }}{{ $farmer->member_households ? ' · '.$farmer->member_households.' hộ thành viên' : '' }} · {{ $farmer->growing_area ?? 'Chưa ghi khu vực trồng' }} ·
                     Chứng nhận:
                     @if ($farmer->hasValidCertificate())
                         Có{{ $farmer->certificate_expires_at ? ', đến '.$farmer->certificate_expires_at->format('d/m/Y') : '' }}

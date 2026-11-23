@@ -102,7 +102,7 @@ class HarvestPlanService
 
         if ($differs && blank($reason)) {
             // Dòng operator tự thêm (gợi ý 0) thì lý do đã rõ.
-            $reason = (float) $item->suggested_kg === 0.0 ? 'Chia thêm nông hộ' : throw new DomainException('Cần ghi lý do khi số chốt khác số gợi ý.');
+            $reason = (float) $item->suggested_kg === 0.0 ? 'Chia thêm HTX' : throw new DomainException('Cần ghi lý do khi số chốt khác số gợi ý.');
         }
 
         $item->update([
@@ -140,7 +140,7 @@ class HarvestPlanService
                 ->select('product_id')->groupBy('product_id', 'farmer_id')->havingRaw('count(*) > 1')->first();
 
             if ($duplicate !== null) {
-                throw new DomainException("{$duplicate->product->name}: một nông hộ đang được chọn ở hai dòng.");
+                throw new DomainException("{$duplicate->product->name}: một HTX đang được chọn ở hai dòng.");
             }
         });
     }
@@ -184,7 +184,7 @@ class HarvestPlanService
             $plan->items()->whereNull('final_kg')->update(['final_kg' => DB::raw('suggested_kg')]);
 
             if ($plan->items()->whereNull('farmer_id')->where('final_kg', '>', 0)->exists()) {
-                throw new DomainException('Còn dòng chưa có nông hộ. Hãy chọn nông hộ hoặc đặt số chốt về 0.');
+                throw new DomainException('Còn dòng chưa có HTX. Hãy chọn HTX hoặc đặt số chốt về 0.');
             }
 
             $plan->update([

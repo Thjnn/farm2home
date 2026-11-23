@@ -14,7 +14,7 @@ enum HarvestPlanStatus: string
         return match ($this) {
             self::Draft => 'Nháp',
             self::Confirmed => 'Đã chốt',
-            self::Sent => 'Đã gửi nông hộ',
+            self::Sent => 'Đã gửi HTX',
             self::Completed => 'Hoàn tất',
         };
     }

@@ -57,7 +57,7 @@ class NotificationService
             ->groupBy('farmer_id')
             ->map(fn ($reports) => [
                 'kind' => 'supply',
-                'text' => "Nông hộ {$reports->first()->farmer->name} vừa báo sản lượng ({$reports->count()} dòng)",
+                'text' => "HTX {$reports->first()->farmer->name} vừa báo sản lượng ({$reports->count()} dòng)",
                 'url' => route('admin.supply.index'),
             ])->values();
 
@@ -65,7 +65,7 @@ class NotificationService
             ->groupBy(fn (HarvestPlanItem $item) => $item->harvest_plan_id.'#'.$item->farmer_id)
             ->map(fn ($items) => [
                 'kind' => 'harvest',
-                'text' => "Nông hộ {$items->first()->farmer->name} đã xác nhận thu hoạch cho ngày giao {$items->first()->plan->delivery_date->format('d/m')}",
+                'text' => "HTX {$items->first()->farmer->name} đã xác nhận thu hoạch cho ngày giao {$items->first()->plan->delivery_date->format('d/m')}",
                 'url' => route('admin.harvest-plans.show', $items->first()->harvest_plan_id),
             ])->values();
 

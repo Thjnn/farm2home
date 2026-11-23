@@ -2,7 +2,7 @@
     <section class="mb-8">
         <h1 class="text-2xl font-bold leading-tight tracking-tight text-stone-900">Điều phối nông sản theo nhu cầu, giảm dư thừa.</h1>
         <p class="mt-3 text-stone-700">
-            Bạn đặt rau trước, nông hộ ở Châu Thành, Cai Lậy, Chợ Gạo và vùng lân cận thu hoạch vừa đủ theo đơn.
+            Bạn đặt rau trước, hợp tác xã rau ở Gò Công và vùng lân cận thu hoạch vừa đủ theo đơn.
             Rau được sơ chế, đóng gói và giao trong ngày, mỗi gói có mã QR để xem thông tin lô hàng.
         </p>
         <div class="mt-5 flex flex-wrap gap-3">
@@ -58,7 +58,7 @@
         <h2 class="font-semibold">Cách hoạt động</h2>
         <ol class="mt-2 list-decimal space-y-1 pl-5">
             <li>Bạn đặt giỏ rau hoặc chọn lẻ trước ngày giao.</li>
-            <li>Chúng tôi tổng hợp đơn và báo nông hộ số lượng cần thu hoạch.</li>
+            <li>Chúng tôi tổng hợp đơn và báo hợp tác xã số lượng cần thu hoạch.</li>
             <li>Rau được giao theo khung giờ bạn chọn, kèm mã QR của lô hàng.</li>
         </ol>
     </section>

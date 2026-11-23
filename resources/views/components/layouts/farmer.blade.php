@@ -1,7 +1,7 @@
-@props(['title' => 'Nông hộ'])
+@props(['title' => 'HTX'])
 <x-layouts.base :title="$title">
     <header class="border-b border-stone-200 bg-white">
-        <div class="mx-auto flex max-w-xl items-center gap-3 px-4 py-2"><x-brand /><span class="text-lg font-bold text-emerald-800">· Nông hộ</span></div>
+        <div class="mx-auto flex max-w-xl items-center gap-3 px-4 py-2"><x-brand /><span class="text-lg font-bold text-emerald-800">· HTX</span></div>
     </header>
 
     <main class="mx-auto max-w-xl px-4 py-4 text-lg">

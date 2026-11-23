@@ -9,7 +9,7 @@
             @enderror
         </div>
         <button class="min-h-11 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Tạo gợi ý thu hoạch</button>
-        <p class="basis-full text-sm text-stone-600">Hệ thống chỉ gợi ý. Bạn xem lại, chỉnh và chốt trước khi gửi cho nông hộ.</p>
+        <p class="basis-full text-sm text-stone-600">Hệ thống chỉ gợi ý. Bạn xem lại, chỉnh và chốt trước khi gửi cho HTX.</p>
     </form>
 
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">

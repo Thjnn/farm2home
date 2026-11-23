@@ -12,7 +12,7 @@ enum SupplySource: string
     {
         return match ($this) {
             self::Zalo => 'Zalo',
-            self::Form => 'Link nông hộ',
+            self::Form => 'Link HTX',
             self::Operator => 'Operator nhập',
         };
     }

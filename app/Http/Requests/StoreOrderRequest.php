@@ -46,6 +46,7 @@ class StoreOrderRequest extends FormRequest
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'data_consent' => ['accepted'],
             'note' => ['nullable', 'string', 'max:500'],
+            'submission_token' => ['nullable', 'uuid'],
             'requested_reward' => ['nullable', Rule::in(Reward::keys()), function (string $attribute, mixed $value, Closure $fail) {
                 $reward = Reward::find($value);
                 $customer = Customer::where('phone', $this->input('phone'))->first();

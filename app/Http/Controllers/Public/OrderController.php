@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -43,9 +44,18 @@ class OrderController extends Controller
 
     public function store(StoreOrderRequest $request, OrderService $orders): RedirectResponse
     {
-        $order = $orders->place($request->validated(), OrderChannel::Website);
+        $data = $request->safe()->except('submission_token');
+        $token = $request->validated('submission_token');
 
-        $request->session()->put('last_order_code', $order->code);
+        $place = fn () => $orders->place($data, OrderChannel::Website)->code;
+
+        // Bấm "Gửi đơn" nhiều lần cùng một form chỉ tạo một đơn: lần sau chờ lần đầu xong rồi trả lại đúng đơn đó.
+        $code = $token === null
+            ? $place()
+            : Cache::lock('order-submit:'.$token, 15)->block(15, fn () => Cache::get('order-submit-code:'.$token)
+                ?? tap($place(), fn (string $code) => Cache::put('order-submit-code:'.$token, $code, now()->addHour())));
+
+        $request->session()->put('last_order_code', $code);
 
         return redirect()->route('orders.thanks');
     }

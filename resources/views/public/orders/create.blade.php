@@ -10,8 +10,10 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('orders.store') }}" x-data="orderForm(...window.orderFormData)" class="space-y-6">
+    <form method="POST" action="{{ route('orders.store') }}" x-data="orderForm(...window.orderFormData)"
+        x-on:submit="$el.querySelector('[data-submit]').disabled = true" x-on:pageshow.window="$event.persisted && location.reload()" class="space-y-6">
         @csrf
+        <input type="hidden" name="submission_token" value="{{ old('submission_token', (string) Str::uuid()) }}">
 
         @include('partials.order-lines', ['maxQuantity' => 20])
 
@@ -130,7 +132,7 @@
             <p class="mt-2 text-xs text-stone-500">Tổng tiền chính xác được xác nhận sau khi gửi đơn.</p>
         </div>
 
-        <button class="min-h-12 w-full rounded-lg bg-emerald-700 px-4 text-base font-semibold text-white hover:bg-emerald-800">Gửi đơn</button>
+        <button data-submit class="min-h-12 w-full rounded-lg bg-emerald-700 px-4 text-base font-semibold text-white hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-60">Gửi đơn</button>
     </form>
 
     {{-- Chừa chỗ để nút Hỏi đáp không che nút Gửi đơn trên điện thoại. --}}

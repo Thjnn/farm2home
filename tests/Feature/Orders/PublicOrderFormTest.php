@@ -69,6 +69,26 @@ class PublicOrderFormTest extends TestCase
             ->assertSee('Sau khi bấm Đặt hàng, bạn sẽ thấy mã QR');
     }
 
+    public function test_submitting_the_same_form_repeatedly_creates_one_order(): void
+    {
+        $form = $this->form(['submission_token' => '0b9f4c2e-6a51-4c3e-9d7a-2f1e8b6c4a10']);
+
+        $this->post('/dat-hang', $form)->assertRedirect('/dat-hang/cam-on');
+        $this->post('/dat-hang', $form)->assertRedirect('/dat-hang/cam-on');
+        $this->post('/dat-hang', $form);
+
+        $this->assertSame(1, Order::count());
+        $this->get('/dat-hang/cam-on')->assertSee('DH261003-001');
+
+        $this->post('/dat-hang', $this->form(['submission_token' => '5d2a7e91-3c4b-4f8a-b6e0-9a1c7d3f2b58']));
+        $this->assertSame(2, Order::count());
+    }
+
+    public function test_order_form_carries_a_fresh_submission_token(): void
+    {
+        $this->get('/dat-hang')->assertOk()->assertSee('name="submission_token"', false);
+    }
+
     public function test_valid_order_is_stored_and_customer_sees_the_code(): void
     {
         $this->post('/dat-hang', $this->form())->assertRedirect('/dat-hang/cam-on');

@@ -98,5 +98,21 @@
                 <p class="text-stone-500">Chưa ghi rau dư.</p>
             @endforelse
         </section>
+        <section class="rounded-xl border border-stone-200 bg-white p-4 text-sm lg:col-span-2">
+            <h2 class="mb-2 font-semibold">Lịch sử sửa</h2>
+            @forelse ($batch->changeLog as $change)
+                <div class="border-b border-stone-100 py-2 last:border-0">
+                    <p class="text-stone-600">{{ $change->created_at->format('d/m/Y H:i') }} · {{ $change->user?->name ?? 'Hệ thống' }}</p>
+                    <ul class="mt-1 space-y-0.5">
+                        @foreach ($change->changes as $field => [$old, $new])
+                            <li><span class="text-stone-600">{{ \App\Models\BatchChange::FIELD_LABELS[$field] ?? $field }}:</span>
+                                {{ \App\Models\BatchChange::display($field, $old) }} → <span class="font-medium">{{ \App\Models\BatchChange::display($field, $new) }}</span></li>
+                        @endforeach
+                    </ul>
+                </div>
+            @empty
+                <p class="text-stone-500">Chưa sửa lần nào kể từ khi nhận hàng.</p>
+            @endforelse
+        </section>
     </div>
 </x-layouts.admin>

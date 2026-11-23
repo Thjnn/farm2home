@@ -27,6 +27,23 @@ class Batch extends Model
         static::creating(function (Batch $batch) {
             $batch->qr_key ??= Str::random(10);
         });
+
+        // Mọi đường sửa lô (form, ảnh, nhận lại hàng, kiểm chất lượng) đi qua đây, nên nhật ký không bỏ sót.
+        static::updated(function (Batch $batch) {
+            $changes = collect(array_keys($batch->getChanges()))
+                ->intersect(array_keys(BatchChange::FIELD_LABELS))
+                ->mapWithKeys(fn (string $field) => [$field => [$batch->getRawOriginal($field), $batch->getAttributes()[$field]]])
+                ->all();
+
+            if ($changes !== []) {
+                $batch->changeLog()->create(['user_id' => auth()->id(), 'changes' => $changes]);
+            }
+        });
+    }
+
+    public function changeLog(): HasMany
+    {
+        return $this->hasMany(BatchChange::class)->latest('id');
     }
 
     /**

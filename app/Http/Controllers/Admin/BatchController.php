@@ -32,7 +32,7 @@ class BatchController extends Controller
     public function show(Batch $batch, BatchService $batches): View
     {
         return view('admin.batches.show', [
-            'batch' => $batch->load('product', 'farmer', 'orderItems.order', 'wasteLogs', 'feedbacks'),
+            'batch' => $batch->load('product', 'farmer', 'orderItems.order', 'wasteLogs', 'feedbacks', 'changeLog.user'),
             'remainingKg' => $batches->remainingKg($batch),
             'qualityStatuses' => QualityStatus::cases(),
         ]);
@@ -48,7 +48,8 @@ class BatchController extends Controller
             'processing_note' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $batch->update([
+        // fill rồi để setQuality lưu một lần: một lần bấm Lưu là một dòng nhật ký.
+        $batch->fill([
             'processed_at' => $data['processed_at'] ?? null,
             'packed_at' => $data['packed_at'] ?? null,
             'processing_note' => $data['processing_note'] ?? null,

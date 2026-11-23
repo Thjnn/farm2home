@@ -44,6 +44,9 @@
                 <div class="py-2"><dt class="text-stone-600">Bảo quản</dt><dd class="mt-1">{{ $batch->storage_guide }}</dd></div>
             @endif
         </dl>
+        @if ($changeCount > 0)
+            <p class="mt-2 text-xs text-stone-500">Thông tin lô đã sửa {{ $changeCount }} lần sau khi nhận hàng, lần cuối {{ $lastChangedAt->format('d/m/Y H:i') }}.</p>
+        @endif
     </section>
 
     @if ($batch->farmer->farm_photos || $batch->farmer->hasEnoughRatingsToShow($farmerRating['count']))

@@ -18,6 +18,13 @@ class BatchPageController extends Controller
 
         $batch->load('product', 'farmer');
 
-        return view('public.batches.show', ['batch' => $batch, 'farmerRating' => $batch->farmer->ratingSummary()]);
+        $lastChange = $batch->changeLog()->first();
+
+        return view('public.batches.show', [
+            'batch' => $batch,
+            'farmerRating' => $batch->farmer->ratingSummary(),
+            'changeCount' => $batch->changeLog()->count(),
+            'lastChangedAt' => $lastChange?->created_at,
+        ]);
     }
 }

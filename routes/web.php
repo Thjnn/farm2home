@@ -74,6 +74,8 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
 
     Route::get('supply', [SupplyController::class, 'index'])->name('supply.index');
     Route::post('supply', [SupplyController::class, 'store'])->name('supply.store');
+    Route::post('supply/read-message', [SupplyController::class, 'read'])->name('supply.read');
+    Route::post('supply/confirm-message', [SupplyController::class, 'confirmMessage'])->name('supply.confirm-message');
 
     Route::get('forecasts', [ForecastController::class, 'index'])->name('forecasts.index');
     Route::post('forecasts/run', [ForecastController::class, 'run'])->name('forecasts.run');

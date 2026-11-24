@@ -13,9 +13,6 @@ use App\Support\OrderWindow;
 use App\Support\Reward;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -25,7 +22,7 @@ use Illuminate\Support\Str;
  */
 class ChatbotService
 {
-    public function __construct(private ForecastService $forecasts) {}
+    public function __construct(private ForecastService $forecasts, private GeminiClient $gemini) {}
 
     private const HEALTH_REPLY = 'Xin lỗi, FARM2HOME không tư vấn sức khỏe hay chế độ ăn. Nếu cần, bạn hãy hỏi bác sĩ hoặc chuyên gia dinh dưỡng nhé. '
         .'Mình có thể giúp về giá rau, giỏ rau, phí giao và giờ giao.';
@@ -55,7 +52,8 @@ class ChatbotService
 
     public function answer(string $message): string
     {
-        return $this->askGemini($message) ?? $this->reply($message);
+        // ponytail: mỗi câu hỏi gửi riêng, không kèm lịch sử chat; thêm lịch sử khi khách cần hỏi nối tiếp.
+        return $this->gemini->generate($this->systemPrompt(), $message, logLabel: 'Chatbot') ?? $this->reply($message);
     }
 
     /**
@@ -168,46 +166,6 @@ class ChatbotService
         return $phone === null
             ? 'gọi lại số FARM2HOME đã liên hệ xác nhận đơn'
             : "nhắn Zalo cho người vận hành: https://zalo.me/{$phone}";
-    }
-
-    /**
-     * null = không có key, mất mạng, hết lượt miễn phí hoặc trả về rỗng → dùng kịch bản.
-     * ponytail: mỗi câu hỏi gửi riêng, không kèm lịch sử chat; thêm lịch sử khi khách cần hỏi nối tiếp.
-     */
-    private function askGemini(string $message): ?string
-    {
-        $key = config('services.gemini.key');
-        if (blank($key)) {
-            return null;
-        }
-
-        try {
-            $response = Http::timeout(15)
-                ->withHeaders(['x-goog-api-key' => $key])
-                ->post('https://generativelanguage.googleapis.com/v1beta/models/'.config('services.gemini.model').':generateContent', [
-                    'system_instruction' => ['parts' => [['text' => $this->systemPrompt()]]],
-                    'contents' => [['role' => 'user', 'parts' => [['text' => $message]]]],
-                    // Model có "suy nghĩ" tính cả token suy nghĩ vào giới hạn, nên để rộng.
-                    'generationConfig' => ['temperature' => 0.2, 'maxOutputTokens' => 2048],
-                ]);
-        } catch (ConnectionException $exception) {
-            Log::warning('Chatbot: không kết nối được Gemini', ['error' => $exception->getMessage()]);
-
-            return null;
-        }
-
-        if ($response->failed()) {
-            Log::warning('Chatbot: Gemini trả lỗi', ['status' => $response->status()]);
-
-            return null;
-        }
-
-        $text = collect($response->json('candidates.0.content.parts', []))
-            ->reject(fn (array $part) => $part['thought'] ?? false)
-            ->pluck('text')
-            ->implode('');
-
-        return trim($text) === '' ? null : trim($text);
     }
 
     /**

@@ -1,6 +1,6 @@
-<x-layouts.public title="Rau theo nhu cầu">
-    <section class="mb-8">
-        <h1 class="text-2xl font-bold leading-tight tracking-tight text-stone-900">Điều phối nông sản theo nhu cầu, giảm dư thừa.</h1>
+<x-layouts.public title="Rau theo nhu cầu" wide>
+    <section class="mb-8 max-w-2xl">
+        <h1 class="text-2xl font-bold leading-tight tracking-tight text-stone-900 sm:text-3xl">Điều phối nông sản theo nhu cầu, giảm dư thừa.</h1>
         <p class="mt-3 text-stone-700">
             Bạn đặt rau trước, hợp tác xã rau ở Gò Công và vùng lân cận thu hoạch vừa đủ theo đơn.
             Rau được sơ chế, đóng gói và giao trong ngày, mỗi gói có mã QR để xem thông tin lô hàng.
@@ -13,48 +13,56 @@
         </div>
     </section>
 
-    @if ($products->isNotEmpty())
-        <section aria-labelledby="products-heading" class="mb-8">
-            <h2 id="products-heading" class="mb-3 text-lg font-semibold">Rau đang có</h2>
-            <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                @foreach ($products as $product)
-                    <li class="overflow-hidden rounded-xl border border-stone-200 bg-white">
-                        <x-product-image :product="$product" class="aspect-[4/3] w-full" />
-                        <div class="p-3">
-                            <p class="font-semibold">{{ $product->name }}</p>
-                            <p class="text-sm text-stone-600">@vnd($product->price) / @kg($product->pack_weight_kg)</p>
-                        </div>
-                    </li>
-                @endforeach
-            </ul>
+    @if ($products['total'] > 0)
+        <section aria-labelledby="products-heading" class="mb-10"
+            x-data="pagedList({ endpoint: @js(route('api.products')), key: 'trang', initial: @js($products) })">
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <h2 id="products-heading" x-ref="heading" class="scroll-mt-4 text-lg font-semibold">Rau đang có</h2>
+                @if (Route::has('products.index'))
+                    <a href="{{ route('products.index') }}" class="inline-flex min-h-11 items-center px-1 font-medium text-emerald-800 hover:underline">Xem tất cả <span aria-hidden="true">&nbsp;→</span></a>
+                @endif
+            </div>
+            <x-product-grid :skeletons="count($products['items'])" />
+            <x-pagination label="Trang rau đang có" :total-pages="$products['totalPages']" />
         </section>
     @endif
 
-    <section aria-labelledby="baskets-heading">
-        <h2 id="baskets-heading" class="mb-3 text-lg font-semibold">Giỏ rau</h2>
-        <div class="space-y-3">
-            @forelse ($baskets as $basket)
-                <article class="rounded-xl border border-stone-200 bg-white p-4">
+    <section aria-labelledby="baskets-heading" class="mb-10"
+        x-data="pagedList({ endpoint: @js(route('api.baskets')), key: 'trang_gio', initial: @js($baskets) })">
+        <h2 id="baskets-heading" x-ref="heading" class="mb-3 scroll-mt-4 text-lg font-semibold">Giỏ rau</h2>
+        @if ($baskets['total'] === 0)
+            <p class="text-stone-600">Hiện chưa có giỏ rau nào đang mở bán.</p>
+        @endif
+        <div class="grid gap-3 sm:grid-cols-2" :aria-busy="loading">
+            @foreach ($baskets['items'] as $basket)
+                <div x-show="loading" aria-hidden="true" class="h-52 animate-pulse rounded-xl border border-stone-200 bg-white"></div>
+            @endforeach
+            <template x-for="basket in items" :key="basket.id">
+                <article x-show="!loading" data-card class="flex min-h-52 flex-col rounded-xl border border-stone-200 bg-white p-4">
                     <div class="flex items-baseline justify-between gap-3">
-                        <h3 class="font-semibold">{{ $basket->name }}</h3>
-                        <p class="font-semibold text-emerald-800">@vnd($basket->price)</p>
+                        <h3 class="font-semibold" x-text="basket.name"></h3>
+                        <p class="shrink-0 font-semibold text-emerald-800" x-text="money(basket.price)"></p>
                     </div>
-                    @if ($basket->description)
-                        <p class="mt-1 text-sm text-stone-600">{{ $basket->description }}</p>
-                    @endif
-                    <ul class="mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-sm text-stone-700">
-                        @foreach ($basket->items as $item)
-                            <li class="flex items-center gap-1.5"><x-product-image :product="$item->product" class="size-6 rounded-full" />{{ $item->quantity }} × {{ $item->product->name }}</li>
-                        @endforeach
+                    <p x-show="basket.description" class="mt-1 text-stone-600" x-text="basket.description"></p>
+                    <ul class="mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-stone-700">
+                        <template x-for="(line, index) in basket.items" :key="index">
+                            <li class="flex items-center gap-1.5">
+                                <img x-show="line.imageUrl" :src="line.imageUrl" alt="" loading="lazy" width="24" height="24" class="size-6 rounded-full bg-stone-100 object-cover">
+                                <span x-text="line.quantity + ' × ' + line.name"></span>
+                            </li>
+                        </template>
                     </ul>
+                    <div class="mt-auto pt-3">
+                        <a :href="@js(route('orders.create')) + '?goi=' + basket.id"
+                            class="inline-flex min-h-11 items-center justify-center rounded-lg border border-emerald-700 px-4 font-semibold text-emerald-800 hover:bg-emerald-50">Đặt giỏ này</a>
+                    </div>
                 </article>
-            @empty
-                <p class="text-stone-600">Hiện chưa có giỏ rau nào đang mở bán.</p>
-            @endforelse
+            </template>
         </div>
+        <x-pagination label="Trang giỏ rau" :total-pages="$baskets['totalPages']" />
     </section>
 
-    <section class="mt-8 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-950">
+    <section class="max-w-2xl rounded-xl bg-emerald-50 p-4 text-emerald-950">
         <h2 class="font-semibold">Cách hoạt động</h2>
         <ol class="mt-2 list-decimal space-y-1 pl-5">
             <li>Bạn đặt giỏ rau hoặc chọn lẻ trước ngày giao.</li>

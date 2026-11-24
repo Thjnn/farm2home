@@ -36,20 +36,22 @@ class PublicOrderFormTest extends TestCase
 
     public function test_home_page_shows_baskets_and_makes_no_marketing_claims(): void
     {
-        $this->get('/')
+        // Danh sách giỏ được Alpine vẽ từ dữ liệu nhúng sẵn, nên kiểm tra dữ liệu truyền cho view.
+        $response = $this->get('/')
             ->assertOk()
             ->assertSee('Điều phối nông sản theo nhu cầu')
-            ->assertSee('Giỏ Mini')
-            ->assertSee('45.000đ')
             ->assertSee('Đặt hàng')
             ->assertDontSee('100%');
+
+        $this->assertSame(['Giỏ Mini', 45000], [$response->viewData('baskets')['items'][0]['name'], $response->viewData('baskets')['items'][0]['price']]);
     }
 
     public function test_home_and_order_form_show_product_photos(): void
     {
         $this->rm->update(['image' => 'products/rau-muong.jpg']);
 
-        $this->get('/')->assertOk()->assertSee('images/products/rau-muong.jpg');
+        $products = $this->get('/')->assertOk()->viewData('products')['items'];
+        $this->assertContains(asset('images/products/rau-muong.jpg'), array_column($products, 'imageUrl'));
         $this->get('/dat-hang')->assertOk()->assertSee('images/products/rau-muong.jpg');
     }
 

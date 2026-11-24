@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ProductCategory;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Support\PhotoStore;
@@ -56,6 +57,7 @@ class ProductController extends Controller
             'price' => ['required', 'integer', 'min:0'],
             'cost_price_per_kg' => ['required', 'integer', 'min:0'],
             'shelf_life_days' => ['required', 'integer', 'min:1', 'max:30'],
+            'category' => ['required', Rule::enum(ProductCategory::class)],
             'storage_guide' => ['nullable', 'string', 'max:1000'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);

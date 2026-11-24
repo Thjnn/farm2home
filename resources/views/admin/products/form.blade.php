@@ -10,6 +10,17 @@
         <x-field name="price" label="Giá bán / gói (đ)" type="number" min="0" :value="$product->price" required />
         <x-field name="cost_price_per_kg" label="Giá thu mua / kg (đ)" type="number" min="0" :value="$product->cost_price_per_kg" required />
         <x-field name="shelf_life_days" label="Hạn dùng (ngày)" type="number" min="1" max="30" :value="$product->shelf_life_days" required />
+        <div>
+            <label for="category" class="mb-1 block text-sm font-medium text-stone-700">Danh mục (dùng để lọc ở trang khách)</label>
+            <select id="category" name="category" class="block min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-base">
+                @foreach (\App\Enums\ProductCategory::cases() as $category)
+                    <option value="{{ $category->value }}" @selected(old('category', $product->category?->value ?? 'leafy') === $category->value)>{{ $category->label() }}</option>
+                @endforeach
+            </select>
+            @error('category')
+                <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
+            @enderror
+        </div>
         <div class="sm:col-span-2">
             <label for="storage_guide" class="mb-1 block text-sm font-medium text-stone-700">Hướng dẫn bảo quản (hiện trên trang QR)</label>
             <textarea id="storage_guide" name="storage_guide" rows="2" class="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2">{{ old('storage_guide', $product->storage_guide) }}</textarea>

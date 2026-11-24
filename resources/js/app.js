@@ -1,4 +1,7 @@
 import Alpine from 'alpinejs';
+import pagedList from './paged-list';
+
+Alpine.data('pagedList', pagedList);
 
 // navigator.clipboard only exists on HTTPS/localhost; on http://farm2home.test fall back to execCommand.
 window.copyText = (text) => {

@@ -80,6 +80,18 @@ class DemoOrdersTest extends TestCase
         }
     }
 
+    public function test_ahead_option_adds_fewer_advance_orders_up_to_that_day(): void
+    {
+        $this->artisan('demo:orders', ['--ahead' => 16] + self::OPTIONS)->expectsOutputToContain('22/10/2026')->assertSuccessful();
+
+        $orders = $this->simulatedOrders()->get();
+        $this->assertLessThanOrEqual('2026-10-22', $orders->max('delivery_date'));
+        $farDays = $orders->where('delivery_date', '>', '2026-10-12');
+        $this->assertGreaterThan(0, $farDays->count());
+        // Ngày xa chỉ có khách đặt sớm: ít hơn hẳn ngày đã qua.
+        $this->assertLessThan($orders->where('delivery_date', '<=', '2026-10-06')->count() / 28, $farDays->count() / 10);
+    }
+
     public function test_running_again_replaces_the_simulated_data(): void
     {
         $this->artisan('demo:orders', self::OPTIONS)->assertSuccessful();

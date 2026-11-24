@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
     {--days=84 : Số ngày lịch sử, tính tới hết hôm nay}
     {--customers=150 : Số khách mô phỏng}
     {--seed=2026 : Cùng seed thì ra cùng dữ liệu}
+    {--ahead=6 : Sinh đơn đặt trước tới bao nhiêu ngày sau hôm nay}
     {--force : Cho phép chạy ở môi trường production}')]
 #[Description('Sinh đơn hàng mô phỏng (có nhịp cuối tuần) rồi chạy lại dự báo cho từng ngày đã qua')]
 class DemoOrders extends Command
@@ -38,6 +39,11 @@ class DemoOrders extends Command
      * Ngày giao D+1…D+6: càng xa càng ít khách đã đặt.
      */
     private const AHEAD_FACTOR = [1 => 0.85, 2 => 0.5, 3 => 0.35, 4 => 0.25, 5 => 0.2, 6 => 0.15];
+
+    /**
+     * Số ngày sau hôm nay có đơn đặt trước (--ahead).
+     */
+    private int $aheadDays = 6;
 
     private const PRODUCT_POPULARITY = ['RM' => 25, 'CN' => 18, 'CX' => 17, 'XL' => 18, 'HL' => 10];
 
@@ -60,6 +66,7 @@ class DemoOrders extends Command
 
         $count = max(1, (int) $this->option('count'));
         $days = max(8, (int) $this->option('days'));
+        $this->aheadDays = max(1, (int) $this->option('ahead'));
         $now = CarbonImmutable::now();
         $today = $now->startOfDay();
         $start = $today->subDays($days - 1);
@@ -81,7 +88,7 @@ class DemoOrders extends Command
         Forecast::whereDate('target_date', '>=', $start->toDateString())->update(['actual_kg' => null]);
         $filled = $forecasts->backfillActuals($today->subDay());
 
-        $this->info("Đã sinh {$count} đơn mô phỏng ({$start->format('d/m/Y')} → {$today->addDays(6)->format('d/m/Y')}).");
+        $this->info("Đã sinh {$count} đơn mô phỏng ({$start->format('d/m/Y')} → {$today->addDays($this->aheadDays)->format('d/m/Y')}).");
         $this->info("Đã chạy lại dự báo cho {$runs} ngày ({$rows} dòng), điền số thực tế cho {$filled} dòng.");
 
         return self::SUCCESS;
@@ -158,7 +165,7 @@ class DemoOrders extends Command
 
         $ordersPerDay = $this->spreadOverDays($count, $start, $today);
         $lastCodes = DB::table('orders')
-            ->whereBetween('delivery_date', [$start->toDateString(), $today->addDays(6)->toDateString()])
+            ->whereBetween('delivery_date', [$start->toDateString(), $today->addDays($this->aheadDays)->toDateString()])
             ->groupBy('delivery_date')
             ->selectRaw('delivery_date, MAX(code) as code')
             ->pluck('code', 'delivery_date');
@@ -246,10 +253,12 @@ class DemoOrders extends Command
         $historyDays = (int) $start->diffInDays($today);
         $weights = [];
 
-        for ($day = $start; $day->lte($today->addDays(6)); $day = $day->addDay()) {
+        for ($day = $start; $day->lte($today->addDays($this->aheadDays)); $day = $day->addDay()) {
             $index = (int) $start->diffInDays($day);
             $trend = 0.7 + 0.5 * min(1, $index / max(1, $historyDays));
-            $ahead = self::AHEAD_FACTOR[(int) $today->diffInDays($day)] ?? 1.0;
+            // Xa hơn 6 ngày: giảm tiếp 20% mỗi ngày, nhưng còn ít nhất 10% ngày thường (khách quen, giỏ định kỳ đặt xa).
+            $daysAhead = (int) $today->diffInDays($day);
+            $ahead = self::AHEAD_FACTOR[$daysAhead] ?? max(0.1, 0.15 * 0.8 ** ($daysAhead - 6));
             $weights[$day->toDateString()] = self::WEEKDAY_FACTOR[$day->dayOfWeekIso] * $trend * ($day->gt($today) ? $ahead : 1.0);
         }
 

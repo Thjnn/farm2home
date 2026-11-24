@@ -95,7 +95,7 @@
         @if ($orders->isNotEmpty())
             <form id="bulk-orders" method="POST" action="{{ route('admin.orders.bulk-transition') }}" x-show="selected > 0" x-cloak
                 x-transition:enter="transition duration-150 motion-reduce:transition-none" x-transition:enter-start="translate-y-2 opacity-0"
-                class="sticky bottom-0 z-20 -mx-4 mt-4 border-t border-stone-200 bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm shadow-[0_-4px_16px_rgb(0_0_0/0.06)]">
+                class="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 mt-4 rounded-xl border border-stone-200 bg-white/95 px-4 py-3 text-sm shadow-[0_4px_20px_rgb(0_0_0/0.08)] backdrop-blur">
                 @csrf
                 @method('PATCH')
                 <div class="flex flex-wrap items-center gap-2">

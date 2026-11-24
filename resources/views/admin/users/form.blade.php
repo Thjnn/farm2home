@@ -21,9 +21,9 @@
         <div class="sm:col-span-2">
             <x-field name="password" :label="$user->exists ? 'Mật khẩu mới (để trống nếu không đổi, tối thiểu 8 ký tự)' : 'Mật khẩu (tối thiểu 8 ký tự)'" type="password" autocomplete="new-password" />
         </div>
-        <div class="flex gap-3 sm:col-span-2">
+        <x-action-bar class="sm:col-span-2">
             <button class="min-h-11 rounded-lg bg-emerald-700 px-6 font-semibold text-white hover:bg-emerald-800">Lưu</button>
             <a href="{{ route('admin.users.index') }}" class="inline-flex min-h-11 items-center rounded-lg border border-stone-300 bg-white px-4 hover:bg-stone-100">Hủy</a>
-        </div>
+        </x-action-bar>
     </form>
 </x-layouts.admin>

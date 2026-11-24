@@ -1,5 +1,5 @@
 <x-layouts.admin title="Giỏ rau">
-    <p class="mb-4"><a href="{{ route('admin.baskets.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm giỏ rau</a></p>
+    <x-slot:actions><a href="{{ route('admin.baskets.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm giỏ rau</a></x-slot:actions>
 
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
         <table class="table-cards w-full min-w-[640px] text-left text-sm">

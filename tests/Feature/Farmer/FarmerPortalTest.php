@@ -3,10 +3,14 @@
 namespace Tests\Feature\Farmer;
 
 use App\Enums\HarvestPlanStatus;
+use App\Enums\OrderChannel;
+use App\Enums\OrderStatus;
 use App\Enums\SupplySource;
 use App\Models\Forecast;
 use App\Models\HarvestPlan;
+use App\Models\Order;
 use App\Models\SupplyReport;
+use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\BuildsCatalog;
 use Tests\TestCase;
@@ -43,24 +47,39 @@ class FarmerPortalTest extends TestCase
             ->assertDontSee('10/10');
     }
 
-    public function test_farmer_sees_the_expected_demand_for_own_products_with_a_harvest_warning(): void
+    public function test_farmer_sees_only_real_orders_for_own_products_in_the_next_three_days(): void
     {
-        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'predicted_total_kg' => 20.2, 'confirmed_kg' => 5]);
-        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-04', 'predicted_total_kg' => 10]);
-        Forecast::factory()->create(['product_id' => $this->cn->id, 'target_date' => '2026-10-03', 'predicted_total_kg' => 99]);
+        // Rau muống gói 0,5 kg: 03/10 = 4 + 6 gói = 5 kg; 05/10 = 2 gói = 1 kg; 06/10 ngoài 3 ngày; đơn hủy và cải ngọt không tính.
+        $this->order('2026-10-03', $this->rm->id, 4);
+        $this->order('2026-10-03', $this->rm->id, 6);
+        $this->order('2026-10-05', $this->rm->id, 2);
+        $this->order('2026-10-06', $this->rm->id, 10);
+        $this->order('2026-10-03', $this->cn->id, 20);
+        app(OrderService::class)->transition($this->order('2026-10-04', $this->rm->id, 8), OrderStatus::Cancelled, 'Khách hủy');
+        Forecast::factory()->create(['product_id' => $this->rm->id, 'target_date' => '2026-10-04', 'predicted_total_kg' => 99]);
 
-        $this->get($this->url)
-            ->assertOk()
-            ->assertSee('Tuần này khách dự kiến cần')
-            ->assertSee('khoảng 30 kg')
-            ->assertSee('thứ bảy 03/10: khoảng 20 kg', false)
+        $response = $this->get($this->url)->assertOk()
+            ->assertSee('Đơn khách đã đặt 3 ngày tới')
             ->assertSee('Chỉ cắt rau theo')
-            ->assertDontSee('Cải ngọt');
+            ->assertDontSee('dự kiến cần')
+            ->assertDontSee('99 kg');
+
+        $this->assertSame(['2026-10-03' => [$this->rm->id => 5.0], '2026-10-05' => [$this->rm->id => 1.0]], $response->viewData('placedOrders'));
     }
 
-    public function test_no_demand_box_without_forecasts(): void
+    public function test_no_orders_box_when_nobody_has_ordered(): void
     {
-        $this->get($this->url)->assertOk()->assertDontSee('Tuần này khách dự kiến cần');
+        $this->get($this->url)->assertOk()->assertDontSee('Đơn khách đã đặt');
+    }
+
+    private function order(string $date, int $productId, int $packs): Order
+    {
+        return app(OrderService::class)->place([
+            'name' => 'Khách', 'phone' => '0988000001', 'address' => '1 Lê Lợi',
+            'delivery_zone_id' => $this->zone->id, 'delivery_date' => $date, 'time_slot' => '17:00-19:00',
+            'order_type' => 'single', 'items' => [['product_id' => $productId, 'quantity' => $packs]],
+            'payment_method' => 'cod', 'data_consent' => true,
+        ], OrderChannel::Zalo);
     }
 
     public function test_unknown_token_and_inactive_farmer_get_404(): void

@@ -52,6 +52,32 @@ class ForecastService
     }
 
     /**
+     * Kg khách đã đặt (đơn chưa hủy) theo ngày giao và loại rau. Số thật, không có phần đoán.
+     *
+     * @param  list<int>  $productIds
+     * @return array<string, array<int, float>> ['Y-m-d' => [product_id => kg]], chỉ ngày/loại có đơn
+     */
+    public function placedKgByDate(array $productIds, CarbonInterface $from, CarbonInterface $to): array
+    {
+        $placed = [];
+
+        DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.status', '!=', OrderStatus::Cancelled->value)
+            ->whereIn('order_items.product_id', $productIds)
+            ->whereBetween('orders.delivery_date', [$from->toDateString(), $to->toDateString()])
+            ->groupBy('orders.delivery_date', 'order_items.product_id')
+            ->orderBy('orders.delivery_date')
+            ->selectRaw('orders.delivery_date as d, order_items.product_id, SUM(order_items.weight_kg) as kg')
+            ->get()
+            ->each(function (object $row) use (&$placed) {
+                $placed[CarbonImmutable::parse($row->d)->toDateString()][(int) $row->product_id] = round((float) $row->kg, 2);
+            });
+
+        return $placed;
+    }
+
+    /**
      * Ghi dự báo của mọi phương pháp cho các ngày giao kế tiếp. Chạy lại cùng ngày thì cập nhật.
      * $knownAt bỏ trống = đếm mọi đơn đang có; có giá trị = chỉ đơn đã tạo tới lúc đó (replay).
      */
@@ -212,7 +238,7 @@ class ForecastService
 
     /**
      * Nhu cầu dự kiến các ngày giao sắp tới của một loại rau, theo lần chạy gần nhất của phương pháp đang dùng cho kế hoạch.
-     * Dùng cho chatbot và trang nông hộ; null = chưa có dự báo cho các ngày tới.
+     * Dùng cho chatbot; null = chưa có dự báo cho các ngày tới.
      *
      * @return array{from: CarbonImmutable, to: CarbonImmutable, total: float, average: float, peak: array{date: CarbonImmutable, kg: float, confirmed: float}|null}|null
      */

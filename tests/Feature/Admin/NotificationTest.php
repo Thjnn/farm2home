@@ -67,7 +67,7 @@ class NotificationTest extends TestCase
 
         $this->actingAs($this->operator)->get('/admin')->assertOk()
             ->assertSee('adminNotifications', false)
-            ->assertSee('x-text="badges.orders"', false);
+            ->assertSee('x-text="count(badges.orders)"', false);
 
         auth()->logout();
         $this->get('/admin/notifications?since=0')->assertRedirect('/login');

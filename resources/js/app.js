@@ -5,6 +5,60 @@ import orderCart from './order-cart';
 Alpine.data('pagedList', pagedList);
 Alpine.data('orderCart', orderCart);
 
+// Menu trái khu quản trị (layouts/admin, config/admin_menu.php): nhóm đóng/mở, thu gọn chỉ còn icon, drawer trên điện thoại.
+const readStorage = (key) => {
+    try {
+        return localStorage.getItem(key);
+    } catch (e) {
+        return null;
+    }
+};
+const writeStorage = (key, value) => {
+    try {
+        localStorage.setItem(key, value);
+    } catch (e) {}
+};
+const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
+
+Alpine.data('adminSidebar', ({ defaults, active }) => {
+    let saved = {};
+    try {
+        saved = JSON.parse(readStorage('f2h-sidebar-groups') || '{}');
+    } catch (e) {}
+
+    return {
+        collapsed: readStorage('f2h-sidebar') === '1',
+        drawer: false,
+        // Nhóm chứa trang đang mở luôn tự mở khi vào trang.
+        groups: { ...defaults, ...saved, ...(active ? { [active]: true } : {}) },
+        tooltip: null,
+        toggle() {
+            this.collapsed = !this.collapsed;
+            this.tooltip = null;
+            writeStorage('f2h-sidebar', this.collapsed ? '1' : '0');
+        },
+        toggleGroup(key) {
+            this.groups[key] = !this.groups[key];
+            writeStorage('f2h-sidebar-groups', JSON.stringify(this.groups));
+        },
+        // Chế độ thu gọn (màn lớn) hiện mọi icon, bỏ qua đóng/mở nhóm.
+        shown(key) {
+            return this.groups[key] || (this.collapsed && isDesktop());
+        },
+        tip(el) {
+            if (!el || !this.collapsed || !isDesktop()) {
+                this.tooltip = null;
+                return;
+            }
+            const rect = el.getBoundingClientRect();
+            this.tooltip = { text: el.dataset.label, top: rect.top + rect.height / 2 };
+        },
+        count(value) {
+            return value > 99 ? '99+' : String(value);
+        },
+    };
+});
+
 // Nút "Lên đầu trang" (layouts/base): hiện khi đã cuộn quá 400px; mỗi lần hiện thì vẽ lại mũi tên.
 Alpine.data('backToTop', () => ({
     visible: false,

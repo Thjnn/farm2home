@@ -28,11 +28,13 @@ use App\Http\Controllers\Public\FeedbackController as PublicFeedbackController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\OrderController as PublicOrderController;
 use App\Http\Controllers\Public\OrderLookupController;
+use App\Http\Controllers\Public\ProductPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/app', AppEntryController::class)->name('app');
 
+Route::get('/rau', ProductPageController::class)->name('products.index');
 Route::get('/api/products', [CatalogController::class, 'products'])->name('api.products');
 Route::get('/api/baskets', [CatalogController::class, 'baskets'])->name('api.baskets');
 

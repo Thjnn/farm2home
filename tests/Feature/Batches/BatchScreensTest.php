@@ -122,7 +122,8 @@ class BatchScreensTest extends TestCase
 
         $response = $this->get('/admin/batches/'.$batch->id.'/labels?count=6')->assertOk();
 
-        $this->assertSame(6, substr_count($response->getContent(), '<svg'));
+        // Chỉ đếm mã QR trong khung tem; layout chung còn có biểu tượng khác (nút lên đầu trang, ẩn khi in).
+        $this->assertSame(6, preg_match_all('/w-28[^"]*">\s*<svg/', $response->getContent()));
         $response->assertSee('F2H-261003-RM-NH01')->assertSee('Rau muống')->assertSee('05/10/2026');
     }
 

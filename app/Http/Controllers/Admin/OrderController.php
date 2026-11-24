@@ -51,7 +51,16 @@ class OrderController extends Controller
             ->selectRaw('products.name as name, SUM(order_items.weight_kg) as kg')
             ->get();
 
+        // Số đơn theo trạng thái trong ngày, cho các chip lọc.
+        $statusCounts = Order::whereDate('delivery_date', $date)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->toBase()
+            ->pluck('total', 'status')
+            ->map(fn ($total) => (int) $total);
+
         return view('admin.orders.index', [
+            'statusCounts' => $statusCounts,
             'orders' => $orders,
             'demand' => $demand,
             'date' => $date,

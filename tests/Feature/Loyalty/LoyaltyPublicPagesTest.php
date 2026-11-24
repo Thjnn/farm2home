@@ -46,10 +46,10 @@ class LoyaltyPublicPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Đổi điểm lấy quà')
             ->assertSee('name="requested_reward"', false)
-            ->assertSee('Tặng bó rau nhỏ — 20 điểm')
-            ->assertSee('Miễn phí 1 lần giao hàng — 30 điểm')
-            ->assertSee('Giảm 20.000đ cho đơn — 50 điểm')
-            ->assertSee('Tặng combo rau nhỏ — 100 điểm');
+            ->assertSee('Tặng bó rau nhỏ - 20 điểm')
+            ->assertSee('Miễn phí 1 lần giao hàng - 30 điểm')
+            ->assertSee('Giảm 20.000đ cho đơn - 50 điểm')
+            ->assertSee('Tặng combo rau nhỏ - 100 điểm');
     }
 
     public function test_requested_reward_is_stored_without_touching_points_or_totals(): void

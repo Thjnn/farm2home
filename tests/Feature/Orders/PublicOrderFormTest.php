@@ -52,23 +52,28 @@ class PublicOrderFormTest extends TestCase
 
         $products = $this->get('/')->assertOk()->viewData('products')['items'];
         $this->assertContains(asset('images/products/rau-muong.jpg'), array_column($products, 'imageUrl'));
-        $this->get('/dat-hang')->assertOk()->assertSee('images/products/rau-muong.jpg');
+        // Trang đặt hàng vẽ danh sách rau bằng Alpine từ dữ liệu JSON, nên kiểm dữ liệu thay vì HTML.
+        $orderProducts = $this->get('/dat-hang')->assertOk()->viewData('products')['items'];
+        $this->assertContains(asset('images/products/rau-muong.jpg'), array_column($orderProducts, 'imageUrl'));
     }
 
     public function test_order_form_lists_catalog_and_allowed_dates(): void
     {
-        $this->get('/dat-hang')
+        $response = $this->get('/dat-hang')
             ->assertOk()
             ->assertSee('Giỏ Mini')
             ->assertSee('Rau muống')
-            ->assertSee('12.000đ')
             ->assertSee('Cụm 1 – Trung tâm')
             ->assertSee('17:00-19:00')
             ->assertSee('value="2026-10-03"', false)
             ->assertSee('value="2026-10-09"', false)
             ->assertDontSee('value="2026-10-02"', false)
             ->assertDontSee('value="2026-10-10"', false)
-            ->assertSee('Sau khi bấm Đặt hàng, bạn sẽ thấy mã QR');
+            ->assertSee('Sau khi gửi đơn, bạn sẽ thấy mã QR');
+
+        // Giá hiện bằng Alpine (money()), nên kiểm trong dữ liệu gửi cho trang.
+        $rauMuong = collect($response->viewData('products')['items'])->firstWhere('name', 'Rau muống');
+        $this->assertSame(12000, $rauMuong['price']);
     }
 
     public function test_submitting_the_same_form_repeatedly_creates_one_order(): void

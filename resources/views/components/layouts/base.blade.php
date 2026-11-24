@@ -1,4 +1,4 @@
-@props(['title' => 'FARM2HOME', 'bodyClass' => ''])
+@props(['title' => 'FARM2HOME', 'bodyClass' => '', 'backToTop' => true])
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -21,6 +21,7 @@
 <body class="min-h-screen bg-stone-50 font-sans text-stone-900 antialiased {{ $bodyClass }}">
     {{ $slot }}
 
+    @if ($backToTop)
     {{-- Lên đầu trang: hiện khi đã cuộn quá 400px. Trang có thanh dưới đáy đặt --back-to-top-offset để đẩy nút lên. --}}
     <button type="button" x-data="backToTop" x-show="visible" x-cloak @click="toTop()"
         x-transition:enter="transition duration-200 motion-reduce:transition-none" x-transition:enter-start="opacity-0 translate-y-2"
@@ -40,5 +41,6 @@
             </g>
         </svg>
     </button>
+    @endif
 </body>
 </html>

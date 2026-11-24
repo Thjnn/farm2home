@@ -42,7 +42,12 @@ class FarmerPortalController extends Controller
         return view('farmer.show', [
             'farmer' => $farmer,
             'products' => $products,
-            'outlooks' => $products->mapWithKeys(fn ($product) => [$product->id => $forecasts->outlook($product, today())])->filter(),
+            // Chỉ đưa HTX số đơn thật đã đặt, không đưa số dự báo: số đoán cả vùng dễ làm HTX chuẩn bị dư.
+            'placedOrders' => $forecasts->placedKgByDate(
+                $products->pluck('id')->all(),
+                today()->addDay(),
+                today()->addDays((int) config('farm2home.htx_orders_days_ahead')),
+            ),
             'dates' => $dates,
             'reports' => $reports,
             'locked' => collect($dates)->mapWithKeys(fn ($date) => [$date => $supply->isLocked($date)]),

@@ -34,27 +34,24 @@
         </section>
     @endif
 
-    @if ($outlooks->isNotEmpty())
-        <section aria-labelledby="outlook-heading" class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
-            <h2 id="outlook-heading" class="text-lg font-semibold">Tuần này khách dự kiến cần</h2>
-            <ul class="mt-2 space-y-2 text-base">
-                @foreach ($products as $product)
-                    @continue(! $outlooks->has($product->id))
-                    @php($outlook = $outlooks[$product->id])
-                    <li>
-                        <div class="flex justify-between gap-3"><span>{{ $product->name }}</span><span class="font-semibold">khoảng @kg(round($outlook['total'] * 2) / 2)</span></div>
-                        <p class="text-sm text-stone-600">
-                            @if ($outlook['peak'])
-                                Đông nhất {{ $outlook['peak']['date']->locale('vi')->isoFormat('dddd DD/MM') }}: khoảng @kg(round($outlook['peak']['kg'] * 2) / 2)
-                            @else
-                                Các ngày khá đều, khoảng @kg(round($outlook['average'] * 2) / 2) mỗi ngày
-                            @endif
-                        </p>
-                    </li>
+    @if ($placedOrders !== [])
+        <section aria-labelledby="placed-heading" class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+            <h2 id="placed-heading" class="text-lg font-semibold">Đơn khách đã đặt {{ config('farm2home.htx_orders_days_ahead') }} ngày tới</h2>
+            <div class="mt-2 space-y-3 text-base">
+                @foreach ($placedOrders as $date => $byProduct)
+                    <div>
+                        <p class="font-medium">{{ str(\Carbon\Carbon::parse($date)->locale('vi')->isoFormat('dddd, DD/MM'))->ucfirst() }}</p>
+                        <ul class="mt-1 space-y-1">
+                            @foreach ($products as $product)
+                                @continue(! isset($byProduct[$product->id]))
+                                <li class="flex justify-between gap-3"><span>{{ $product->name }}</span><span class="font-semibold">@kg($byProduct[$product->id])</span></li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endforeach
-            </ul>
+            </div>
             <p class="mt-3 rounded-lg bg-white px-3 py-2 text-base font-medium text-amber-900">
-                Đây là tổng số khách cả vùng dự kiến đặt, chia cho nhiều HTX. Cô chú dùng để chăm rau và báo sản lượng.
+                Đây là đơn thật khách cả vùng đã đặt, FARM2HOME chia cho nhiều HTX; khách còn đặt thêm được tới {{ config('farm2home.order.cutoff_hour') }}:00 hôm trước.
                 Chỉ cắt rau theo <strong>số kg FARM2HOME gửi</strong> trong danh sách thu hoạch.
             </p>
         </section>

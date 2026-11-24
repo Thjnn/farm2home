@@ -10,6 +10,9 @@ return [
     // Sản lượng báo cho một ngày cao hơn (kg/tuần thường có ÷ 7) × hệ số này thì đánh dấu để người vận hành hỏi lại.
     'supply_unusual_factor' => 3,
 
+    // Trang HTX hiện đơn khách đã đặt cho chừng này ngày tới (số thật, không hiện dự báo).
+    'htx_orders_days_ahead' => 3,
+
     // Báo trước bao nhiêu ngày khi chứng nhận của nông hộ sắp hết hạn.
     'certificate_warning_days' => 15,
 

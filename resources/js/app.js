@@ -59,6 +59,73 @@ Alpine.data('adminSidebar', ({ defaults, active }) => {
     };
 });
 
+// Menu "+ Tạo mới" ở thanh trên admin (components/quick-create): phím N mở, Esc đóng, mũi tên đi theo vị trí mục.
+Alpine.data('quickCreate', () => ({
+    open: false,
+    items() {
+        return [...this.$root.querySelectorAll('[data-quick-item]')];
+    },
+    toggle() {
+        this.open ? this.close() : this.show();
+    },
+    show() {
+        this.open = true;
+        this.$nextTick(() => this.items()[0]?.focus());
+    },
+    close(returnFocus = true) {
+        if (!this.open) {
+            return;
+        }
+        this.open = false;
+        if (returnFocus) {
+            this.$refs.button.focus();
+        }
+    },
+    shortcut(event) {
+        const typing = event.target.closest('input, textarea, select, [contenteditable]');
+        if (event.key === 'Escape') {
+            this.close();
+        } else if (!typing && !event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === 'n' && !this.open) {
+            event.preventDefault();
+            this.show();
+        }
+    },
+    navigate(event) {
+        const directions = { ArrowDown: [0, 1], ArrowUp: [0, -1], ArrowRight: [1, 0], ArrowLeft: [-1, 0] };
+        if (event.key === 'Home' || event.key === 'End') {
+            event.preventDefault();
+            const items = this.items();
+            (event.key === 'Home' ? items[0] : items[items.length - 1])?.focus();
+            return;
+        }
+        if (!directions[event.key]) {
+            return;
+        }
+        event.preventDefault();
+        const [dx, dy] = directions[event.key];
+        const from = document.activeElement.getBoundingClientRect();
+        const center = (rect) => [rect.left + rect.width / 2, rect.top + rect.height / 2];
+        const [fx, fy] = center(from);
+        // Mục gần nhất theo hướng bấm; mục lệch hướng bị phạt để đi đúng hàng / đúng cột.
+        let best = null;
+        let bestScore = Infinity;
+        for (const item of this.items()) {
+            const [x, y] = center(item.getBoundingClientRect());
+            const along = (x - fx) * dx + (y - fy) * dy;
+            if (item === document.activeElement || along <= 1) {
+                continue;
+            }
+            const across = Math.abs(dx ? y - fy : x - fx);
+            const score = along + across * 3;
+            if (score < bestScore) {
+                bestScore = score;
+                best = item;
+            }
+        }
+        best?.focus();
+    },
+}));
+
 // Bảng .table-cards (CSS: thành thẻ trên điện thoại): gán nhãn cột cho từng ô từ tiêu đề bảng.
 document.querySelectorAll('table.table-cards').forEach((table) => {
     const labels = [...table.querySelectorAll('thead th')].map((th) => th.textContent.trim());

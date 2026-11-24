@@ -13,7 +13,7 @@
         @enderror
     @endforeach
 
-    <section class="mb-6">
+    <section id="ghi-rau-du" class="mb-6 scroll-mt-6">
         <h2 class="mb-1 font-semibold">Lô còn tồn</h2>
         <p class="mb-3 text-sm text-stone-600">Lô còn hạn có thể để lại bán ngày mai; chỉ ghi phần thực sự dư, hỏng, hết hạn hoặc bán giảm giá.</p>
         <div class="space-y-3">

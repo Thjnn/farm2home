@@ -27,14 +27,6 @@
          @keydown.escape.window="drawer = false"
          class="min-h-screen lg:flex">
 
-        {{-- Thanh trên cho điện thoại --}}
-        <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-200 bg-white px-4 py-2 lg:hidden print:hidden">
-            <button type="button" @click="drawer = true" class="relative inline-flex size-11 items-center justify-center rounded-lg border border-stone-300 hover:bg-stone-100" aria-label="Mở menu" :aria-expanded="drawer.toString()" aria-controls="admin-sidebar">
-                {!! $icon('<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>') !!}
-                <span x-show="badges.orders + badges.feedbacks > 0" @if ($badges['orders'] + $badges['feedbacks'] === 0) x-cloak @endif class="absolute -right-1 -top-1 size-3 rounded-full bg-red-500" aria-hidden="true"></span>
-            </button>
-            <a href="{{ route('admin.dashboard') }}" class="py-1"><x-brand /></a>
-        </header>
 
         <div x-show="drawer" x-cloak x-transition.opacity @click="drawer = false" class="fixed inset-0 z-40 bg-stone-900/40 lg:hidden" aria-hidden="true"></div>
 
@@ -136,6 +128,18 @@
         </aside>
 
         <main class="min-w-0 flex-1">
+            {{-- Thanh trên: điện thoại có nút menu + logo; màn lớn hiện ngày hôm nay. Bên phải là "+ Tạo mới".
+                 Không dùng backdrop-blur: nó làm bottom sheet (fixed) của menu Tạo mới bị neo vào thanh này. --}}
+            <header class="sticky top-0 z-30 flex min-h-[61px] items-center gap-3 border-b border-stone-200 bg-white px-4 py-2 print:hidden">
+                <button type="button" @click="drawer = true" class="relative inline-flex size-11 items-center justify-center rounded-lg border border-stone-300 hover:bg-stone-100 lg:hidden" aria-label="Mở menu" :aria-expanded="drawer.toString()" aria-controls="admin-sidebar">
+                    {!! $icon('<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>') !!}
+                    <span x-show="badges.orders + badges.feedbacks > 0" @if ($badges['orders'] + $badges['feedbacks'] === 0) x-cloak @endif class="absolute -right-1 -top-1 size-3 rounded-full bg-red-500" aria-hidden="true"></span>
+                </button>
+                <a href="{{ route('admin.dashboard') }}" class="py-1 lg:hidden"><x-brand /></a>
+                <p class="hidden text-sm text-stone-600 lg:block">{{ str(today()->locale('vi')->isoFormat('dddd, DD/MM/YYYY'))->ucfirst() }}</p>
+                <div class="ml-auto"><x-quick-create /></div>
+            </header>
+
             <div class="mx-auto max-w-6xl px-4 py-6">
                 {{-- Đầu trang: tiêu đề, mô tả ngắn (subtitle) và nút chính bên phải (actions). --}}
                 <div class="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">

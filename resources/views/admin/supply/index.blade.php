@@ -16,7 +16,7 @@
     @endif
 
     @php($parsed = session('parsed'))
-    <section class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+    <section id="ghi-san-luong" class="mb-4 scroll-mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
         <h2 class="mb-1 font-semibold">Dán tin nhắn Zalo của HTX</h2>
         <p class="mb-3 text-sm text-stone-700">Máy đọc tin (ví dụ "mai có 30 ký cải ngọt") thành các dòng sản lượng. Chưa lưu gì cho tới khi bạn xem lại và bấm Xác nhận.</p>
         <form method="POST" action="{{ route('admin.supply.read', ['date' => $date]) }}" class="space-y-3">

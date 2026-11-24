@@ -1,5 +1,5 @@
 <x-layouts.admin title="Kế hoạch thu hoạch">
-    <form method="POST" action="{{ route('admin.harvest-plans.generate') }}" class="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-stone-200 bg-white p-4">
+    <form id="tao-ke-hoach" method="POST" action="{{ route('admin.harvest-plans.generate') }}" class="scroll-mt-6 mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-stone-200 bg-white p-4">
         @csrf
         <div>
             <label for="delivery_date" class="mb-1 block text-sm font-medium text-stone-700">Ngày giao</label>

@@ -66,8 +66,8 @@ Ví dụ: Thứ Năm lúc 18:15 đã có đơn 6 kg rau muống cho Thứ Bảy,
 - **Dữ liệu thật:** chưa có buổi giao thật nào. Toàn bộ dữ liệu là dữ liệu mẫu do nhóm tự nhập và 2.000 đơn mô phỏng do máy sinh.
 
 ### Kết quả chạy thử có ngày giờ
-- **Lúc chạy:** 24/11/2026, 20:13 (lệnh `php artisan demo:orders`, seed 2026)
-- **Dữ liệu:** 2.000 đơn mô phỏng từ 02/09 đến 30/11/2026, 8 loại rau. Hệ thống chạy lại dự báo cho từng ngày đã qua, mỗi lần chỉ dùng những đơn đã có tới 18:15 hôm đó.
+- **Lúc chạy:** 24/11/2026, 21:35 (lệnh `php artisan demo:orders --ahead=16`, seed 2026)
+- **Dữ liệu:** 2.000 đơn mô phỏng, buổi giao từ 02/09 đến 10/12/2026 (từ 25/11 trở đi là đơn khách đã đặt trước), 9 loại rau. Hệ thống chạy lại dự báo cho từng ngày đã qua, mỗi lần chỉ dùng những đơn đã có tới 18:15 hôm đó.
 - **Số buổi đối chiếu:** 74 buổi giao cho mỗi loại rau (dự báo trước 2 ngày).
 - **Lưu ý:** dữ liệu mô phỏng được sinh theo nhịp trong tuần, nên **không phải bằng chứng** cho chuyện ngoài thực tế.
 
@@ -82,21 +82,21 @@ Ví dụ: Thứ Năm lúc 18:15 đã có đơn 6 kg rau muống cho Thứ Bảy,
 - Sau buổi giao, hệ thống điền số thực tế và so **phần khách đặt thêm** mà mỗi cách đoán với phần khách thực sự đặt thêm.
 - Trang **Đối chiếu buổi giao** (`/admin/sessions`) hiện từng lần đối chiếu: buổi, loại rau, đơn đã có lúc đoán, cách thường đoán, mô hình đoán, thực tế, bên nào gần hơn. **Giữ cả những buổi mô hình đoán kém hơn.**
 
-### Kết quả trên dữ liệu mô phỏng (dự báo trước 2 ngày, buổi giao 10/09 → 23/11/2026)
+### Kết quả trên dữ liệu mô phỏng (dự báo trước 2 ngày, buổi giao 10/09 → 23/11/2026; số liệu chạy lại 21:35)
 
 | Cách đoán phần đặt thêm | Số lần | Lệch trung bình | WAPE |
 |---|---|---|---|
-| **Cách tính thông thường** | 592 | **2,83 kg** | **43,0%** |
-| Trung bình cùng thứ | 597 | 3,66 kg | 56,0% |
-| Trung bình trượt 7 ngày (đang dùng) | 597 | 4,36 kg | 66,5% |
-| Làm mượt hàm mũ | 597 | 4,71 kg | 71,9% |
+| **Cách tính thông thường** | 666 | **2,71 kg** | **46,9%** |
+| Trung bình cùng thứ | 671 | 3,58 kg | 61,9% |
+| Trung bình trượt 7 ngày (đang dùng) | 671 | 4,19 kg | 72,4% |
+| Làm mượt hàm mũ | 671 | 4,49 kg | 77,5% |
 
-**Đối chiếu từng buổi**, trung bình trượt 7 ngày (đang dùng) so với cách thường, 592 lần:
-- Mô hình gần hơn **196** lần
-- Cách thường gần hơn **392** lần
-- Hòa 4 lần
+**Đối chiếu từng buổi**, trung bình trượt 7 ngày (đang dùng) so với cách thường, 666 lần:
+- Mô hình gần hơn **241** lần
+- Cách thường gần hơn **413** lần
+- Hòa 12 lần
 
-Khi dự báo trước 3 ngày, kết quả cũng tương tự: cách thường có WAPE 38,2%, tốt nhất trong các mô hình là trung bình cùng thứ với 40,1%.
+Khi dự báo trước 3 ngày, kết quả cũng tương tự: cách thường có WAPE 41,6%, tốt nhất trong các mô hình là trung bình cùng thứ với 44,4%.
 
 ### Kết luận trung thực
 - Trên dữ liệu mô phỏng, **các mô hình thống kê chưa thắng cách tính thông thường**. Lý do: các mô hình đoán *tổng* lượng bán rồi trừ đi đơn đã có, còn cách thường đo thẳng *phần đặt thêm*.
@@ -187,7 +187,7 @@ Con số về dự báo dùng mục 3: trên dữ liệu mô phỏng, dự báo 
 
 > "Nhóm sẽ thử dự báo lượng khách đặt thêm, so với cách tính thông thường qua nhiều buổi giao và tính lợi ích sau khi trừ chi phí. Hiệu quả AI là nội dung cần kiểm chứng; nhóm chỉ công bố kết quả khi có dữ liệu đối chiếu."
 
-Có thể thêm: "Trên dữ liệu mô phỏng, cách tính thông thường đang cho sai số thấp hơn các mô hình thống kê (WAPE 43% so với 56–72%). Vì vậy hệ thống ghi song song cả hai cách để chọn theo dữ liệu thật."
+Có thể thêm: "Trên dữ liệu mô phỏng, cách tính thông thường đang cho sai số thấp hơn các mô hình thống kê (WAPE 47% so với 62–78%). Vì vậy hệ thống ghi song song cả hai cách để chọn theo dữ liệu thật."
 
 ---
 

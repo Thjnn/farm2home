@@ -87,8 +87,8 @@
 
 ### Task 5: Số liệu và báo cáo
 
-- [x] `php artisan migrate`, `php artisan demo:orders` (24/11/2026 20:13) để có dự báo trước 2 ngày và cách thường trên dữ liệu mô phỏng.
-- [x] Kết quả (trước 2 ngày, buổi giao 10/09 → 23/11): cách thường WAPE 43,0% thắng TB cùng thứ 56,0%, TB trượt 66,5%, làm mượt 71,9%; TB trượt gần hơn 196/592 lần.
+- [x] `php artisan migrate`, `php artisan demo:orders --ahead=16` (24/11/2026 21:35, đơn đặt trước tới 10/12) để có dự báo trước 2 ngày và cách thường trên dữ liệu mô phỏng.
+- [x] Kết quả (trước 2 ngày, buổi giao 10/09 → 23/11): cách thường WAPE 46,9% thắng TB cùng thứ 61,9%, TB trượt 72,4%, làm mượt 77,5%; TB trượt gần hơn 241/666 lần.
 - [x] `docs/BAO-CAO-GOP-Y-AI.md`, cập nhật `docs/CHUC-NANG-AI.md` mục 3.1 và 5.
 
 ## Việc còn mở

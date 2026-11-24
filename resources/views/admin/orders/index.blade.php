@@ -43,7 +43,7 @@
     @endif
 
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-        <table class="w-full min-w-[640px] text-left text-sm">
+        <table class="table-cards w-full min-w-[640px] text-left text-sm">
             <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                 <tr>
                     <th class="w-10 px-3 py-2"><input type="checkbox" data-bulk-all class="size-5" aria-label="Chọn tất cả đơn"></th>

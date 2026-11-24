@@ -16,7 +16,7 @@
     <p class="mb-4 text-sm text-stone-600">Lô được tạo khi bấm "Nhận" trong kế hoạch thu hoạch. Chỉ lô đã đạt kiểm tra mới được gán cho đơn và in tem.</p>
 
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-        <table class="w-full min-w-[680px] text-left text-sm">
+        <table class="table-cards w-full min-w-[680px] text-left text-sm">
             <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                 <tr>
                     <th class="px-3 py-2 font-medium">Mã lô</th>

@@ -59,6 +59,20 @@ Alpine.data('adminSidebar', ({ defaults, active }) => {
     };
 });
 
+// Bảng .table-cards (CSS: thành thẻ trên điện thoại): gán nhãn cột cho từng ô từ tiêu đề bảng.
+document.querySelectorAll('table.table-cards').forEach((table) => {
+    const labels = [...table.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+    table.querySelectorAll('tbody tr, tfoot tr').forEach((row) => {
+        let column = 0;
+        [...row.children].forEach((cell) => {
+            if (!cell.hasAttribute('data-label')) {
+                cell.dataset.label = labels[column] ?? '';
+            }
+            column += cell.colSpan || 1;
+        });
+    });
+});
+
 // Nút "Lên đầu trang" (layouts/base): hiện khi đã cuộn quá 400px; mỗi lần hiện thì vẽ lại mũi tên.
 Alpine.data('backToTop', () => ({
     visible: false,

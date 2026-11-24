@@ -56,7 +56,7 @@
     <section>
         <h2 class="mb-2 font-semibold">Đã ghi trong ngày</h2>
         <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-            <table class="w-full min-w-[560px] text-left text-sm">
+            <table class="table-cards w-full min-w-[560px] text-left text-sm">
                 <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                     <tr>
                         <th class="px-3 py-2 font-medium">Rau</th>

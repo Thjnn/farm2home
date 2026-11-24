@@ -137,7 +137,18 @@
 
         <main class="min-w-0 flex-1">
             <div class="mx-auto max-w-6xl px-4 py-6">
-                <h1 class="mb-4 text-xl font-semibold">{{ $title }}</h1>
+                {{-- Đầu trang: tiêu đề, mô tả ngắn (subtitle) và nút chính bên phải (actions). --}}
+                <div class="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+                    <div class="min-w-0">
+                        <h1 class="text-xl font-semibold sm:text-2xl">{{ $title }}</h1>
+                        @isset($subtitle)
+                            <p class="mt-1 text-sm text-stone-600">{{ $subtitle }}</p>
+                        @endisset
+                    </div>
+                    @isset($actions)
+                        <div class="flex flex-wrap items-center gap-2">{{ $actions }}</div>
+                    @endisset
+                </div>
                 <x-flash />
                 {{ $slot }}
             </div>

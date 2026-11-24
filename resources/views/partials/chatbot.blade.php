@@ -35,7 +35,7 @@
                 this.$nextTick(() => this.$refs.log.scrollTop = this.$refs.log.scrollHeight);
             }
         },
-    }" class="fixed bottom-4 right-4 z-40 flex flex-col items-end">
+    }" class="fixed {{ $chatbotPosition ?? 'bottom-4' }} right-4 z-40 flex flex-col items-end">
     <section x-show="open" x-cloak x-transition
              class="mb-3 flex h-[70vh] max-h-[480px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl"
              aria-label="Hỏi đáp nhanh">

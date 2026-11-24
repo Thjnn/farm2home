@@ -92,4 +92,11 @@ class CatalogApiTest extends TestCase
         $response->assertSee('Trang rau đang có')->assertSee('Trang giỏ rau');
     }
 
+    public function test_order_form_preselects_the_basket_from_the_link(): void
+    {
+        [, $second] = Basket::factory()->count(2)->sequence(['price' => 40000], ['price' => 60000])->create();
+
+        $this->get('/dat-hang?goi='.$second->id)->assertOk()->assertViewHas('preselectedBasket', fn ($basket) => $basket['id'] === $second->id);
+        $this->get('/dat-hang?goi=999999')->assertOk()->assertViewHas('preselectedBasket', null);
+    }
 }

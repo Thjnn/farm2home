@@ -66,7 +66,7 @@ class MasterDataTest extends TestCase
 
         $this->post('/admin/products', [
             'code' => 'mt', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 12000,
-            'cost_price_per_kg' => 14000, 'shelf_life_days' => 2, 'storage_guide' => 'Ngăn mát', 'is_active' => '1',
+            'cost_price_per_kg' => 14000, 'shelf_life_days' => 2, 'category' => 'leafy', 'storage_guide' => 'Ngăn mát', 'is_active' => '1',
         ])->assertRedirect('/admin/products');
 
         $product = Product::where('code', 'MT')->firstOrFail();
@@ -74,7 +74,7 @@ class MasterDataTest extends TestCase
 
         $this->put('/admin/products/'.$product->id, [
             'code' => 'MT', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 13000,
-            'cost_price_per_kg' => 14000, 'shelf_life_days' => 2,
+            'cost_price_per_kg' => 14000, 'shelf_life_days' => 2, 'category' => 'leafy',
         ])->assertRedirect('/admin/products');
 
         $this->assertSame([13000, false], [$product->refresh()->price, $product->is_active]);
@@ -84,7 +84,7 @@ class MasterDataTest extends TestCase
     {
         Storage::fake('public');
         $this->actingAs($this->admin);
-        $fields = ['code' => 'MT', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 12000, 'cost_price_per_kg' => 14000, 'shelf_life_days' => 2];
+        $fields = ['code' => 'MT', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 12000, 'cost_price_per_kg' => 14000, 'shelf_life_days' => 2, 'category' => 'leafy'];
 
         $this->post('/admin/products', [...$fields, 'photo' => UploadedFile::fake()->image('mt.jpg', 2000, 2000)])->assertRedirect('/admin/products');
 
@@ -112,7 +112,7 @@ class MasterDataTest extends TestCase
         $this->assertStringEndsWith('/images/products/rau-muong.jpg', $this->rm->imageUrl());
 
         $this->actingAs($this->admin)->put('/admin/products/'.$this->rm->id, [
-            'code' => 'RM', 'name' => 'Rau muống', 'pack_weight_kg' => '0.5', 'price' => 12000, 'cost_price_per_kg' => 14000, 'shelf_life_days' => 2,
+            'code' => 'RM', 'name' => 'Rau muống', 'pack_weight_kg' => '0.5', 'price' => 12000, 'cost_price_per_kg' => 14000, 'shelf_life_days' => 2, 'category' => 'leafy',
             'photo' => UploadedFile::fake()->image('rm.jpg'),
         ]);
 
@@ -123,7 +123,7 @@ class MasterDataTest extends TestCase
     public function test_product_photo_must_be_an_image(): void
     {
         $this->actingAs($this->admin)->post('/admin/products', [
-            'code' => 'MT', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 1, 'cost_price_per_kg' => 1, 'shelf_life_days' => 2,
+            'code' => 'MT', 'name' => 'Mồng tơi', 'pack_weight_kg' => '0.5', 'price' => 1, 'cost_price_per_kg' => 1, 'shelf_life_days' => 2, 'category' => 'leafy',
             'photo' => UploadedFile::fake()->create('mt.pdf', 100, 'application/pdf'),
         ])->assertSessionHasErrors('photo');
     }
@@ -131,7 +131,7 @@ class MasterDataTest extends TestCase
     public function test_product_code_must_be_unique(): void
     {
         $this->actingAs($this->admin)->post('/admin/products', [
-            'code' => 'RM', 'name' => 'Rau muống 2', 'pack_weight_kg' => '0.5', 'price' => 1, 'cost_price_per_kg' => 1, 'shelf_life_days' => 2,
+            'code' => 'RM', 'name' => 'Rau muống 2', 'pack_weight_kg' => '0.5', 'price' => 1, 'cost_price_per_kg' => 1, 'shelf_life_days' => 2, 'category' => 'leafy',
         ])->assertSessionHasErrors('code');
     }
 

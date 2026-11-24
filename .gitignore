@@ -31,3 +31,6 @@ docs/*.docx
 docs/*.png
 docs/note.txt
 /graphify-out
+/test-results
+/playwright-report
+/tests/screenshots

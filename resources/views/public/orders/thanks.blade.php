@@ -1,4 +1,6 @@
 <x-layouts.public title="Đã nhận đơn">
+    {{-- Đơn đã gửi xong: xoá giỏ đang lưu ở trang đặt hàng (resources/js/order-cart.js). --}}
+    <script>try { localStorage.removeItem('f2h-cart'); } catch (e) {}</script>
     <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
         <h1 class="text-xl font-semibold text-emerald-900">Đã nhận đơn của bạn</h1>
         <p class="mt-1 text-sm text-emerald-900">Chúng tôi sẽ liên hệ qua số điện thoại bạn đã để lại để xác nhận.</p>

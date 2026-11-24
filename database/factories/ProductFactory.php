@@ -21,6 +21,7 @@ class ProductFactory extends Factory
             'code' => strtoupper(fake()->unique()->lexify('???')),
             'name' => 'Rau '.fake()->unique()->word(),
             'slug' => fake()->unique()->slug(2),
+            'category' => 'leafy',
             'pack_weight_kg' => 0.5,
             'price' => 12000,
             'cost_price_per_kg' => 14000,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProductCategory;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'code', 'name', 'slug', 'pack_weight_kg', 'price', 'cost_price_per_kg',
+    'code', 'name', 'slug', 'category', 'pack_weight_kg', 'price', 'cost_price_per_kg',
     'shelf_life_days', 'storage_guide', 'image', 'is_active',
 ])]
 class Product extends Model
@@ -31,6 +32,7 @@ class Product extends Model
             'cost_price_per_kg' => 'integer',
             'shelf_life_days' => 'integer',
             'is_active' => 'boolean',
+            'category' => ProductCategory::class,
         ];
     }
 

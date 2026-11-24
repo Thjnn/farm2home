@@ -13,10 +13,10 @@ use PHPUnit\Framework\TestCase;
 
 class EnumLabelsTest extends TestCase
 {
-    public function test_there_are_18_enums_and_every_case_has_a_label(): void
+    public function test_there_are_19_enums_and_every_case_has_a_label(): void
     {
         $files = glob(dirname(__DIR__, 3).'/app/Enums/*.php');
-        $this->assertCount(18, $files);
+        $this->assertCount(19, $files);
 
         foreach ($files as $file) {
             $enum = 'App\\Enums\\'.basename($file, '.php');

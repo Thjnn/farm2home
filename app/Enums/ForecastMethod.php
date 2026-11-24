@@ -9,10 +9,12 @@ enum ForecastMethod: string
     case TreeRegression = 'tree_regression';
     case Manual = 'manual';
     case WeekdayAverage = 'weekday_average';
+    case ExtraAverage = 'extra_average';
 
     public function label(): string
     {
         return match ($this) {
+            self::ExtraAverage => 'Cách tính thông thường (mức đặt thêm trung bình)',
             self::MovingAverage => 'Trung bình trượt 7 ngày',
             self::ExpSmoothing => 'Làm mượt hàm mũ',
             self::TreeRegression => 'Cây hồi quy',
@@ -27,6 +29,7 @@ enum ForecastMethod: string
     public function plainExplanation(): string
     {
         return match ($this) {
+            self::ExtraAverage => 'Lấy số đơn đã có, cộng thêm mức khách thường đặt thêm sau thời điểm này ở 4 buổi cùng thứ trước.',
             self::MovingAverage => 'Lấy trung bình số rau bán được trong 7 ngày gần nhất.',
             self::ExpSmoothing => 'Xem các ngày đã qua, nhưng coi trọng mấy ngày gần đây hơn.',
             self::TreeRegression => 'Mô hình học máy, sẽ dùng khi có đủ dữ liệu.',

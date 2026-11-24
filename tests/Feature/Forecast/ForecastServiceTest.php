@@ -69,9 +69,9 @@ class ForecastServiceTest extends TestCase
     {
         $count = $this->forecasts->run($this->d('2026-10-01'));
 
-        // 3 sản phẩm × 7 ngày × 3 phương pháp
-        $this->assertSame(63, $count);
-        $this->assertSame(63, Forecast::count());
+        // 3 sản phẩm × 7 ngày × 4 phương pháp
+        $this->assertSame(84, $count);
+        $this->assertSame(84, Forecast::count());
         $this->assertSame(['2026-10-02', '2026-10-08'], [Forecast::min('target_date'), Forecast::max('target_date')]);
     }
 
@@ -96,6 +96,46 @@ class ForecastServiceTest extends TestCase
 
         $this->assertSame(['2.00', '2.00', '2.00'], [$tuesday->predicted_total_kg, $tuesday->lower_kg, $tuesday->upper_kg]);
         $this->assertSame('0.00', $wednesday->predicted_total_kg);
+    }
+
+    public function test_baseline_adds_the_usual_late_orders_of_the_same_weekday(): void
+    {
+        $this->forecasts->run($this->d('2026-10-01'));
+
+        // 06/10 là Thứ Ba, đoán trước 5 ngày. Thứ Ba trước (29/09): 2 kg, đơn tạo 01/10 18:30, tức sau mốc 24/09 18:30 → đặt thêm 2 kg.
+        $baseline = $this->forecasts->latestFor($this->rm, $this->d('2026-10-06'), ForecastMethod::ExtraAverage);
+        $this->assertSame(['0.00', '2.00', '2.00'], [$baseline->confirmed_kg, $baseline->predicted_extra_kg, $baseline->predicted_total_kg]);
+
+        // Đơn 29/09 đã có từ 20/09 thì không phải phần đặt thêm.
+        Order::whereDate('delivery_date', '2026-09-29')->update(['created_at' => '2026-09-20 09:00:00']);
+        $this->forecasts->run($this->d('2026-10-01'));
+
+        $this->assertSame('0.00', $this->forecasts->latestFor($this->rm, $this->d('2026-10-06'), ForecastMethod::ExtraAverage)->predicted_extra_kg);
+    }
+
+    public function test_accuracy_scores_only_the_extra_part_at_the_evaluation_lead(): void
+    {
+        $row = ['product_id' => $this->rm->id, 'target_date' => '2026-09-30', 'method' => ForecastMethod::MovingAverage, 'actual_kg' => 4];
+        // Trước 2 ngày: đã đặt 1, đoán thêm 2, thực tế thêm 3 → lệch 1 kg.
+        Forecast::factory()->create($row + ['generated_on' => '2026-09-28', 'confirmed_kg' => 1, 'predicted_extra_kg' => 2, 'predicted_total_kg' => 3]);
+        // Trước 1 ngày: không được chấm.
+        Forecast::factory()->create($row + ['generated_on' => '2026-09-29', 'confirmed_kg' => 4, 'predicted_extra_kg' => 0, 'predicted_total_kg' => 4]);
+
+        $accuracy = $this->forecasts->accuracy($this->d('2026-09-30'), $this->d('2026-09-30'));
+
+        $this->assertSame(['n' => 1, 'mae' => 1.0, 'mape' => 33.3, 'wape' => 33.3, 'bias' => -1.0], $accuracy['moving_average']);
+    }
+
+    public function test_session_comparison_pairs_model_and_baseline_of_the_same_run(): void
+    {
+        $row = ['product_id' => $this->rm->id, 'target_date' => '2026-09-30', 'generated_on' => '2026-09-28', 'confirmed_kg' => 1, 'actual_kg' => 4];
+        Forecast::factory()->create($row + ['method' => ForecastMethod::MovingAverage, 'predicted_extra_kg' => 2.5, 'predicted_total_kg' => 3.5]);
+        Forecast::factory()->create($row + ['method' => ForecastMethod::ExtraAverage, 'predicted_extra_kg' => 1, 'predicted_total_kg' => 2]);
+
+        $rows = $this->forecasts->sessionComparison($this->d('2026-09-01'), $this->d('2026-09-30'), ForecastMethod::MovingAverage);
+
+        $this->assertCount(1, $rows);
+        $this->assertSame([1.0, 2.5, 3.0, 'model'], [$rows[0]['baseline'], $rows[0]['model'], $rows[0]['actual'], $rows[0]['winner']]);
     }
 
     public function test_known_at_ignores_orders_created_after_the_run(): void
@@ -131,7 +171,7 @@ class ForecastServiceTest extends TestCase
         $this->order('2026-10-03', 4);
         $this->forecasts->run($this->d('2026-10-01'));
 
-        $this->assertSame(63, Forecast::count());
+        $this->assertSame(84, Forecast::count());
         $this->assertSame('2.00', $this->forecasts->latestFor($this->rm, $this->d('2026-10-03'), ForecastMethod::MovingAverage)->confirmed_kg);
     }
 
@@ -151,8 +191,8 @@ class ForecastServiceTest extends TestCase
 
         $updated = $this->forecasts->backfillActuals($this->d('2026-10-02'));
 
-        // 3 sản phẩm × 3 phương pháp cho ngày 02/10
-        $this->assertSame(9, $updated);
+        // 3 sản phẩm × 4 phương pháp cho ngày 02/10
+        $this->assertSame(12, $updated);
         $this->assertSame('3.00', $this->forecasts->latestFor($this->rm, $this->d('2026-10-02'), ForecastMethod::MovingAverage)->actual_kg);
         $this->assertSame('0.00', $this->forecasts->latestFor($this->cn, $this->d('2026-10-02'), ForecastMethod::MovingAverage)->actual_kg);
         $this->assertNull($this->forecasts->latestFor($this->rm, $this->d('2026-10-03'), ForecastMethod::MovingAverage)->actual_kg);
@@ -168,9 +208,9 @@ class ForecastServiceTest extends TestCase
     public function test_artisan_commands(): void
     {
         $this->artisan('forecast:run', ['date' => '2026-10-01'])->assertSuccessful();
-        $this->assertSame(63, Forecast::count());
+        $this->assertSame(84, Forecast::count());
 
         $this->artisan('forecast:backfill', ['date' => '2026-10-02'])->assertSuccessful();
-        $this->assertSame(9, Forecast::whereNotNull('actual_kg')->count());
+        $this->assertSame(12, Forecast::whereNotNull('actual_kg')->count());
     }
 }

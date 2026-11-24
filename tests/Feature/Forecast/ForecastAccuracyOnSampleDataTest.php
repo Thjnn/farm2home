@@ -17,10 +17,10 @@ class ForecastAccuracyOnSampleDataTest extends TestCase
     {
         $this->seed(DemoSeeder::class);
 
-        $accuracy = app(ForecastService::class)->accuracy(CarbonImmutable::parse('2026-09-17'), CarbonImmutable::parse('2026-10-01'));
+        $accuracy = app(ForecastService::class)->accuracy(CarbonImmutable::parse('2026-09-17'), CarbonImmutable::parse('2026-10-01'), leadDays: 1);
 
-        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 51.4, 'wape' => 39.1, 'bias' => 0.18], $accuracy['moving_average']);
-        $this->assertSame(['n' => 105, 'mae' => 0.7, 'mape' => 56.6, 'wape' => 42.1, 'bias' => 0.23], $accuracy['exp_smoothing']);
+        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 223.4, 'wape' => 172.9, 'bias' => 0.18], $accuracy['moving_average']);
+        $this->assertSame(['n' => 105, 'mae' => 0.7, 'mape' => 245.1, 'wape' => 186.3, 'bias' => 0.23], $accuracy['exp_smoothing']);
     }
 
     public function test_demand_on_sample_data(): void

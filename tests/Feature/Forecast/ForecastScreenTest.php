@@ -19,6 +19,8 @@ class ForecastScreenTest extends TestCase
         parent::setUp();
         $this->travelTo('2026-10-02 10:00:00');
         $this->seed(DemoSeeder::class);
+        // Dự báo trong file mẫu đều làm trước 1 ngày.
+        config(['farm2home.forecast.evaluation_lead_days' => 1]);
         $this->actingAs(User::where('email', 'operator@farm2home.vn')->firstOrFail());
     }
 
@@ -41,8 +43,8 @@ class ForecastScreenTest extends TestCase
     {
         $this->post('/admin/forecasts/run')->assertRedirect()->assertSessionHas('status');
 
-        // 5 sản phẩm đang bán × 7 ngày × 3 phương pháp
-        $this->assertSame(105, Forecast::whereDate('generated_on', '2026-10-02')->count());
+        // 5 sản phẩm đang bán × 7 ngày × 4 phương pháp
+        $this->assertSame(140, Forecast::whereDate('generated_on', '2026-10-02')->count());
     }
 
     public function test_method_can_be_switched_and_unknown_method_falls_back_to_default(): void

@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PackagingReturnController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\SessionReportController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Admin\UserController;
@@ -77,6 +78,8 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::get('forecasts', [ForecastController::class, 'index'])->name('forecasts.index');
     Route::post('forecasts/run', [ForecastController::class, 'run'])->name('forecasts.run');
     Route::post('forecasts/backfill', [ForecastController::class, 'backfill'])->name('forecasts.backfill');
+    Route::get('sessions', [SessionReportController::class, 'index'])->name('sessions.index');
+    Route::post('sessions/unmet', [SessionReportController::class, 'storeUnmet'])->name('sessions.unmet');
 
     Route::get('harvest-plans', [HarvestPlanController::class, 'index'])->name('harvest-plans.index');
     Route::post('harvest-plans/generate', [HarvestPlanController::class, 'generate'])->name('harvest-plans.generate');

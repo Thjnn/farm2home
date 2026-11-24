@@ -12,6 +12,8 @@ use App\Models\Feedback;
 use App\Models\HarvestPlanItem;
 use App\Models\PackagingReturn;
 use App\Models\PointTransaction;
+use App\Models\Product;
+use App\Models\UnmetDemand;
 use App\Models\WasteLog;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -40,6 +42,60 @@ class KpiService
             // Số lần operator chốt khác số gợi ý.
             'adjusted_items' => (clone $items)->whereColumn('final_kg', '!=', 'suggested_kg')->count(),
         ];
+    }
+
+    /**
+     * Kết quả từng buổi giao × loại rau: khách yêu cầu, giao được, còn dư/hỏng, phần khách muốn mua mà hết hàng.
+     * Tiền: rau dư tính theo giá thu mua; hết hàng tính theo lãi gộp mỗi kg (giá bán − giá thu mua). Mới nhất trước.
+     *
+     * @return list<array{date: string, product: Product, requested_kg: float, delivered_kg: ?float, surplus_kg: float, unmet_kg: float, surplus_vnd: int, missed_margin_vnd: int}>
+     */
+    public function sessions(CarbonInterface $from, CarbonInterface $to): array
+    {
+        $dates = $this->dates($from, $to);
+        $key = fn (object $row) => CarbonImmutable::parse($row->d)->toDateString().'#'.$row->product_id;
+
+        $orders = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.status', '!=', OrderStatus::Cancelled->value)
+            ->whereBetween('orders.delivery_date', $dates)
+            ->groupBy('orders.delivery_date', 'order_items.product_id')
+            ->selectRaw('orders.delivery_date as d, order_items.product_id, SUM(order_items.weight_kg) as requested, '
+                .'SUM(order_items.fulfilled_quantity * order_items.weight_kg / order_items.quantity) as delivered, '
+                .'SUM(order_items.fulfilled_quantity IS NULL) as unrecorded')
+            ->get()->keyBy($key);
+        $waste = WasteLog::whereBetween('log_date', $dates)
+            ->groupBy('log_date', 'product_id')
+            ->selectRaw('log_date as d, product_id, SUM(quantity_kg) as kg')
+            ->toBase()->get()->keyBy($key);
+        $unmet = UnmetDemand::whereBetween('delivery_date', $dates)
+            ->toBase()->get(['delivery_date as d', 'product_id', 'quantity_kg as kg'])->keyBy($key);
+
+        $products = Product::whereIn('id', $orders->pluck('product_id')->merge($waste->pluck('product_id'))->merge($unmet->pluck('product_id'))->unique())
+            ->get()->keyBy('id');
+
+        return $orders->keys()->merge($waste->keys())->merge($unmet->keys())->unique()->sortDesc()
+            ->map(function (string $sessionKey) use ($orders, $waste, $unmet, $products) {
+                [$date, $productId] = explode('#', $sessionKey);
+                $product = $products[(int) $productId];
+                $order = $orders->get($sessionKey);
+                $surplus = round((float) ($waste->get($sessionKey)->kg ?? 0), 2);
+                $unmetKg = round((float) ($unmet->get($sessionKey)->kg ?? 0), 2);
+                $marginPerKg = max(0, $product->price / max(0.001, (float) $product->pack_weight_kg) - $product->cost_price_per_kg);
+
+                return [
+                    'date' => $date,
+                    'product' => $product,
+                    'requested_kg' => round((float) ($order->requested ?? 0), 2),
+                    // null = chưa ghi đủ số gói thực giao cho buổi này.
+                    'delivered_kg' => $order === null ? 0.0 : ((int) $order->unrecorded > 0 ? null : round((float) $order->delivered, 2)),
+                    'surplus_kg' => $surplus,
+                    'unmet_kg' => $unmetKg,
+                    'surplus_vnd' => (int) round($surplus * $product->cost_price_per_kg),
+                    'missed_margin_vnd' => (int) round($unmetKg * $marginPerKg),
+                ];
+            })
+            ->values()->all();
     }
 
     /**

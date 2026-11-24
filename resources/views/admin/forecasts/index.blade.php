@@ -51,7 +51,8 @@
                     <span class="text-xs text-stone-600">đoán đúng</span>
                 </div>
                 <ul class="min-w-0 flex-1 space-y-1 leading-relaxed">
-                    <li>Cứ <strong>100 kg</strong> rau thật sự giao, máy đoán đúng khoảng <strong>{{ number_format($hitRate, 0) }} kg</strong>.</li>
+                    <li>Chỉ chấm phần <strong>khách đặt thêm</strong> sau lúc đoán ({{ config('farm2home.forecast.evaluation_lead_days') }} ngày trước buổi giao); phần đơn đã có thì không cần đoán.</li>
+                    <li>Cứ <strong>100 kg</strong> khách đặt thêm, máy đoán đúng khoảng <strong>{{ number_format($hitRate, 0) }} kg</strong>.</li>
                     <li>Mỗi loại rau mỗi ngày, máy đoán lệch trung bình <strong>@kg($current['mae'])</strong>.</li>
                     <li>
                         @if (abs($current['bias']) < 0.1)
@@ -64,7 +65,7 @@
                     </li>
                 </ul>
             </div>
-            <p class="mt-2 text-xs text-stone-500">Dựa trên {{ $current['n'] }} lần đoán đã có số thật để so (mỗi loại rau mỗi ngày là 1 lần).</p>
+            <p class="mt-2 text-xs text-stone-500">Dựa trên {{ $current['n'] }} lần đoán đã có số thật để so (mỗi loại rau mỗi ngày là 1 lần). <a href="{{ route('admin.sessions.index') }}" class="underline">So với cách tính thông thường, từng buổi</a></p>
 
             @if ($worstDays !== [])
                 <div class="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm leading-relaxed text-stone-800" role="alert">
@@ -324,10 +325,10 @@
                     </table>
                 </div>
                 <ul class="mt-3 list-disc space-y-1 pl-5 text-xs text-stone-600">
-                    <li><strong>Đoán đúng</strong> = 100% − WAPE. Chỉ chấm con số đoán trước 1 ngày, tức con số dùng để quyết định thu hoạch.</li>
+                    <li><strong>Đoán đúng</strong> = 100% − WAPE. Chỉ chấm con số đoán trước {{ config('farm2home.forecast.evaluation_lead_days') }} ngày và chỉ phần khách đặt thêm. Trước 1 ngày (sau giờ chốt) đơn đã đủ, không còn gì để đoán.</li>
                     <li><strong>MAE</strong>: mỗi lần đoán lệch trung bình bao nhiêu kg.</li>
                     <li><strong>MAPE</strong>: mỗi lần lệch bao nhiêu % so với thực tế. Rau bán ít (1–2 kg) lệch 1 kg đã thành 50%, nên số này thường cao.</li>
-                    <li><strong>WAPE</strong>: tổng kg đoán lệch chia tổng kg thực tế. Đây là thước đo chính để chọn cách đoán; càng thấp càng tốt.</li>
+                    <li><strong>WAPE</strong>: tổng kg đoán lệch chia tổng kg khách thực sự đặt thêm. Đây là thước đo chính để chọn cách đoán; càng thấp càng tốt.</li>
                     <li><strong>Lệch dư/thiếu</strong>: dương (+) là hay đoán dư, âm (−) là hay đoán thiếu. Càng gần 0 càng tốt.</li>
                 </ul>
             @endif

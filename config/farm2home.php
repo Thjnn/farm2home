@@ -24,6 +24,11 @@ return [
         'history_days' => 28,
         // Mục tiêu "% đoán đúng" (100 − WAPE); thấp hơn thì trang dự báo hiện cảnh báo.
         'target_hit_rate' => 80,
+        // Chấm điểm dự báo làm trước buổi giao bao nhiêu ngày. Trước 1 ngày (sau 18:00) đơn đã chốt,
+        // không còn gì để đoán; trước 2 ngày là lúc HTX cần biết để giữ rau và xếp người thu hoạch.
+        'evaluation_lead_days' => 2,
+        // Cách tính thông thường: trung bình phần khách đặt thêm của chừng này buổi cùng thứ gần nhất.
+        'baseline_sessions' => 4,
     ],
 
     'order' => [

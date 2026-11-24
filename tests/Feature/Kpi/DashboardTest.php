@@ -38,12 +38,13 @@ class DashboardTest extends TestCase
     public function test_dashboard_shows_all_five_kpi_groups_for_the_sample_period(): void
     {
         $this->seed(DemoSeeder::class);
+        config(['farm2home.forecast.evaluation_lead_days' => 1]);
         $this->actingAs(User::where('email', 'operator@farm2home.vn')->firstOrFail());
 
         $this->get('/admin?from=2026-09-10&to=2026-10-03')
             ->assertOk()
             // Dự báo
-            ->assertSee('Dự báo')->assertSee('WAPE')->assertSee('39,1%')->assertSee('38 / 112')
+            ->assertSee('Dự báo')->assertSee('WAPE')->assertSee('172,9%')->assertSee('38 / 112')
             // Khách hàng
             ->assertSee('Khách hàng')->assertSee('98,3%')->assertSee('96%')->assertSee('4,64')->assertSee('38 / 45')
             // Kinh tế

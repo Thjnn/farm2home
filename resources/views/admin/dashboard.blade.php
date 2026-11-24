@@ -170,7 +170,7 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        <p class="mt-2 text-xs text-stone-500">Dự báo trước 1 ngày. WAPE = tổng sai số tuyệt đối / tổng thực tế.</p>
+                        <p class="mt-2 text-xs text-stone-500">Dự báo làm trước buổi giao {{ config('farm2home.forecast.evaluation_lead_days') }} ngày, chỉ chấm phần khách đặt thêm sau lúc đoán. WAPE = tổng sai số / tổng kg đặt thêm. <a href="{{ route('admin.sessions.index') }}" class="underline">Đối chiếu từng buổi</a></p>
                     @endif
                 </div>
             </div>

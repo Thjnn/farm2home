@@ -32,7 +32,7 @@ class ForecastController extends Controller
 
         $accuracy = $forecasts->accuracy(today()->subDays(14), today());
         $wape = $accuracy[$method->value]['wape'] ?? null;
-        $worstDays = $wape !== null && 100 - $wape < config('farm2home.forecast.target_hit_rate')
+        $worstDays = $wape !== null && max(0, 100 - $wape) < config('farm2home.forecast.target_hit_rate')
             ? $forecasts->worstDays(today()->subDays(14), today(), $method)
             : [];
         // Lịch tháng: ?month=2026-10, ?day=2026-10-03 (mặc định hôm nay).

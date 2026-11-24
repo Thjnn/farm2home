@@ -26,6 +26,8 @@ class KpiServiceOnSampleDataTest extends TestCase
         parent::setUp();
         $this->travelTo('2026-10-03 21:00:00');
         $this->seed(DemoSeeder::class);
+        // Dự báo trong file mẫu đều làm trước 1 ngày.
+        config(['farm2home.forecast.evaluation_lead_days' => 1]);
         $this->kpi = app(KpiService::class);
         $this->from = CarbonImmutable::parse('2026-09-10');
         $this->to = CarbonImmutable::parse('2026-10-03');
@@ -35,7 +37,7 @@ class KpiServiceOnSampleDataTest extends TestCase
     {
         $kpi = $this->kpi->forecast($this->from, $this->to);
 
-        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 51.4, 'wape' => 39.1, 'bias' => 0.18], $kpi['accuracy']['moving_average']);
+        $this->assertSame(['n' => 105, 'mae' => 0.65, 'mape' => 223.4, 'wape' => 172.9, 'bias' => 0.18], $kpi['accuracy']['moving_average']);
         $this->assertSame(112, $kpi['plan_items']);
         $this->assertSame(38, $kpi['adjusted_items']);
     }

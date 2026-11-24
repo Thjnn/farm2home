@@ -71,10 +71,16 @@ class ForecastService
         $from = $first->gt($windowStart) ? $first : $windowStart;
 
         $rows = [];
+        $moment = CarbonImmutable::parse($knownAt ?? CarbonImmutable::now());
+        $sessions = (int) config('farm2home.forecast.baseline_sessions');
 
         foreach (Product::where('is_active', true)->orderBy('id')->get() as $product) {
             $historyByDate = $from->gt($generatedOn) ? [] : $this->demandHistory($product, $from, $generatedOn);
             $history = array_values($historyByDate);
+            $pastOrders = $this->demandQuery($product)
+                ->whereBetween('orders.delivery_date', [$from->toDateString(), $generatedOn->toDateString()])
+                ->get(['orders.delivery_date as d', 'orders.created_at as at', 'order_items.weight_kg as kg'])
+                ->groupBy('d');
 
             $models = [
                 ForecastMethod::MovingAverage->value => ForecastCalculator::movingAverage($history, (int) config('farm2home.forecast.window_days')),
@@ -85,8 +91,16 @@ class ForecastService
                 $target = $generatedOn->addDays($offset);
                 $confirmed = $this->confirmedKg($product, $target, $knownAt);
 
+                // Cách tính thông thường: đã đặt + mức khách thường đặt thêm sau thời điểm này ở các buổi cùng thứ trước.
+                $extra = ForecastCalculator::movingAverage($this->pastExtras($pastOrders, $target, $from, $offset, $moment, $sessions), $sessions);
+
                 $perTarget = $models + [
                     ForecastMethod::WeekdayAverage->value => ForecastCalculator::weekdayAverage($historyByDate, $target),
+                    ForecastMethod::ExtraAverage->value => [
+                        'predicted' => $confirmed + $extra['predicted'],
+                        'lower' => $confirmed + $extra['lower'],
+                        'upper' => $confirmed + $extra['upper'],
+                    ],
                 ];
 
                 foreach ($perTarget as $method => $model) {
@@ -149,21 +163,51 @@ class ForecastService
     }
 
     /**
-     * Sai số của từng phương pháp cho các dự báo được tạo trước ngày giao $leadDays ngày.
+     * Sai số của từng phương pháp, chỉ chấm phần khách đặt thêm (phần đơn đã có thì không cần đoán),
+     * cho các dự báo được tạo trước ngày giao $leadDays ngày (mặc định theo config).
      *
      * @return array<string, array{n: int, mae: ?float, mape: ?float, wape: ?float, bias: ?float}>
      */
-    public function accuracy(CarbonInterface $from, CarbonInterface $to, int $leadDays = 1): array
+    public function accuracy(CarbonInterface $from, CarbonInterface $to, ?int $leadDays = null): array
     {
-        return Forecast::whereNotNull('actual_kg')
-            ->whereBetween('target_date', [$from->toDateString(), $to->toDateString()])
-            ->whereRaw('DATEDIFF(target_date, generated_on) = ?', [$leadDays])
-            ->get(['method', 'predicted_total_kg', 'actual_kg'])
+        return $this->evaluated($from, $to, $leadDays)
             ->groupBy(fn (Forecast $forecast) => $forecast->method->value)
             ->map(fn ($group) => ForecastCalculator::errors(
-                $group->map(fn (Forecast $forecast) => [(float) $forecast->predicted_total_kg, (float) $forecast->actual_kg])->values()->all()
+                $group->map(fn (Forecast $forecast) => [(float) $forecast->predicted_extra_kg, $forecast->actualExtraKg()])->values()->all()
             ))
             ->all();
+    }
+
+    /**
+     * Đối chiếu từng buổi giao × loại rau: phần đặt thêm do cách tính thông thường và do $model đoán
+     * (cùng một lần chạy, trước khi biết kết quả) so với phần khách thực sự đặt thêm. Mới nhất trước.
+     *
+     * @return Collection<int, array{date: CarbonImmutable, product: Product, confirmed: float, baseline: float, model: float, actual: float, winner: 'model'|'baseline'|'tie'}>
+     */
+    public function sessionComparison(CarbonInterface $from, CarbonInterface $to, ForecastMethod $model, ?int $leadDays = null): Collection
+    {
+        return $this->evaluated($from, $to, $leadDays, [ForecastMethod::ExtraAverage, $model])
+            ->groupBy(fn (Forecast $forecast) => $forecast->target_date->toDateString().'#'.$forecast->product_id)
+            ->filter(fn (Collection $pair) => $pair->count() === 2)
+            ->map(function (Collection $pair) use ($model) {
+                $baseline = $pair->first(fn (Forecast $forecast) => $forecast->method === ForecastMethod::ExtraAverage);
+                $modelRow = $pair->first(fn (Forecast $forecast) => $forecast->method === $model);
+                $actual = $baseline->actualExtraKg();
+                $gap = abs((float) $modelRow->predicted_extra_kg - $actual) - abs((float) $baseline->predicted_extra_kg - $actual);
+
+                return [
+                    'date' => CarbonImmutable::parse($baseline->target_date),
+                    'product' => $baseline->product,
+                    'confirmed' => (float) $baseline->confirmed_kg,
+                    'baseline' => (float) $baseline->predicted_extra_kg,
+                    'model' => (float) $modelRow->predicted_extra_kg,
+                    'actual' => $actual,
+                    // Lệch nhau dưới 0,05 kg coi như hòa.
+                    'winner' => abs($gap) < 0.05 ? 'tie' : ($gap < 0 ? 'model' : 'baseline'),
+                ];
+            })
+            ->sortByDesc(fn (array $row) => $row['date']->toDateString().'#'.str_pad((string) $row['product']->id, 6, '0', STR_PAD_LEFT))
+            ->values();
     }
 
     /**
@@ -213,8 +257,9 @@ class ForecastService
      *
      * @return list<array{date: CarbonImmutable, predicted: float, actual: float, cancelled: int}>
      */
-    public function worstDays(CarbonInterface $from, CarbonInterface $to, ForecastMethod $method, int $limit = 3, int $leadDays = 1): array
+    public function worstDays(CarbonInterface $from, CarbonInterface $to, ForecastMethod $method, int $limit = 3, ?int $leadDays = null): array
     {
+        $leadDays ??= (int) config('farm2home.forecast.evaluation_lead_days');
         $days = Forecast::whereNotNull('actual_kg')
             ->whereBetween('target_date', [$from->toDateString(), $to->toDateString()])
             ->whereRaw('DATEDIFF(target_date, generated_on) = ?', [$leadDays])
@@ -309,6 +354,44 @@ class ForecastService
                 'items' => $items->sortBy('product_id')->values(),
             ])
             ->all();
+    }
+
+    /**
+     * Dự báo đã có số thực tế, tạo trước ngày giao đúng $leadDays ngày.
+     *
+     * @param  list<ForecastMethod>|null  $methods
+     * @return Collection<int, Forecast>
+     */
+    private function evaluated(CarbonInterface $from, CarbonInterface $to, ?int $leadDays, ?array $methods = null): Collection
+    {
+        return Forecast::with('product')
+            ->whereNotNull('actual_kg')
+            ->whereBetween('target_date', [$from->toDateString(), $to->toDateString()])
+            ->whereRaw('DATEDIFF(target_date, generated_on) = ?', [$leadDays ?? (int) config('farm2home.forecast.evaluation_lead_days')])
+            ->when($methods, fn ($query) => $query->whereIn('method', $methods))
+            ->get()
+            ->toBase();
+    }
+
+    /**
+     * Kg khách đặt thêm ở các buổi cùng thứ trước $target, tính từ cùng thời điểm (trước buổi giao $leadDays ngày,
+     * cùng giờ với $moment) tới khi chốt đơn. Mới nhất trước, tối đa $sessions buổi, không lấy buổi trước $from.
+     *
+     * @param  Collection<string, Collection<int, object{d: string, at: ?string, kg: string}>>  $ordersByDate
+     * @return list<float>
+     */
+    private function pastExtras(Collection $ordersByDate, CarbonImmutable $target, CarbonImmutable $from, int $leadDays, CarbonImmutable $moment, int $sessions): array
+    {
+        $extras = [];
+
+        for ($day = $target->subWeek(); $day->gte($from) && count($extras) < $sessions; $day = $day->subWeek()) {
+            $knownBy = $day->subDays($leadDays)->setTimeFrom($moment)->format('Y-m-d H:i:s');
+            $orders = $ordersByDate->get($day->toDateString(), collect());
+
+            $extras[] = round((float) $orders->filter(fn (object $row) => $row->at === null || $row->at > $knownBy)->sum('kg'), 2);
+        }
+
+        return $extras;
     }
 
     private function demandQuery(Product $product): Builder

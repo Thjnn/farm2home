@@ -36,6 +36,14 @@ class Forecast extends Model
         ];
     }
 
+    /**
+     * Phần khách thực sự đặt thêm sau lúc dự báo (thực tế − đã đặt lúc đó). Đơn bị hủy sau đó không làm số này âm.
+     */
+    public function actualExtraKg(): ?float
+    {
+        return $this->actual_kg === null ? null : max(0.0, round((float) $this->actual_kg - (float) $this->confirmed_kg, 2));
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

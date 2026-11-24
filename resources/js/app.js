@@ -5,6 +5,28 @@ import orderCart from './order-cart';
 Alpine.data('pagedList', pagedList);
 Alpine.data('orderCart', orderCart);
 
+// Nút "Lên đầu trang" (layouts/base): hiện khi đã cuộn quá 400px; mỗi lần hiện thì vẽ lại mũi tên.
+Alpine.data('backToTop', () => ({
+    visible: false,
+    init() {
+        const update = () => (this.visible = window.scrollY > 400);
+        window.addEventListener('scroll', update, { passive: true });
+        this.$watch('visible', (visible) => visible && this.drawArrow());
+        update();
+    },
+    drawArrow() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            this.$refs.arrow.querySelectorAll('path').forEach((path) => path.setAttribute('stroke-dashoffset', '0'));
+            return;
+        }
+        this.$refs.arrow.querySelectorAll('animate').forEach((animation) => animation.beginElement());
+    },
+    toTop() {
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    },
+}));
+
 // navigator.clipboard only exists on HTTPS/localhost; on http://farm2home.test fall back to execCommand.
 window.copyText = (text) => {
     if (navigator.clipboard && window.isSecureContext) {

@@ -381,5 +381,7 @@
             check();
         })();
     </script>
+    {{-- Nút Lên đầu trang nằm trên nút Hỏi đáp, cả hai trên thanh dưới đáy. --}}
+    <style>:root { --back-to-top-offset: 11rem; }</style>
     @include('partials.chatbot', ['chatbotPosition' => 'bottom-28'])
 </x-layouts.public>

@@ -20,5 +20,25 @@
 </head>
 <body class="min-h-screen bg-stone-50 font-sans text-stone-900 antialiased {{ $bodyClass }}">
     {{ $slot }}
+
+    {{-- Lên đầu trang: hiện khi đã cuộn quá 400px. Trang có thanh dưới đáy đặt --back-to-top-offset để đẩy nút lên. --}}
+    <button type="button" x-data="backToTop" x-show="visible" x-cloak @click="toTop()"
+        x-transition:enter="transition duration-200 motion-reduce:transition-none" x-transition:enter-start="opacity-0 translate-y-2"
+        x-transition:leave="transition duration-150 motion-reduce:transition-none" x-transition:leave-end="opacity-0 translate-y-2"
+        aria-label="Lên đầu trang" title="Lên đầu trang"
+        style="bottom: calc(var(--back-to-top-offset, 1rem) + env(safe-area-inset-bottom))"
+        class="fixed right-4 z-30 flex size-12 items-center justify-center rounded-full border border-stone-200 bg-white/95 text-emerald-800 shadow-lg backdrop-blur hover:-translate-y-0.5 hover:bg-emerald-50 active:scale-95 motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 print:hidden">
+        {{-- Thân mũi tên vẽ từ dưới lên (0,3s) rồi tới đầu mũi tên (0,2s); JS gọi beginElement() mỗi lần nút hiện. --}}
+        <svg x-ref="arrow" class="size-6" viewBox="0 0 24 24" aria-hidden="true">
+            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2">
+                <path stroke-dasharray="16" stroke-dashoffset="16" d="M12 19l0 -13.5">
+                    <animate begin="indefinite" fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="16;0"/>
+                </path>
+                <path stroke-dasharray="10" stroke-dashoffset="10" d="M12 5l5 5M12 5l-5 5">
+                    <animate begin="indefinite" fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="10;10;0" keyTimes="0;0.6;1"/>
+                </path>
+            </g>
+        </svg>
+    </button>
 </body>
 </html>

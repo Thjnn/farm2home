@@ -15,6 +15,7 @@ use App\Models\SupplyReport;
 use App\Models\User;
 use App\Support\Format;
 use App\Support\HarvestMath;
+use App\Support\OrderWindow;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use DomainException;
@@ -103,10 +104,12 @@ class HarvestPlanService
 
             $method = ForecastMethod::from(config('farm2home.forecast.default_method'));
             $margin = (float) $plan->safety_margin_pct;
+            // Qua giờ chốt thì khách không đặt thêm được nữa: chỉ thu theo đơn + biên an toàn, không cộng phần dự báo.
+            $ordersClosed = OrderWindow::earliest(CarbonImmutable::now(), (int) config('farm2home.order.cutoff_hour'))->gt($date);
 
             foreach (Product::where('is_active', true)->orderBy('id')->get() as $product) {
                 $confirmed = $this->forecasts->confirmedKg($product, $date);
-                $forecast = $this->forecasts->latestFor($product, $date, $method);
+                $forecast = $ordersClosed ? null : $this->forecasts->latestFor($product, $date, $method);
                 $extra = $forecast === null ? 0.0 : max(0.0, round((float) $forecast->predicted_total_kg - $confirmed, 2));
                 $stock = $this->batches->availableStockKg($product, $date);
                 $suggested = HarvestMath::suggestedKg($confirmed, $extra, $stock, $margin);

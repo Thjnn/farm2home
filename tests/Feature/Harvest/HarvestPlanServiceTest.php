@@ -83,16 +83,33 @@ class HarvestPlanServiceTest extends TestCase
 
     public function test_forecast_extra_is_added_on_top_of_placed_orders(): void
     {
+        $this->rmForecastWithExtra();
+        $this->travelTo('2026-10-02 17:00:00');
+
+        $plan = $this->plans->generateDraft($this->date);
+
+        // Trước giờ chốt: (7,5 + 1,5) × 1,1 = 9,9 → 10,0
+        $this->assertSame(10.0, (float) $plan->items->where('product_id', $this->rm->id)->sum('suggested_kg'));
+        $this->assertSame('1.50', $plan->items->firstWhere('product_id', $this->rm->id)->forecast_extra_kg);
+    }
+
+    public function test_forecast_extra_is_ignored_once_orders_for_that_day_are_closed(): void
+    {
+        $this->rmForecastWithExtra();
+
+        // 19:00 ngày 02/10, đã qua giờ chốt đơn ngày 03/10: chỉ còn đơn + biên an toàn, 7,5 × 1,1 → 8,5.
+        $plan = $this->plans->generateDraft($this->date);
+
+        $this->assertSame(8.5, (float) $plan->items->where('product_id', $this->rm->id)->sum('suggested_kg'));
+        $this->assertSame('0.00', $plan->items->firstWhere('product_id', $this->rm->id)->forecast_extra_kg);
+    }
+
+    private function rmForecastWithExtra(): void
+    {
         Forecast::factory()->create([
             'product_id' => $this->rm->id, 'target_date' => '2026-10-03', 'generated_on' => '2026-10-02', 'method' => ForecastMethod::MovingAverage,
             'confirmed_kg' => 7.5, 'predicted_extra_kg' => 1.5, 'predicted_total_kg' => 9.0, 'lower_kg' => 7.5, 'upper_kg' => 10,
         ]);
-
-        $plan = $this->plans->generateDraft($this->date);
-
-        // (7,5 + 1,5) × 1,1 = 9,9 → 10,0
-        $this->assertSame(10.0, (float) $plan->items->where('product_id', $this->rm->id)->sum('suggested_kg'));
-        $this->assertSame('1.50', $plan->items->firstWhere('product_id', $this->rm->id)->forecast_extra_kg);
     }
 
     public function test_leftover_stock_from_a_previous_batch_reduces_the_suggestion(): void

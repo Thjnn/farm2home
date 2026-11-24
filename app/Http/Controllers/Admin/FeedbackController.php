@@ -21,6 +21,7 @@ class FeedbackController extends Controller
         return view('admin.feedbacks.index', [
             'status' => $status,
             'statuses' => FeedbackStatus::cases(),
+            'statusCounts' => Feedback::selectRaw('status, COUNT(*) as total')->groupBy('status')->toBase()->pluck('total', 'status')->map(fn ($total) => (int) $total),
             'feedbacks' => Feedback::with('batch.product', 'batch.farmer', 'customer', 'order')
                 ->when($status, fn ($query, $value) => $query->where('status', $value))
                 ->orderByDesc('created_at')

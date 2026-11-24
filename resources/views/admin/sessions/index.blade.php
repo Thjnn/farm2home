@@ -70,7 +70,7 @@
                     <tbody class="divide-y divide-stone-100">
                         @foreach ([$model, $baselineMethod] as $candidate)
                             @continue(! isset($accuracy[$candidate->value]))
-                            @php($row = $accuracy[$candidate->value])
+                            @php $row = $accuracy[$candidate->value]; @endphp
                             <tr>
                                 <td class="py-2 pr-3">{{ $candidate->label() }}</td>
                                 <td class="py-2 pr-3 text-right">{{ $row['n'] }}</td>
@@ -130,56 +130,96 @@
         @if ($sessions === [])
             <p class="text-sm text-stone-600">Chưa có buổi giao nào trong khoảng này.</p>
         @else
-            @php($totals = collect($sessions))
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[820px] text-left text-sm">
-                    <thead class="border-b border-stone-200 text-stone-600">
-                        <tr>
-                            <th class="py-2 pr-3 font-medium">Buổi giao</th>
-                            <th class="py-2 pr-3 font-medium">Rau</th>
-                            <th class="py-2 pr-3 text-right font-medium">Khách yêu cầu</th>
-                            <th class="py-2 pr-3 text-right font-medium">Giao được</th>
-                            <th class="py-2 pr-3 text-right font-medium">Dư/hỏng</th>
-                            <th class="py-2 pr-3 font-medium">Hết hàng (kg)</th>
-                            <th class="py-2 pr-3 text-right font-medium">Tiền rau dư</th>
-                            <th class="py-2 text-right font-medium">Lãi bỏ lỡ</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-100">
-                        @foreach ($sessions as $row)
-                            <tr>
-                                <td class="py-2 pr-3">{{ $dayLabel($row['date']) }}</td>
-                                <td class="py-2 pr-3">{{ $row['product']->name }}</td>
-                                <td class="py-2 pr-3 text-right">@kg($row['requested_kg'])</td>
-                                <td class="py-2 pr-3 text-right">{{ $row['delivered_kg'] === null ? 'chưa ghi' : \App\Support\Format::kg($row['delivered_kg']) }}</td>
-                                <td class="py-2 pr-3 text-right">@kg($row['surplus_kg'])</td>
-                                <td class="py-2 pr-3">
-                                    <form method="POST" action="{{ route('admin.sessions.unmet') }}" class="flex items-center gap-1">
-                                        @csrf
-                                        <input type="hidden" name="delivery_date" value="{{ $row['date'] }}">
-                                        <input type="hidden" name="product_id" value="{{ $row['product']->id }}">
-                                        <label class="sr-only" for="unmet-{{ $loop->index }}">Kg hết hàng {{ $row['product']->name }} {{ $row['date'] }}</label>
-                                        <input id="unmet-{{ $loop->index }}" type="number" step="0.1" min="0" name="quantity_kg" value="{{ $row['unmet_kg'] + 0 }}" class="h-10 w-20 rounded-lg border border-stone-300 px-2 text-right">
-                                        <button class="h-10 rounded-lg border border-stone-300 px-2 text-xs hover:bg-stone-100">Lưu</button>
-                                    </form>
-                                </td>
-                                <td class="py-2 pr-3 text-right">@vnd($row['surplus_vnd'])</td>
-                                <td class="py-2 text-right">@vnd($row['missed_margin_vnd'])</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="border-t border-stone-300 font-semibold">
-                        <tr>
-                            <td class="py-2 pr-3" colspan="2">Cộng {{ $totals->pluck('date')->unique()->count() }} buổi</td>
-                            <td class="py-2 pr-3 text-right">@kg($totals->sum('requested_kg'))</td>
-                            <td class="py-2 pr-3 text-right">@kg($totals->sum('delivered_kg'))</td>
-                            <td class="py-2 pr-3 text-right">@kg($totals->sum('surplus_kg'))</td>
-                            <td class="py-2 pr-3">@kg($totals->sum('unmet_kg'))</td>
-                            <td class="py-2 pr-3 text-right">@vnd($totals->sum('surplus_vnd'))</td>
-                            <td class="py-2 text-right">@vnd($totals->sum('missed_margin_vnd'))</td>
-                        </tr>
-                    </tfoot>
-                </table>
+            @php
+                $totals = collect($sessions);
+                // Mỗi buổi giao một dòng tóm tắt; bấm để mở từng loại rau (và ô ghi "hết hàng"). Buổi mới nhất mở sẵn.
+                $byDate = $totals->groupBy('date')->sortKeysDesc();
+                $sum = fn ($rows) => [
+                    'requested' => $rows->sum('requested_kg'),
+                    'delivered' => $rows->sum('delivered_kg'),
+                    'surplus' => $rows->sum('surplus_kg'),
+                    'unmet' => $rows->sum('unmet_kg'),
+                    'surplus_vnd' => $rows->sum('surplus_vnd'),
+                    'missed_vnd' => $rows->sum('missed_margin_vnd'),
+                ];
+                $grand = $sum($totals);
+                $cols = 'grid grid-cols-[auto_1fr_auto_1fr] gap-x-3 gap-y-0.5 sm:grid-cols-[minmax(7rem,1.2fr)_repeat(6,minmax(0,1fr))] sm:items-center';
+            @endphp
+
+            <div class="overflow-hidden rounded-lg border border-stone-200 text-sm">
+                {{-- Tiêu đề cột (màn lớn) --}}
+                <div class="{{ $cols }} hidden border-b border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-600 sm:grid" aria-hidden="true">
+                    <span>Buổi giao</span><span class="text-right">Khách yêu cầu</span><span class="text-right">Giao được</span><span class="text-right">Dư/hỏng</span>
+                    <span class="text-right">Hết hàng</span><span class="text-right">Tiền rau dư</span><span class="text-right">Lãi bỏ lỡ</span>
+                </div>
+
+                @foreach ($byDate as $date => $rows)
+                    @php($day = $sum($rows))
+                    <details class="group border-b border-stone-100 last:border-b-0" @if ($loop->first) open @endif>
+                        <summary class="{{ $cols }} cursor-pointer list-none px-3 py-2.5 hover:bg-stone-50 [&::-webkit-details-marker]:hidden">
+                            <span class="col-span-4 flex items-center gap-2 font-semibold sm:col-span-1">
+                                <svg class="size-4 shrink-0 text-stone-400 transition-transform group-open:rotate-90 motion-reduce:transition-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                                {{ $dayLabel($date) }}
+                            </span>
+                            <span class="text-stone-600 sm:hidden">Yêu cầu</span><span class="text-right tabular-nums">@kg($day['requested'])</span>
+                            <span class="text-stone-600 sm:hidden">Giao</span><span class="text-right tabular-nums">@kg($day['delivered'])</span>
+                            <span class="text-stone-600 sm:hidden">Dư</span><span @class(['text-right tabular-nums', 'font-semibold text-amber-800' => $day['surplus'] > 0])>@kg($day['surplus'])</span>
+                            <span class="text-stone-600 sm:hidden">Hết</span><span @class(['text-right tabular-nums', 'font-semibold text-rose-700' => $day['unmet'] > 0])>@kg($day['unmet'])</span>
+                            {{-- Điện thoại: dòng tóm tắt chỉ giữ số kg; tiền xem trong chi tiết buổi và dòng Cộng. --}}
+                            <span class="hidden text-right tabular-nums sm:block">@vnd($day['surplus_vnd'])</span>
+                            <span class="hidden text-right tabular-nums sm:block">@vnd($day['missed_vnd'])</span>
+                        </summary>
+
+                        <div class="overflow-x-auto bg-stone-50/60 px-3 pb-3">
+                            <table class="table-cards w-full min-w-[720px] text-left text-sm">
+                                <thead class="border-b border-stone-200 text-xs text-stone-600">
+                                    <tr>
+                                        <th class="py-2 pr-3 font-medium">Rau</th>
+                                        <th class="py-2 pr-3 text-right font-medium">Khách yêu cầu</th>
+                                        <th class="py-2 pr-3 text-right font-medium">Giao được</th>
+                                        <th class="py-2 pr-3 text-right font-medium">Dư/hỏng</th>
+                                        <th class="py-2 pr-3 font-medium">Hết hàng (kg)</th>
+                                        <th class="py-2 pr-3 text-right font-medium">Tiền rau dư</th>
+                                        <th class="py-2 text-right font-medium">Lãi bỏ lỡ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-stone-100">
+                                    @foreach ($rows as $row)
+                                        <tr>
+                                            <td class="py-2 pr-3">{{ $row['product']->name }}</td>
+                                            <td class="py-2 pr-3 text-right tabular-nums">@kg($row['requested_kg'])</td>
+                                            <td class="py-2 pr-3 text-right tabular-nums">{{ $row['delivered_kg'] === null ? 'chưa ghi' : \App\Support\Format::kg($row['delivered_kg']) }}</td>
+                                            <td class="py-2 pr-3 text-right tabular-nums">@kg($row['surplus_kg'])</td>
+                                            <td class="py-2 pr-3">
+                                                <form method="POST" action="{{ route('admin.sessions.unmet') }}" class="flex items-center gap-1">
+                                                    @csrf
+                                                    <input type="hidden" name="delivery_date" value="{{ $row['date'] }}">
+                                                    <input type="hidden" name="product_id" value="{{ $row['product']->id }}">
+                                                    <label class="sr-only" for="unmet-{{ $date }}-{{ $loop->index }}">Kg hết hàng {{ $row['product']->name }} {{ $row['date'] }}</label>
+                                                    <input id="unmet-{{ $date }}-{{ $loop->index }}" type="number" step="0.1" min="0" name="quantity_kg" value="{{ $row['unmet_kg'] + 0 }}" class="h-11 w-20 rounded-lg border border-stone-300 bg-white px-2 text-right">
+                                                    <button class="h-11 rounded-lg border border-stone-300 bg-white px-3 text-xs hover:bg-stone-100">Lưu</button>
+                                                </form>
+                                            </td>
+                                            <td class="py-2 pr-3 text-right tabular-nums">@vnd($row['surplus_vnd'])</td>
+                                            <td class="py-2 text-right tabular-nums">@vnd($row['missed_margin_vnd'])</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                @endforeach
+
+                {{-- Cộng cả khoảng --}}
+                <div class="{{ $cols }} border-t border-stone-300 bg-stone-50 px-3 py-2.5 font-semibold">
+                    <span class="col-span-4 sm:col-span-1">Cộng {{ $byDate->count() }} buổi</span>
+                    <span class="font-normal text-stone-600 sm:hidden">Yêu cầu</span><span class="text-right tabular-nums">@kg($grand['requested'])</span>
+                    <span class="font-normal text-stone-600 sm:hidden">Giao</span><span class="text-right tabular-nums">@kg($grand['delivered'])</span>
+                    <span class="font-normal text-stone-600 sm:hidden">Dư</span><span class="text-right tabular-nums">@kg($grand['surplus'])</span>
+                    <span class="font-normal text-stone-600 sm:hidden">Hết</span><span class="text-right tabular-nums">@kg($grand['unmet'])</span>
+                    <span class="font-normal text-stone-600 sm:hidden">Tiền rau dư</span><span class="text-right tabular-nums">@vnd($grand['surplus_vnd'])</span>
+                    <span class="font-normal text-stone-600 sm:hidden">Lãi bỏ lỡ</span><span class="text-right tabular-nums">@vnd($grand['missed_vnd'])</span>
+                </div>
             </div>
             <p class="mt-2 text-xs text-stone-500">
                 Tiền rau dư = kg dư × giá thu mua. Lãi bỏ lỡ = kg hết hàng × (giá bán mỗi kg − giá thu mua). Lợi ích của dự báo chỉ tính được khi so hai giai đoạn

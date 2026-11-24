@@ -21,8 +21,42 @@
         $dayHitRate = fn (array $entry) => $entry['actual'] === null || $entry['actual'] <= 0 ? null
             : max(0, 100 - abs($entry['predicted'] - $entry['actual']) / $entry['actual'] * 100);
         $selected = $calendar[$selectedDay->toDateString()] ?? null;
+        // Tab mở sẵn: ?method= là đang xem độ chính xác, ?day= / ?month= là đang xem lịch.
+        $initialTab = request()->has('method') ? 'accuracy' : (request()->hasAny(['day', 'month']) ? 'calendar' : 'plan');
+        $tabs = ['plan' => 'Mấy ngày tới', 'calendar' => 'Lịch tháng', 'accuracy' => 'Máy đoán có đúng không?'];
+        $hashes = ['plan' => 'may-ngay-toi', 'calendar' => 'lich', 'accuracy' => 'do-chinh-xac'];
     @endphp
 
+    <x-slot:actions>
+        <form method="POST" action="{{ route('admin.forecasts.backfill') }}">
+            @csrf
+            <button class="min-h-11 rounded-lg border border-stone-300 bg-white px-4 hover:bg-stone-100">Cập nhật số thực tế</button>
+        </form>
+        <form method="POST" action="{{ route('admin.forecasts.run') }}">
+            @csrf
+            <button class="min-h-11 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Chạy dự báo hôm nay</button>
+        </form>
+    </x-slot:actions>
+
+    <div x-data="{
+            tab: @js($initialTab),
+            hashes: @js($hashes),
+            init() {
+                const fromHash = Object.keys(this.hashes).find((key) => '#' + this.hashes[key] === location.hash);
+                if (fromHash) { this.tab = fromHash; }
+            },
+            show(key) { this.tab = key; history.replaceState(history.state, '', location.pathname + location.search + '#' + this.hashes[key]); },
+        }">
+    <div class="-mx-4 mb-4 flex gap-1 overflow-x-auto border-b border-stone-200 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="Các phần của trang dự báo">
+        @foreach ($tabs as $key => $label)
+            <button type="button" role="tab" id="tab-{{ $key }}" aria-controls="panel-{{ $key }}" @click="show(@js($key))"
+                :aria-selected="(tab === @js($key)).toString()"
+                :class="tab === @js($key) ? 'border-emerald-700 text-emerald-800 font-semibold' : 'border-transparent text-stone-600 hover:text-stone-900'"
+                class="-mb-px min-h-11 shrink-0 whitespace-nowrap border-b-2 px-3 text-sm transition-colors">{{ $label }}</button>
+        @endforeach
+    </div>
+
+    <div role="tabpanel" id="panel-plan" aria-labelledby="tab-plan" x-show="tab === 'plan'" @if ($initialTab !== 'plan') x-cloak @endif>
     {{-- 1. Máy đoán thế nào, nói ngắn gọn --}}
     <section class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-stone-800">
         <h2 class="mb-1 text-lg font-semibold">Mấy ngày tới cần bao nhiêu rau?</h2>
@@ -37,7 +71,9 @@
             @endif
         </p>
     </section>
+    </div>
 
+    <div role="tabpanel" id="panel-accuracy" aria-labelledby="tab-accuracy" x-show="tab === 'accuracy'" @if ($initialTab !== 'accuracy') x-cloak @endif>
     {{-- 2. Máy đoán có đúng không --}}
     <section class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
         <h2 class="mb-2 font-semibold">Máy đoán có đúng không? (14 ngày qua)</h2>
@@ -88,7 +124,9 @@
             @endif
         @endif
     </section>
+    </div>
 
+    <div role="tabpanel" id="panel-calendar" aria-labelledby="tab-calendar" x-show="tab === 'calendar'" @if ($initialTab !== 'calendar') x-cloak @endif>
     {{-- 3. Lịch tháng: mỗi ô là một ngày giao --}}
     <section id="lich" class="mb-4 scroll-mt-4 rounded-xl border border-stone-200 bg-white">
         <header class="flex flex-wrap items-center justify-between gap-3 p-4">
@@ -195,7 +233,9 @@
             @endif
         </div>
     </section>
+    </div>
 
+    <div role="tabpanel" id="panel-plan-2" aria-labelledby="tab-plan" x-show="tab === 'plan'" @if ($initialTab !== 'plan') x-cloak @endif>
     {{-- 4. Biểu đồ --}}
     @if ($chart)
         <figure class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
@@ -253,21 +293,12 @@
     @empty
         <p class="rounded-lg bg-stone-100 px-4 py-3 text-sm text-stone-700">Chưa có dự báo. Bấm "Chạy dự báo hôm nay" để bắt đầu.</p>
     @endforelse
-
-    {{-- 6. Nút thao tác --}}
-    <div class="my-4 flex flex-wrap items-center gap-3">
-        <form method="POST" action="{{ route('admin.forecasts.run') }}">
-            @csrf
-            <button class="min-h-11 rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Chạy dự báo hôm nay</button>
-        </form>
-        <form method="POST" action="{{ route('admin.forecasts.backfill') }}">
-            @csrf
-            <button class="min-h-11 rounded-lg border border-stone-300 bg-white px-4 hover:bg-stone-100">Cập nhật số thực tế</button>
-        </form>
     </div>
 
+
+    <div role="tabpanel" id="panel-accuracy-2" aria-labelledby="tab-accuracy" x-show="tab === 'accuracy'" @if ($initialTab !== 'accuracy') x-cloak @endif>
     {{-- 7. Chi tiết kỹ thuật: gập lại, chỉ người điều phối cần --}}
-    <details class="rounded-xl border border-stone-200 bg-white" @if (request()->has('method')) open @endif>
+    <details class="rounded-xl border border-stone-200 bg-white" open>
         <summary class="flex min-h-12 cursor-pointer items-center px-4 py-3 font-semibold">So sánh các cách đoán (chi tiết kỹ thuật)</summary>
         <div class="px-4 pb-4">
             <nav class="mb-3 flex flex-wrap gap-2" aria-label="Chọn cách đoán">
@@ -334,4 +365,6 @@
             @endif
         </div>
     </details>
+    </div>
+    </div>
 </x-layouts.admin>

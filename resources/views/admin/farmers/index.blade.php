@@ -1,5 +1,5 @@
 <x-layouts.admin title="HTX">
-    <p class="mb-4"><a href="{{ route('admin.farmers.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm HTX</a></p>
+    <x-slot:actions><a href="{{ route('admin.farmers.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm HTX</a></x-slot:actions>
 
     <div class="space-y-3">
         @foreach ($farmers as $farmer)

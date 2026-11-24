@@ -7,7 +7,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full min-w-[520px] text-left text-sm">
+                <table class="table-cards w-full min-w-[520px] text-left text-sm">
                     <thead class="border-b border-stone-200 text-stone-600">
                         <tr>
                             <th class="py-2 pr-3 font-medium">Rau</th>

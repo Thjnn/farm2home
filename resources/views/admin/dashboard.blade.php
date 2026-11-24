@@ -16,6 +16,29 @@
         @vite('resources/js/dashboard.js')
     </x-slot:head>
 
+    {{-- Việc cần làm: mỗi thẻ dẫn tới đúng trang; còn việc thì nổi màu, xong thì mờ. --}}
+    <section aria-labelledby="today-heading" class="mb-8">
+        <h2 id="today-heading" class="mb-3 text-lg font-semibold">Hôm nay <span class="font-normal text-stone-500">· {{ str(today()->locale('vi')->isoFormat('dddd, DD/MM'))->ucfirst() }}</span></h2>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            @foreach ($todayTasks as $task)
+                <a href="{{ $task['url'] }}" data-task="{{ $task['key'] }}"
+                    @class([
+                        'group flex min-h-28 flex-col rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+                        'border-amber-300 bg-amber-50' => $task['count'] > 0,
+                        'border-stone-200 bg-white' => $task['count'] === 0,
+                    ])>
+                    <span class="text-sm font-medium text-stone-700">{{ $task['label'] }}</span>
+                    <span @class(['mt-1 text-3xl font-bold tabular-nums', 'text-amber-900' => $task['count'] > 0, 'text-stone-400' => $task['count'] === 0])>{{ $task['count'] }}</span>
+                    <span class="mt-auto flex items-center justify-between gap-2 pt-1 text-xs text-stone-600">
+                        <span class="truncate">{{ $task['detail'] }}</span>
+                        <span aria-hidden="true" class="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">→</span>
+                    </span>
+                </a>
+            @endforeach
+        </div>
+    </section>
+
+    <h2 class="mb-3 text-lg font-semibold">Chỉ số pilot</h2>
     <form method="GET" action="{{ route('admin.dashboard') }}" class="mb-4 flex flex-wrap items-end gap-3">
         <div>
             <label for="from" class="mb-1 block text-sm font-medium text-stone-700">Từ ngày</label>

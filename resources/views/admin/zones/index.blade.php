@@ -1,8 +1,8 @@
 <x-layouts.admin title="Cụm giao">
-    <p class="mb-4"><a href="{{ route('admin.zones.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm cụm giao</a></p>
+    <x-slot:actions><a href="{{ route('admin.zones.create') }}" class="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800">Thêm cụm giao</a></x-slot:actions>
 
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-        <table class="w-full min-w-[680px] text-left text-sm">
+        <table class="table-cards w-full min-w-[680px] text-left text-sm">
             <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                 <tr>
                     <th class="px-3 py-2 font-medium">Tên</th>

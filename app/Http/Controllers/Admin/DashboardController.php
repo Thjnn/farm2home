@@ -6,6 +6,7 @@ use App\Enums\ForecastMethod;
 use App\Http\Controllers\Controller;
 use App\Models\Farmer;
 use App\Services\KpiService;
+use App\Services\TodayTasksService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,9 +14,9 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
-     * Pilot KPI dashboard. Defaults to the last 28 days ending today.
+     * Việc cần làm hôm nay ở đầu trang, bên dưới là KPI pilot (mặc định 28 ngày gần nhất).
      */
-    public function __invoke(Request $request, KpiService $kpi): View
+    public function __invoke(Request $request, KpiService $kpi, TodayTasksService $today): View
     {
         $range = $request->validate([
             'from' => ['nullable', 'date_format:Y-m-d'],
@@ -26,6 +27,7 @@ class DashboardController extends Controller
         $from = CarbonImmutable::parse($range['from'] ?? $to->subDays(27));
 
         return view('admin.dashboard', [
+            'todayTasks' => $today->tasks(CarbonImmutable::today()),
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'forecast' => $kpi->forecast($from, $to),

@@ -1,4 +1,4 @@
-<x-layouts.base :title="'Tem lô '.$batch->code" bodyClass="bg-white">
+<x-layouts.base :title="'Tem lô '.$batch->code" bodyClass="bg-white" :back-to-top="false">
     <div class="mx-auto max-w-3xl p-4">
         <div class="mb-4 flex items-center justify-between gap-3 print:hidden">
             <p class="text-sm text-stone-600">{{ $count }} tem · quét mã sẽ mở {{ $batch->publicUrl() }}</p>

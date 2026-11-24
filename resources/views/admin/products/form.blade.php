@@ -47,9 +47,9 @@
         <label class="flex min-h-11 items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" name="is_active" value="1" class="size-5 rounded border-stone-300" @checked(old('is_active', $product->is_active))> Đang bán
         </label>
-        <div class="flex gap-3 sm:col-span-2">
+        <x-action-bar class="sm:col-span-2">
             <button class="min-h-11 rounded-lg bg-emerald-700 px-6 font-semibold text-white hover:bg-emerald-800">Lưu</button>
             <a href="{{ route('admin.products.index') }}" class="inline-flex min-h-11 items-center rounded-lg border border-stone-300 bg-white px-4 hover:bg-stone-100">Hủy</a>
-        </div>
+        </x-action-bar>
     </form>
 </x-layouts.admin>

@@ -13,7 +13,7 @@
         @enderror
     @endforeach
 
-    <section class="mb-6">
+    <section id="ghi-rau-du" class="mb-6 scroll-mt-6">
         <h2 class="mb-1 font-semibold">Lô còn tồn</h2>
         <p class="mb-3 text-sm text-stone-600">Lô còn hạn có thể để lại bán ngày mai; chỉ ghi phần thực sự dư, hỏng, hết hạn hoặc bán giảm giá.</p>
         <div class="space-y-3">
@@ -56,7 +56,7 @@
     <section>
         <h2 class="mb-2 font-semibold">Đã ghi trong ngày</h2>
         <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-            <table class="w-full min-w-[560px] text-left text-sm">
+            <table class="table-cards w-full min-w-[560px] text-left text-sm">
                 <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                     <tr>
                         <th class="px-3 py-2 font-medium">Rau</th>

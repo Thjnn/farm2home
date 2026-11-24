@@ -1,5 +1,5 @@
 <x-layouts.admin title="Bao bì thu hồi">
-    <form method="POST" action="{{ route('admin.packaging-returns.store') }}" class="mb-6 grid gap-4 rounded-xl border border-stone-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
+    <form id="ghi-bao-bi" method="POST" action="{{ route('admin.packaging-returns.store') }}" class="scroll-mt-6 mb-6 grid gap-4 rounded-xl border border-stone-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
         @csrf
         <x-field name="return_date" label="Ngày thu hồi" type="date" :value="today()->toDateString()" required />
         <x-field name="phone" label="SĐT khách (không bắt buộc)" type="tel" inputmode="numeric" />
@@ -13,7 +13,7 @@
     </form>
 
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-        <table class="w-full min-w-[560px] text-left text-sm">
+        <table class="table-cards w-full min-w-[560px] text-left text-sm">
             <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                 <tr>
                     <th class="px-3 py-2 font-medium">Ngày</th>

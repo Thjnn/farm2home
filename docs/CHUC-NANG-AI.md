@@ -142,7 +142,7 @@ suggested_kg = làm_tròn_lên_0,5( max(0, đã_đặt + dự_báo_thêm − t�
 | Thành phần | Lấy từ đâu |
 |---|---|
 | Đã đặt | `ForecastService::confirmedKg()`, tính tại thời điểm tạo gợi ý |
-| Dự báo thêm | Dự báo **mới nhất** của ngày đó, trừ đi số đã đặt hiện tại |
+| Dự báo thêm | Dự báo **mới nhất** của ngày đó, trừ đi số đã đặt hiện tại. **Bằng 0 khi đã qua giờ chốt đơn** của ngày giao (đơn đã đủ) |
 | Tồn kho | `BatchService::availableStockKg()`: các lô **đạt chất lượng**, thu hoạch **trước** ngày giao, **còn hạn**, trừ phần đã phân bổ cho đơn và phần đã ghi rau dư |
 | Biên an toàn | `safety_margin_pct` = 10%, có thể chỉnh theo từng kế hoạch |
 
@@ -185,7 +185,7 @@ Nhờ lưu cả `suggested_kg` lẫn `final_kg` kèm lý do, nhóm có thể ch�
 **Lệnh:** `php artisan forecast:backfill [Y-m-d]`, chạy tự động lúc **21:00**, hoặc bấm **Cập nhật số thực tế** trên trang Dự báo
 
 1. **Backfill:** với các dự báo đã tới hoặc qua ngày giao mà chưa có `actual_kg`, hệ thống điền vào đó tổng kg đơn chưa hủy của ngày giao.
-2. **So sánh:** chỉ lấy các dự báo được tạo **trước ngày giao đúng 1 ngày**, vì đó là con số dùng để ra quyết định thu hoạch.
+2. **So sánh:** chỉ lấy các dự báo được tạo **trước ngày giao đúng 2 ngày** (`evaluation_lead_days`) và chỉ chấm **phần khách đặt thêm** (thực tế − đã đặt lúc đoán). Trước 1 ngày (sau 18:00) đơn đã chốt, không còn gì để đoán. So với **cách tính thông thường** (`extra_average`) và đối chiếu từng buổi ở `/admin/sessions`. Xem `docs/BAO-CAO-GOP-Y-AI.md`.
 
 | Chỉ số | Công thức | Đọc thế nào |
 |---|---|---|

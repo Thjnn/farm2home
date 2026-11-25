@@ -1,4 +1,21 @@
 import Chart from 'chart.js/auto';
+import { gsap } from 'gsap';
+
+// Thẻ KPI và khối biểu đồ (data-reveal) hiện lần lượt khi tải trang; bỏ hẳn khi người dùng chọn giảm chuyển động.
+const revealTargets = document.querySelectorAll('[data-reveal]');
+if (revealTargets.length) {
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+        gsap.from(revealTargets, {
+            autoAlpha: 0,
+            y: 8,
+            duration: 0.35,
+            ease: 'power2.out',
+            // Tổng thời gian luôn dưới 0,6 s dù có bao nhiêu khối.
+            stagger: { amount: Math.min(0.2, 0.03 * (revealTargets.length - 1)) },
+            clearProps: 'transform,opacity,visibility',
+        });
+    });
+}
 
 // Palette validated with the dataviz validator on the light surface (categorical slots 1 and 2).
 const SERIES_1 = '#2a78d6';

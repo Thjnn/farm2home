@@ -42,24 +42,13 @@
         <fieldset class="rounded-xl border border-stone-200 bg-white p-4">
             <legend class="px-1 text-sm font-medium text-stone-700">Ảnh vùng trồng (hiện trên trang QR)</legend>
             <p class="mb-3 text-sm text-stone-600">Chỉ dùng ảnh thật chụp tại vùng trồng, khi HTX đồng ý. Tối đa 4 ảnh; chọn ảnh mới sẽ thay cả bộ ảnh cũ.</p>
+            <x-image-upload name="farm_photos[]" multiple :current="$farmer->farm_photos ? $farmer->farmPhotoUrls() : []" hint="JPG/PNG/WEBP, tối đa 10 MB mỗi ảnh" />
             @if ($farmer->farm_photos)
-                <div class="mb-3 grid grid-cols-4 gap-2">
-                    @foreach ($farmer->farmPhotoUrls() as $url)
-                        <img src="{{ $url }}" alt="" class="aspect-square w-full rounded-lg object-cover">
-                    @endforeach
-                </div>
-                <label class="mb-3 flex items-center gap-2 text-sm">
+                <label class="mt-3 flex min-h-11 items-center gap-2 text-sm">
                     <input type="checkbox" name="remove_farm_photos" value="1" class="size-5">
                     Xoá hết ảnh vùng trồng
                 </label>
             @endif
-            <input id="farm_photos" type="file" name="farm_photos[]" accept="image/*" multiple class="block w-full text-sm" aria-label="Chọn ảnh vùng trồng">
-            @error('farm_photos')
-                <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
-            @enderror
-            @error('farm_photos.*')
-                <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
-            @enderror
         </fieldset>
 
         <fieldset class="rounded-xl border border-stone-200 bg-white p-4">
@@ -69,14 +58,10 @@
                 <x-field name="certificate_name" label="Tên chứng nhận" :value="$farmer->certificate_name" />
                 <x-field name="certificate_expires_at" label="Hết hạn ngày" type="date" :value="$farmer->certificate_expires_at?->toDateString()" />
                 <div class="sm:col-span-2">
-                    <label for="certificate" class="mb-1 block text-sm font-medium text-stone-700">File chứng nhận (PDF/JPG/PNG, tối đa 4 MB)</label>
-                    <input id="certificate" type="file" name="certificate" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm">
+                    <x-image-upload name="certificate" accept=".pdf,.jpg,.jpeg,.png" label="File chứng nhận" hint="PDF/JPG/PNG, tối đa 4 MB" />
                     @if ($farmer->certificate_file)
                         <p class="mt-1 text-xs text-stone-600">Đã có file: {{ $farmer->certificate_file }}</p>
                     @endif
-                    @error('certificate')
-                        <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
-                    @enderror
                 </div>
             </div>
         </fieldset>

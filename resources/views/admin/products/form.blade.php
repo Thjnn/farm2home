@@ -28,21 +28,9 @@
                 <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
             @enderror
         </div>
-        <fieldset class="rounded-xl border border-stone-200 bg-white p-4 sm:col-span-2"
-            x-data="{ preview: @js($product->imageUrl()) }">
+        <fieldset class="rounded-xl border border-stone-200 bg-white p-4 sm:col-span-2">
             <legend class="px-1 text-sm font-medium text-stone-700">Ảnh sản phẩm (hiện ở trang đặt hàng, giỏ rau, trang HTX)</legend>
-            <div class="flex flex-wrap items-center gap-4">
-                <img x-show="preview" :src="preview" alt="Ảnh hiện tại của sản phẩm" class="size-24 rounded-lg bg-stone-100 object-cover" @if (! $product->imageUrl()) x-cloak @endif>
-                <span x-show="! preview" class="flex size-24 items-center justify-center rounded-lg bg-emerald-50 text-xs text-stone-500" @if ($product->imageUrl()) x-cloak @endif>Chưa có ảnh</span>
-                <div class="min-w-0 flex-1">
-                    <label for="photo" class="mb-1 block text-sm text-stone-700">{{ $product->image ? 'Chọn ảnh mới để thay' : 'Chọn ảnh' }} (JPG/PNG/WEBP, tối đa 10 MB, nên chụp vuông)</label>
-                    <input id="photo" type="file" name="photo" accept="image/*" class="block w-full text-sm"
-                        @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : @js($product->imageUrl())">
-                    @error('photo')
-                        <p class="mt-1 text-sm text-rose-700">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
+            <x-image-upload name="photo" :current="$product->imageUrl()" hint="JPG/PNG/WEBP, tối đa 10 MB, nên chụp vuông" />
         </fieldset>
         <label class="flex min-h-11 items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" name="is_active" value="1" class="size-5 rounded border-stone-300" @checked(old('is_active', $product->is_active))> Đang bán

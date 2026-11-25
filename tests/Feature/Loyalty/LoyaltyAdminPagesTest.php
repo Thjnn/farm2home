@@ -103,7 +103,7 @@ class LoyaltyAdminPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Điểm đã cộng')
             ->assertSee('Điểm đã đổi')
-            ->assertSee('1 lượt đổi quà');
+            ->assertSeeInOrder(['Lượt đổi quà', '<dd class="shrink-0 text-lg font-semibold text-stone-900 tabular-nums">1</dd>'], false);
 
         $this->assertSame(['points_earned' => 20, 'points_redeemed' => 20, 'redemptions' => 1], $this->kpi('2026-09-10', '2026-10-03'));
     }

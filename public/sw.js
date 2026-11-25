@@ -1,6 +1,6 @@
 // Service worker của Farm2Home: chỉ để cài được app và báo khi mất mạng.
 // Không lưu sẵn trang nào khác, để đơn hàng / kế hoạch luôn là số mới nhất từ máy chủ.
-const CACHE = 'f2h-offline-v1';
+const CACHE = 'f2h-offline-v2';
 const OFFLINE_URL = '/offline.html';
 
 self.addEventListener('install', (event) => {

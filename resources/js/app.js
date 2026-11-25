@@ -1,9 +1,11 @@
 import Alpine from 'alpinejs';
 import pagedList from './paged-list';
 import orderCart from './order-cart';
+import imageUpload from './image-upload';
 
 Alpine.data('pagedList', pagedList);
 Alpine.data('orderCart', orderCart);
+Alpine.data('imageUpload', imageUpload);
 
 // Menu trái khu quản trị (layouts/admin, config/admin_menu.php): nhóm đóng/mở, thu gọn chỉ còn icon, drawer trên điện thoại.
 const readStorage = (key) => {

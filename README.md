@@ -24,6 +24,31 @@ Giỏ rau định kỳ ───────────────────
 
 Hiện bán 5 loại rau: **Rau muống, Cải xanh, Cải ngọt, Xà lách, Hành lá** (Mồng tơi và Rau dền đã ngưng bán, vẫn giữ trong DB để tra đơn cũ).
 
+## Giao diện
+
+Ảnh chụp từ dữ liệu mô phỏng, không phải số liệu pilot thật.
+
+**Khách hàng và HTX** dùng trên điện thoại, không cần tài khoản:
+
+<table>
+  <tr>
+    <td align="center" width="25%"><img src="docs/screenshots/khach-trang-chu.png" alt="Trang chủ"><br><sub>Trang chủ</sub></td>
+    <td align="center" width="25%"><img src="docs/screenshots/khach-dat-hang.png" alt="Đặt hàng"><br><sub>Đặt giỏ rau hoặc rau lẻ, có chatbot hỏi đáp</sub></td>
+    <td align="center" width="25%"><img src="docs/screenshots/khach-qr-lo.png" alt="Trang QR của lô"><br><sub>Quét QR xem thông tin lô rau</sub></td>
+    <td align="center" width="25%"><img src="docs/screenshots/htx-bao-san-luong.png" alt="Trang HTX"><br><sub>HTX xem đơn 3 ngày tới và báo sản lượng</sub></td>
+  </tr>
+</table>
+
+**Người điều phối** dùng trên máy tính:
+
+| Tổng quan (KPI pilot) | Dự báo nhu cầu |
+|---|---|
+| ![Dashboard](docs/screenshots/admin-dashboard.png) | ![Dự báo](docs/screenshots/admin-du-bao.png) |
+
+**Kế hoạch thu hoạch:** máy gợi ý số kg cho từng loại rau và chia cho các HTX, người điều phối sửa số chốt (ghi lý do nếu khác gợi ý) rồi mới chốt.
+
+![Kế hoạch thu hoạch](docs/screenshots/admin-ke-hoach-thu-hoach.png)
+
 ## Ai dùng, làm được gì
 
 | Người dùng | Cách vào | Chức năng |

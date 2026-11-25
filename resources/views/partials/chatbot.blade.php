@@ -35,9 +35,19 @@
                 this.$nextTick(() => this.$refs.log.scrollTop = this.$refs.log.scrollHeight);
             }
         },
-    }" class="fixed {{ $chatbotPosition ?? 'bottom-4' }} right-4 z-40 flex flex-col items-end">
+        {{-- Trên điện thoại khung chat phủ đúng phần màn hình còn thấy, để bàn phím bật lên không che/đẩy mất đầu khung. --}}
+        syncViewport() {
+            const viewport = window.visualViewport;
+            if (!viewport) return;
+            this.$el.style.setProperty('--vv-h', viewport.height + 'px');
+            this.$el.style.setProperty('--vv-top', viewport.offsetTop + 'px');
+            if (this.open) this.$refs.log.scrollTop = this.$refs.log.scrollHeight;
+        },
+    }" x-init="syncViewport(); window.visualViewport?.addEventListener('resize', () => syncViewport()); window.visualViewport?.addEventListener('scroll', () => syncViewport())"
+    class="fixed {{ $chatbotPosition ?? 'bottom-4' }} right-4 z-40 flex flex-col items-end">
     <section x-show="open" x-cloak x-transition
-             class="mb-3 flex h-[70vh] max-h-[480px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl"
+             class="mb-3 flex h-[70vh] max-h-[480px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl
+                    max-sm:fixed max-sm:inset-x-0 max-sm:top-[var(--vv-top,0px)] max-sm:mb-0 max-sm:h-[var(--vv-h,100dvh)] max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0"
              aria-label="Hỏi đáp nhanh">
         <header class="flex items-center justify-between bg-emerald-700 px-4 py-2 text-white">
             <h2 class="flex items-center gap-2 font-semibold">
@@ -64,6 +74,7 @@
         </form>
     </section>
     <button type="button" @click="open = !open; if (open) $nextTick(() => document.getElementById('chatbot-input').focus())"
+            :class="open && 'max-sm:hidden'"
             class="flex min-h-12 items-center gap-2 rounded-full bg-emerald-700 px-4 font-semibold text-white shadow-lg hover:bg-emerald-800"
             :aria-expanded="open.toString()">
         <span class="-ml-2 flex size-10 items-center justify-center rounded-full bg-white/90">

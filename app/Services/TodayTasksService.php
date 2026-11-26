@@ -17,6 +17,8 @@ use Carbon\CarbonImmutable;
  */
 class TodayTasksService
 {
+    public function __construct(private PackingService $packing) {}
+
     /**
      * @return list<array{key: string, label: string, count: int, detail: string, url: string}>
      */
@@ -30,6 +32,8 @@ class TodayTasksService
         $deliveringToday = Order::whereDate('delivery_date', $today)
             ->whereNotIn('status', [OrderStatus::Delivered, OrderStatus::Cancelled])
             ->count();
+
+        $notPackedToday = $this->packing->orders($today)->reject(fn (Order $order) => $this->packing->isFullyPacked($order))->count();
 
         $drafts = HarvestPlan::where('status', HarvestPlanStatus::Draft)->whereDate('delivery_date', '>=', $today)->orderBy('delivery_date');
         $firstDraft = (clone $drafts)->first();
@@ -55,6 +59,13 @@ class TodayTasksService
                 'count' => $deliveringToday,
                 'detail' => 'Chưa giao xong',
                 'url' => route('admin.orders.index', ['delivery_date' => $today->toDateString()]),
+            ],
+            [
+                'key' => 'packing',
+                'label' => 'Đơn chưa đóng xong',
+                'count' => $notPackedToday,
+                'detail' => 'Giao hôm nay',
+                'url' => route('admin.packing.index', ['date' => $today->toDateString()]),
             ],
             [
                 'key' => 'drafts',

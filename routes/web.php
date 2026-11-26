@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PackagingReturnController;
+use App\Http\Controllers\Admin\PackingController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SessionReportController;
 use App\Http\Controllers\Admin\SubscriptionController;
@@ -104,6 +105,10 @@ Route::middleware(['auth', 'role:admin,operator'])->prefix('admin')->name('admin
     Route::patch('batches/{batch}', [BatchController::class, 'update'])->name('batches.update');
     Route::post('batches/{batch}/photo', [BatchController::class, 'photo'])->name('batches.photo');
     Route::get('batches/{batch}/labels', [BatchController::class, 'labels'])->name('batches.labels');
+    Route::get('packing', [PackingController::class, 'index'])->name('packing.index');
+    Route::get('packing/slips', [PackingController::class, 'slips'])->name('packing.slips');
+    Route::patch('packing/{order}/bags/{batch}', [PackingController::class, 'toggleBag'])->name('packing.bags.toggle');
+    Route::patch('packing/{order}', [PackingController::class, 'packOrder'])->name('packing.orders.pack');
 
     Route::get('feedbacks', [AdminFeedbackController::class, 'index'])->name('feedbacks.index');
     Route::patch('feedbacks/{feedback}', [AdminFeedbackController::class, 'update'])->name('feedbacks.update');

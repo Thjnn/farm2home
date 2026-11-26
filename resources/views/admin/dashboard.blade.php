@@ -82,7 +82,7 @@
     {{-- Việc cần làm: mỗi thẻ dẫn tới đúng trang; còn việc thì nổi màu, xong thì mờ. --}}
     <section aria-labelledby="today-heading" class="mb-8">
         <h2 id="today-heading" class="mb-3 text-lg font-semibold">Hôm nay <span class="font-normal text-stone-500">· {{ str(today()->locale('vi')->isoFormat('dddd, DD/MM'))->ucfirst() }}</span></h2>
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
             @foreach ($todayTasks as $task)
                 <a href="{{ $task['url'] }}" data-task="{{ $task['key'] }}"
                     @class([

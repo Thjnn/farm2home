@@ -5,6 +5,7 @@ namespace Tests\Feature\Loyalty;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PointReason;
+use App\Models\HarvestPlan;
 use App\Models\Order;
 use App\Models\PointTransaction;
 use App\Services\LoyaltyService;
@@ -219,6 +220,7 @@ class LoyaltyRedeemTest extends TestCase
     {
         $this->givePoints(100);
         $this->orders->transition($this->order, OrderStatus::Confirmed);
+        HarvestPlan::factory()->create(['delivery_date' => '2026-10-03', 'harvest_date' => '2026-10-03', 'status' => 'confirmed']);
         $this->orders->transition($this->order, OrderStatus::Packing);
         $this->assertFalse($this->loyalty->canRedeemOn($this->order));
         $this->assertRefused('chờ xác nhận hoặc đã xác nhận', fn () => $this->redeem('free_shipping'));

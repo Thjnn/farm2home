@@ -12,6 +12,7 @@ use App\Models\Basket;
 use App\Models\BasketItem;
 use App\Models\Customer;
 use App\Models\DeliveryZone;
+use App\Models\HarvestPlan;
 use App\Models\Order;
 use App\Models\Product;
 use App\Support\ShippingCalculator;
@@ -85,6 +86,10 @@ class OrderService
             throw new DomainException("Không thể chuyển đơn từ \"{$order->status->label()}\" sang \"{$to->label()}\".");
         }
 
+        if ($to->needsLockedPlan() && ! HarvestPlan::isLockedFor($order->delivery_date)) {
+            throw new DomainException("Kế hoạch thu hoạch ngày {$order->delivery_date->format('d/m')} chưa chốt. Chốt kế hoạch trước khi đóng gói hoặc giao đơn.");
+        }
+
         if ($to === OrderStatus::Cancelled && blank($cancelReason)) {
             throw new DomainException('Cần nhập lý do hủy đơn.');
         }
@@ -123,9 +128,10 @@ class OrderService
     /**
      * Chuyển cả nhóm đơn sang cùng một trạng thái; đơn không ở bước liền trước thì bỏ qua (không báo lỗi).
      * Hủy đơn không làm hàng loạt vì mỗi đơn cần lý do riêng.
+     * Đơn có ngày giao chưa chốt kế hoạch thì không chuyển sang đóng gói / giao (đếm vào blocked).
      *
      * @param  iterable<Order>  $orders
-     * @return array{moved: int, skipped: int}
+     * @return array{moved: int, skipped: int, blocked: int}
      */
     public function transitionMany(iterable $orders, OrderStatus $to): array
     {
@@ -135,17 +141,28 @@ class OrderService
 
         $moved = 0;
         $skipped = 0;
+        $blocked = 0;
+        $lockedByDate = [];
 
         foreach ($orders as $order) {
-            if ($order->status->canTransitionTo($to)) {
-                $this->transition($order, $to);
-                $moved++;
-            } else {
+            if (! $order->status->canTransitionTo($to)) {
                 $skipped++;
+
+                continue;
             }
+
+            $date = $order->delivery_date->toDateString();
+            if ($to->needsLockedPlan() && ! ($lockedByDate[$date] ??= HarvestPlan::isLockedFor($date))) {
+                $blocked++;
+
+                continue;
+            }
+
+            $this->transition($order, $to);
+            $moved++;
         }
 
-        return ['moved' => $moved, 'skipped' => $skipped];
+        return ['moved' => $moved, 'skipped' => $skipped, 'blocked' => $blocked];
     }
 
     /**

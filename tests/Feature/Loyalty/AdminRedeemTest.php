@@ -176,6 +176,7 @@ class AdminRedeemTest extends TestCase
         $this->givePoints(100);
         $orders = app(OrderService::class);
         $orders->transition($this->order, OrderStatus::Confirmed);
+        HarvestPlan::factory()->create(['delivery_date' => '2026-10-03', 'harvest_date' => '2026-10-03', 'status' => 'confirmed']);
         $orders->transition($this->order, OrderStatus::Packing);
 
         $this->actingAs($this->operator)->get($this->url)

@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Orders;
 
+use App\Enums\HarvestPlanStatus;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
+use App\Models\HarvestPlan;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -141,6 +143,31 @@ class AdminOrderTest extends TestCase
         $this->assertSame(OrderStatus::Confirmed, $this->order->fresh()->status);
         $this->assertNotNull($second->fresh()->confirmed_at);
         $this->assertSame(OrderStatus::Delivered, $delivered->fresh()->status);
+    }
+
+    public function test_bulk_packing_skips_dates_whose_plan_is_not_locked(): void
+    {
+        HarvestPlan::factory()->create(['delivery_date' => '2026-10-03', 'harvest_date' => '2026-10-03', 'status' => HarvestPlanStatus::Confirmed]);
+        $a = Order::factory()->create(['delivery_date' => '2026-10-03', 'status' => OrderStatus::Confirmed]);
+        $b = Order::factory()->create(['delivery_date' => '2026-10-04', 'status' => OrderStatus::Confirmed]);
+
+        $this->actingAs($this->operator)
+            ->patch('/admin/orders/bulk-status', ['status' => 'packing', 'order_ids' => [$a->id, $b->id]])
+            ->assertSessionHas('status', 'Đã chuyển 1 đơn sang "Đang đóng gói". Bỏ qua 1 đơn vì kế hoạch thu hoạch chưa chốt.');
+
+        $this->assertSame(OrderStatus::Packing, $a->fresh()->status);
+        $this->assertSame(OrderStatus::Confirmed, $b->fresh()->status);
+    }
+
+    public function test_unlocked_plan_hides_packing_actions_and_shows_a_banner(): void
+    {
+        $this->order->update(['status' => OrderStatus::Confirmed]);
+
+        $this->actingAs($this->operator)->get('/admin/orders?delivery_date=2026-10-03')
+            ->assertOk()->assertSee('Kế hoạch thu hoạch ngày 03/10 chưa chốt')->assertDontSee('value="packing"', false);
+
+        $this->actingAs($this->operator)->get('/admin/orders/'.$this->order->id)
+            ->assertOk()->assertSee('chưa thể chuyển sang "Đang đóng gói"', false);
     }
 
     public function test_bulk_action_cannot_cancel_and_needs_a_selection(): void

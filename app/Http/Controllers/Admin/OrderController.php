@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\HarvestPlanStatus;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
@@ -87,6 +86,8 @@ class OrderController extends Controller
             'date' => $date,
             'status' => $filters['status'] ?? null,
             'search' => $search !== '' ? $search : null,
+            // Khi tìm (nhiều ngày) không ẩn nút; guard trong OrderService chặn từng đơn.
+            'planLocked' => $search !== '' || HarvestPlan::isLockedFor($date),
             'statuses' => OrderStatus::cases(),
             'bulkStatuses' => [OrderStatus::Confirmed, OrderStatus::Packing, OrderStatus::Delivering, OrderStatus::Delivered],
         ]);
@@ -164,9 +165,7 @@ class OrderController extends Controller
             'packsByReward' => collect($rewards)->mapWithKeys(fn (Reward $reward) => [$reward->key => $reward->packs])->all(),
             'maxPacks' => (int) collect($rewards)->max('packs'),
             'giftProducts' => Product::where('is_active', true)->orderBy('id')->get(['id', 'name']),
-            'harvestPlanLocked' => HarvestPlan::whereDate('delivery_date', $order->delivery_date)
-                ->where('status', '!=', HarvestPlanStatus::Draft)
-                ->exists(),
+            'harvestPlanLocked' => HarvestPlan::isLockedFor($order->delivery_date),
         ];
     }
 
@@ -211,6 +210,9 @@ class OrderController extends Controller
         $message = "Đã chuyển {$result['moved']} đơn sang \"{$to->label()}\".";
         if ($result['skipped'] > 0) {
             $message .= " Bỏ qua {$result['skipped']} đơn không ở bước liền trước.";
+        }
+        if ($result['blocked'] > 0) {
+            $message .= " Bỏ qua {$result['blocked']} đơn vì kế hoạch thu hoạch chưa chốt.";
         }
 
         return back()->with('status', $message);

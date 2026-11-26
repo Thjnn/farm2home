@@ -155,6 +155,13 @@
                     <h2 class="mb-2 font-semibold">Chuyển trạng thái</h2>
                     <div class="space-y-3">
                         @foreach ($order->status->next() as $next)
+                            @if ($next->needsLockedPlan() && ! $harvestPlanLocked)
+                                <p class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-900">
+                                    Kế hoạch thu hoạch ngày {{ $order->delivery_date->format('d/m') }} chưa chốt, chưa thể chuyển sang "{{ $next->label() }}".
+                                    <a href="{{ route('admin.harvest-plans.index') }}" class="font-medium underline">Mở kế hoạch thu hoạch</a>
+                                </p>
+                                @continue
+                            @endif
                             <form method="POST" action="{{ route('admin.orders.transition', $order) }}" class="space-y-2">
                                 @csrf
                                 @method('PATCH')

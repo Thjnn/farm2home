@@ -41,6 +41,14 @@ enum OrderStatus: string
     }
 
     /**
+     * Đóng gói / giao chỉ được làm khi kế hoạch thu hoạch ngày giao đã chốt.
+     */
+    public function needsLockedPlan(): bool
+    {
+        return in_array($this, [self::Packing, self::Delivering, self::Delivered], true);
+    }
+
+    /**
      * Đơn chưa hủy đều được tính vào nhu cầu (quyết định D3).
      */
     public function countsAsDemand(): bool

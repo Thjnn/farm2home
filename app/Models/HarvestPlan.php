@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\HarvestPlanStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\HarvestPlanFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,6 +32,16 @@ class HarvestPlan extends Model
             'status' => HarvestPlanStatus::class,
             'confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Kế hoạch ngày giao đã chốt (confirmed / sent / completed).
+     */
+    public static function isLockedFor(CarbonInterface|string $deliveryDate): bool
+    {
+        return static::whereDate('delivery_date', $deliveryDate)
+            ->where('status', '!=', HarvestPlanStatus::Draft)
+            ->exists();
     }
 
     public function items(): HasMany

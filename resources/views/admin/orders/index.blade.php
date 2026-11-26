@@ -70,6 +70,12 @@
             </section>
         @endif
 
+        @if (! $planLocked && $orders->isNotEmpty())
+            <p class="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                Kế hoạch thu hoạch ngày {{ $day->format('d/m') }} chưa chốt: chỉ xác nhận được đơn, chưa đóng gói / giao.
+                <a href="{{ route('admin.harvest-plans.index') }}" class="font-medium underline">Mở kế hoạch thu hoạch</a>
+            </p>
+        @endif
     @endif
 
     <div x-data="{ selected: 0, count() { this.selected = this.$root.querySelectorAll('[data-bulk-item]:checked').length } }" @change="count()">
@@ -129,6 +135,7 @@
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="mr-1 text-stone-700">Đã chọn <span data-bulk-count class="font-semibold" x-text="selected">0</span> đơn → chuyển sang</span>
                     @foreach ($bulkStatuses as $option)
+                        @continue($option->needsLockedPlan() && ! $planLocked)
                         <button name="status" value="{{ $option->value }}" class="min-h-11 rounded-lg border border-emerald-700 px-3 font-medium text-emerald-800 hover:bg-emerald-50">{{ $option->label() }}</button>
                     @endforeach
                 </div>

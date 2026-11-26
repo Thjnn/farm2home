@@ -6,6 +6,7 @@ use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\WasteReason;
 use App\Models\Batch;
+use App\Models\HarvestPlan;
 use App\Models\Order;
 use App\Models\Subscription;
 use App\Services\BatchService;
@@ -144,6 +145,7 @@ class BatchAllocationTest extends TestCase
         $order = $this->order('0988000001', 14);
         $this->batch('F2H-261003-RM-NH01', 5.0);
         $this->batches->allocate($this->date);
+        HarvestPlan::factory()->create(['delivery_date' => '2026-10-03', 'harvest_date' => '2026-10-03', 'status' => 'confirmed']);
 
         foreach ([OrderStatus::Packing, OrderStatus::Delivering, OrderStatus::Delivered] as $status) {
             $this->orders->transition($order, $status);

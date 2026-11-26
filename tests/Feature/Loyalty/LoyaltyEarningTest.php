@@ -5,6 +5,7 @@ namespace Tests\Feature\Loyalty;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PointReason;
+use App\Models\HarvestPlan;
 use App\Models\Order;
 use App\Models\PackagingReturn;
 use App\Models\PointTransaction;
@@ -53,6 +54,7 @@ class LoyaltyEarningTest extends TestCase
 
     private function deliver(Order $order): Order
     {
+        HarvestPlan::firstOrCreate(['delivery_date' => '2026-10-04'], ['harvest_date' => '2026-10-04', 'status' => 'confirmed']);
         foreach ([OrderStatus::Confirmed, OrderStatus::Packing, OrderStatus::Delivering, OrderStatus::Delivered] as $status) {
             $this->orders->transition($order, $status);
         }

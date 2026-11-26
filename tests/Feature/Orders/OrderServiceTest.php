@@ -3,10 +3,12 @@
 namespace Tests\Feature\Orders;
 
 use App\Enums\DeliveryMethod;
+use App\Enums\HarvestPlanStatus;
 use App\Enums\OrderChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Customer;
+use App\Models\HarvestPlan;
 use App\Models\Order;
 use App\Services\OrderService;
 use App\Support\AddressEncryption;
@@ -187,8 +189,51 @@ class OrderServiceTest extends TestCase
         $this->assertSame(0, Customer::count());
     }
 
+    private function lockPlan(string $date, HarvestPlanStatus $status = HarvestPlanStatus::Confirmed): void
+    {
+        HarvestPlan::factory()->create(['delivery_date' => $date, 'harvest_date' => $date, 'status' => $status]);
+    }
+
+    private function confirmedOrderFor(string $date): Order
+    {
+        $order = $this->orders->place($this->payload(['delivery_date' => $date]), OrderChannel::Website);
+
+        return $this->orders->transition($order, OrderStatus::Confirmed);
+    }
+
+    public function test_packing_needs_a_locked_harvest_plan(): void
+    {
+        $order = $this->confirmedOrderFor('2026-10-03');
+
+        $this->expectExceptionMessage('Kế hoạch thu hoạch ngày 03/10 chưa chốt');
+        $this->orders->transition($order, OrderStatus::Packing);
+    }
+
+    public function test_draft_plan_still_blocks_packing_but_not_confirm_or_cancel(): void
+    {
+        $this->lockPlan('2026-10-03', HarvestPlanStatus::Draft);
+        $order = $this->confirmedOrderFor('2026-10-03');
+
+        try {
+            $this->orders->transition($order, OrderStatus::Packing);
+            $this->fail('Packing should be blocked while the plan is a draft.');
+        } catch (DomainException) {
+        }
+
+        $this->assertSame(OrderStatus::Cancelled, $this->orders->transition($order, OrderStatus::Cancelled, 'Khách đổi ý')->status);
+    }
+
+    public function test_sent_and_completed_plans_count_as_locked(): void
+    {
+        foreach (['2026-10-03' => HarvestPlanStatus::Sent, '2026-10-04' => HarvestPlanStatus::Completed] as $date => $status) {
+            $this->lockPlan($date, $status);
+            $this->assertSame(OrderStatus::Packing, $this->orders->transition($this->confirmedOrderFor($date), OrderStatus::Packing)->status);
+        }
+    }
+
     public function test_confirming_and_delivering_a_cod_order(): void
     {
+        $this->lockPlan('2026-10-03');
         $order = $this->orders->place($this->payload(), OrderChannel::Website);
 
         $this->orders->transition($order, OrderStatus::Confirmed);
@@ -207,6 +252,7 @@ class OrderServiceTest extends TestCase
 
     public function test_bank_transfer_order_is_not_marked_paid_on_delivery(): void
     {
+        $this->lockPlan('2026-10-03');
         $order = $this->orders->place($this->payload(['payment_method' => 'bank_transfer']), OrderChannel::Website);
         foreach ([OrderStatus::Confirmed, OrderStatus::Packing, OrderStatus::Delivering, OrderStatus::Delivered] as $status) {
             $this->orders->transition($order, $status);

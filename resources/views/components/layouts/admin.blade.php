@@ -1,4 +1,4 @@
-@props(['title' => 'Quản trị'])
+@props(['title' => 'Quản trị', 'back' => null])
 @php
     // Menu lấy từ config/admin_menu.php; icon là nét SVG lucide nhúng thẳng để khỏi thêm thư viện.
     $menu = config('admin_menu');
@@ -15,6 +15,9 @@
     // Số trên menu, cập nhật mỗi 15 giây qua admin.notifications.
     $badgeOf = $menu['badges'];
     $badges = app(\App\Services\NotificationService::class)->badges();
+    // back = route danh sách; link quay lại giữ bộ lọc lần cuối mở danh sách đó, nhãn lấy từ menu.
+    $backUrl = $back ? session(\App\Http\Middleware\RememberListUrl::key($back), route($back)) : null;
+    $backLabel = $back ? collect($menu['groups'])->flatMap(fn ($group) => $group['items'])->get($back)[0] ?? 'Quay lại' : null;
     $badgeSum = fn (array $routes) => collect($routes)->map(fn ($route) => isset($badgeOf[$route]) ? 'badges.'.$badgeOf[$route]['key'] : null)->filter()->join(' + ') ?: '0';
 @endphp
 <x-layouts.base :title="$title">
@@ -144,6 +147,9 @@
                 {{-- Đầu trang: tiêu đề, mô tả ngắn (subtitle) và nút chính bên phải (actions). --}}
                 <div class="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
                     <div class="min-w-0">
+                        @if ($backUrl)
+                            <a href="{{ $backUrl }}" class="-ml-2 mb-1 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50">← {{ $backLabel }}</a>
+                        @endif
                         <h1 class="text-xl font-semibold sm:text-2xl">{{ $title }}</h1>
                         @isset($subtitle)
                             <p class="mt-1 text-sm text-stone-600">{{ $subtitle }}</p>

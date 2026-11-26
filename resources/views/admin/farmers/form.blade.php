@@ -1,4 +1,4 @@
-<x-layouts.admin :title="$farmer->exists ? 'Sửa HTX' : 'Thêm HTX'">
+<x-layouts.admin :title="$farmer->exists ? 'Sửa HTX' : 'Thêm HTX'" back="admin.farmers.index">
     <form method="POST" enctype="multipart/form-data" action="{{ $farmer->exists ? route('admin.farmers.update', $farmer) : route('admin.farmers.store') }}" class="max-w-3xl space-y-4">
         @csrf
         @if ($farmer->exists)

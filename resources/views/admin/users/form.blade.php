@@ -1,4 +1,4 @@
-<x-layouts.admin :title="$user->exists ? 'Sửa tài khoản' : 'Thêm tài khoản'">
+<x-layouts.admin :title="$user->exists ? 'Sửa tài khoản' : 'Thêm tài khoản'" back="admin.users.index">
     <form method="POST" action="{{ $user->exists ? route('admin.users.update', $user) : route('admin.users.store') }}" class="grid max-w-2xl gap-4 sm:grid-cols-2">
         @csrf
         @if ($user->exists)

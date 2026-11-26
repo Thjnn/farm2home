@@ -1,4 +1,4 @@
-<x-layouts.admin :title="'Điểm của '.$customer->name">
+<x-layouts.admin :title="'Điểm của '.$customer->name" back="admin.loyalty.index">
     <p class="mb-4 text-sm">{{ $customer->phone }} · Số dư: <span class="font-semibold">{{ $points }} điểm</span></p>
 
     <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
@@ -37,5 +37,4 @@
     </div>
     <div class="mt-4">{{ $transactions->links() }}</div>
 
-    <p class="mt-4 text-sm"><a href="{{ route('admin.loyalty.index') }}" class="text-emerald-800 underline">← Điểm thành viên</a></p>
 </x-layouts.admin>

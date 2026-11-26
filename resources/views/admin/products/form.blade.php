@@ -1,4 +1,4 @@
-<x-layouts.admin :title="$product->exists ? 'Sửa sản phẩm' : 'Thêm sản phẩm'">
+<x-layouts.admin :title="$product->exists ? 'Sửa sản phẩm' : 'Thêm sản phẩm'" back="admin.products.index">
     <form method="POST" enctype="multipart/form-data" action="{{ $product->exists ? route('admin.products.update', $product) : route('admin.products.store') }}" class="grid max-w-2xl gap-4 sm:grid-cols-2">
         @csrf
         @if ($product->exists)

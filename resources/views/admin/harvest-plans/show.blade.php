@@ -13,7 +13,7 @@
     // Dư (vàng) / thiếu (đỏ).
     $diffTone = fn (float $kg) => abs($kg) < 0.05 ? 'text-stone-500' : ($kg > 0 ? 'text-amber-800' : 'text-rose-700');
 @endphp
-<x-layouts.admin :title="'Kế hoạch thu hoạch '.$plan->delivery_date->format('d/m/Y')">
+<x-layouts.admin :title="'Kế hoạch thu hoạch '.$plan->delivery_date->format('d/m/Y')" back="admin.harvest-plans.index">
     <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-700">
         <x-status-badge :status="$plan->status" />
         <span>Biên an toàn {{ (float) $plan->safety_margin_pct }}%</span>

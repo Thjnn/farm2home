@@ -1,4 +1,4 @@
-<x-layouts.admin :title="'Đơn '.$order->code">
+<x-layouts.admin :title="'Đơn '.$order->code" back="admin.orders.index">
     <div class="grid gap-4 lg:grid-cols-3">
         <section class="rounded-xl border border-stone-200 bg-white p-4 lg:col-span-2">
             <div class="mb-3 flex flex-wrap items-center gap-3">

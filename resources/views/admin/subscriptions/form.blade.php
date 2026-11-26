@@ -1,5 +1,5 @@
 @php($weekdays = [1 => 'Thứ Hai', 2 => 'Thứ Ba', 3 => 'Thứ Tư', 4 => 'Thứ Năm', 5 => 'Thứ Sáu', 6 => 'Thứ Bảy', 7 => 'Chủ nhật'])
-<x-layouts.admin :title="$subscription->exists ? 'Sửa giỏ định kỳ' : 'Thêm giỏ định kỳ'">
+<x-layouts.admin :title="$subscription->exists ? 'Sửa giỏ định kỳ' : 'Thêm giỏ định kỳ'" back="admin.subscriptions.index">
     <form method="POST" action="{{ $subscription->exists ? route('admin.subscriptions.update', $subscription) : route('admin.subscriptions.store') }}" class="grid max-w-2xl gap-4 sm:grid-cols-2">
         @csrf
         @if ($subscription->exists)

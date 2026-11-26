@@ -1,4 +1,4 @@
-<x-layouts.admin title="Tạo đơn hộ khách">
+<x-layouts.admin title="Tạo đơn hộ khách" back="admin.orders.index">
     @include('partials.order-form-script')
 
     <form method="POST" action="{{ route('admin.orders.store') }}" x-data="orderForm(...window.orderFormData)" class="max-w-2xl space-y-6">

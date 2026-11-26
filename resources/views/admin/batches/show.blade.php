@@ -1,4 +1,4 @@
-<x-layouts.admin :title="'Lô '.$batch->code">
+<x-layouts.admin :title="'Lô '.$batch->code" back="admin.batches.index">
     <div class="grid gap-4 lg:grid-cols-3">
         <section class="rounded-xl border border-stone-200 bg-white p-4 text-sm lg:col-span-1">
             <div class="mb-2"><x-status-badge :status="$batch->quality_status" /></div>

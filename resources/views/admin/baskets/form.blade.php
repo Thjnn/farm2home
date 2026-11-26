@@ -1,4 +1,4 @@
-<x-layouts.admin :title="$basket->exists ? 'Sửa giỏ rau' : 'Thêm giỏ rau'">
+<x-layouts.admin :title="$basket->exists ? 'Sửa giỏ rau' : 'Thêm giỏ rau'" back="admin.baskets.index">
     <form method="POST" action="{{ $basket->exists ? route('admin.baskets.update', $basket) : route('admin.baskets.store') }}" class="max-w-2xl space-y-4">
         @csrf
         @if ($basket->exists)

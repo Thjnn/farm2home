@@ -1,4 +1,4 @@
-<x-layouts.admin :title="$zone->exists ? 'Sửa cụm giao' : 'Thêm cụm giao'">
+<x-layouts.admin :title="$zone->exists ? 'Sửa cụm giao' : 'Thêm cụm giao'" back="admin.zones.index">
     <form method="POST" action="{{ $zone->exists ? route('admin.zones.update', $zone) : route('admin.zones.store') }}" class="grid max-w-2xl gap-4 sm:grid-cols-2">
         @csrf
         @if ($zone->exists)

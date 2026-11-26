@@ -11,6 +11,7 @@ use App\Models\HarvestPlan;
 use App\Models\HarvestPlanItem;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\SupplyReport;
 use App\Services\BatchService;
 use App\Services\ForecastService;
 use App\Services\HarvestPlanService;
@@ -61,6 +62,9 @@ class HarvestPlanController extends Controller
                 : collect(),
             'farmers' => $farmers,
             'unusual' => $supply->unusualReports($plan->delivery_date->toDateString()),
+            // Số kg HTX báo cho ngày giao, theo "farmerId-productId".
+            'reported' => SupplyReport::whereDate('available_date', $plan->delivery_date)->get()
+                ->mapWithKeys(fn (SupplyReport $report) => ["{$report->farmer_id}-{$report->product_id}" => (float) $report->quantity_kg]),
             'staleWarnings' => $plans->staleWarnings($plan),
         ]);
     }

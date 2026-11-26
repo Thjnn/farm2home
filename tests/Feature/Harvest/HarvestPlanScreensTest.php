@@ -55,6 +55,38 @@ class HarvestPlanScreensTest extends TestCase
             ->assertSee('Chốt kế hoạch');
     }
 
+    public function test_plan_table_groups_rows_by_product_with_totals_and_differences(): void
+    {
+        $this->rm->update(['image' => 'rau-muong.jpg']);
+        SupplyReport::factory()->create(['farmer_id' => $this->nh02->id, 'product_id' => $this->rm->id, 'available_date' => '2026-10-03', 'quantity_kg' => 9, 'source' => 'form']);
+        $plan = $this->generate();
+        $plan->items()->create(['product_id' => $this->cn->id, 'confirmed_order_kg' => 0, 'forecast_extra_kg' => 0, 'available_stock_kg' => 0, 'suggested_kg' => 0, 'final_kg' => 0]);
+
+        $this->get(route('admin.harvest-plans.show', $plan))
+            ->assertOk()
+            ->assertSee('Cần 7 kg')
+            ->assertSee('HTX báo')
+            ->assertSee('Chênh lệch')
+            ->assertSee('18 kg')
+            ->assertSee($this->rm->fresh()->imageUrl(), false)
+            ->assertSeeInOrder([$this->rm->name, $this->nh01->name, $this->nh02->name, $this->cn->name])
+            ->assertSee('<span class="flex size-10', false);
+    }
+
+    public function test_confirmed_plan_shows_received_minus_final_difference(): void
+    {
+        $plan = HarvestPlan::factory()->create(['delivery_date' => '2026-10-03', 'harvest_date' => '2026-10-03', 'status' => HarvestPlanStatus::Confirmed]);
+        $plan->items()->create([
+            'product_id' => $this->rm->id, 'farmer_id' => $this->nh01->id, 'confirmed_order_kg' => 7, 'forecast_extra_kg' => 0,
+            'available_stock_kg' => 0, 'suggested_kg' => 8, 'final_kg' => 10, 'received_kg' => 9,
+        ]);
+
+        $this->actingAs($this->operator)->get(route('admin.harvest-plans.show', $plan))
+            ->assertOk()
+            ->assertSee('−1 kg')
+            ->assertSee('nhận − chốt');
+    }
+
     public function test_generating_also_runs_the_forecast_for_today(): void
     {
         $this->generate();

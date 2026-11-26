@@ -5,8 +5,13 @@
     $canReceive = in_array($plan->status, [HarvestPlanStatus::Confirmed, HarvestPlanStatus::Sent], true) && Route::has('admin.harvest-plan-items.receive');
     $totalSuggested = (float) $plan->items->sum('suggested_kg');
     $withoutSource = $plan->items->whereNull('farmer_id')->count();
-    // Dòng cuối của mỗi loại rau: nơi đặt nút "+ Thêm HTX cho ..." (gọn hơn một dòng riêng).
-    $lastOfProduct = $plan->items->groupBy('product_id')->map(fn ($rows) => $rows->last()->id);
+    // Chênh lệch dòng HTX: khi nháp = chốt − gợi ý; đã chốt và có số nhận = nhận − chốt.
+    $rowDiff = fn ($item) => ! $isDraft && $item->received_kg !== null
+        ? (float) $item->received_kg - (float) $item->final_kg
+        : (float) ($item->final_kg ?? $item->suggested_kg) - (float) $item->suggested_kg;
+    $signedKg = fn (float $kg) => (abs($kg) < 0.05 ? '' : ($kg > 0 ? '+' : '−')).\App\Support\Format::kg(abs($kg));
+    // Dư (vàng) / thiếu (đỏ).
+    $diffTone = fn (float $kg) => abs($kg) < 0.05 ? 'text-stone-500' : ($kg > 0 ? 'text-amber-800' : 'text-rose-700');
 @endphp
 <x-layouts.admin :title="'Kế hoạch thu hoạch '.$plan->delivery_date->format('d/m/Y')">
     <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-700">
@@ -41,13 +46,20 @@
     <div x-data="{
             changed: 0,
             totalFinal: 0,
-            {{-- Đếm dòng chốt khác gợi ý và tổng kg chốt, cập nhật khi gõ. --}}
+            byProduct: {},
+            {{-- Đếm dòng chốt khác gợi ý, tổng kg chốt (cả kế hoạch và từng rau), cập nhật khi gõ. --}}
             recount() {
                 const inputs = [...this.$root.querySelectorAll('[data-final]')];
                 this.changed = inputs.filter((input) => Number(input.value) !== Number(input.dataset.suggested)).length;
                 this.totalFinal = inputs.reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+                this.byProduct = inputs.reduce((sums, input) => {
+                    sums[input.dataset.product] = (sums[input.dataset.product] ?? 0) + (Number(input.value) || 0);
+                    return sums;
+                }, {});
             },
             kg(value) { return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value) + ' kg'; },
+            signed(value) { return (Math.abs(value) < 0.05 ? '' : (value > 0 ? '+' : '−')) + this.kg(Math.abs(value)); },
+            tone(value) { return Math.abs(value) < 0.05 ? 'text-stone-500' : (value > 0 ? 'text-amber-800' : 'text-rose-700'); },
         }" x-init="recount()" @input="recount()">
 
         @if ($isDraft && $plan->items->isNotEmpty())
@@ -82,104 +94,151 @@
             <button form="save-all-items" class="sr-only" tabindex="-1" aria-hidden="true">Lưu tất cả</button>
         @endif
         <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-            <table class="table-cards w-full {{ $isDraft ? 'min-w-[960px]' : 'min-w-[820px]' }} text-left text-sm">
+            <table class="table-cards w-full {{ $isDraft ? 'min-w-[960px]' : 'min-w-[880px]' }} text-left text-sm">
                 <thead class="border-b border-stone-200 bg-stone-50 text-stone-600">
                     <tr>
-                        <th class="px-3 py-2 font-medium">Loại rau</th>
+                        <th class="px-3 py-2 font-medium">Rau</th>
                         <th class="px-3 py-2 font-medium">HTX</th>
-                        <th class="whitespace-nowrap px-3 py-2 text-right font-medium">Đã đặt</th>
-                        <th class="whitespace-nowrap px-3 py-2 text-right font-medium">Dự báo thêm</th>
-                        <th class="whitespace-nowrap px-3 py-2 text-right font-medium">Tồn</th>
+                        <th class="whitespace-nowrap px-3 py-2 text-right font-medium">HTX báo</th>
                         <th class="whitespace-nowrap px-3 py-2 text-right font-medium">Gợi ý</th>
                         <th class="px-3 py-2 font-medium">Chốt</th>
-                        <th class="px-3 py-2 font-medium">{{ $isDraft ? '' : 'Thực nhận' }}</th>
+                        <th class="whitespace-nowrap px-3 py-2 text-right font-medium">Chênh lệch</th>
+                        @unless ($isDraft)
+                            <th class="px-3 py-2 font-medium">Thực nhận</th>
+                        @endunless
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-stone-100">
-                    @forelse ($plan->items as $item)
-                        @php($firstOfProduct = $loop->first || $plan->items[$loop->index - 1]->product_id !== $item->product_id)
-                        <tr @class(['align-top', 'border-t-2 border-t-stone-200' => $firstOfProduct && ! $loop->first])>
-                            <td class="px-3 py-2">
-                                <span @class(['font-medium', 'text-stone-400' => ! $firstOfProduct])>{{ $item->product->name }}</span>
-                                @if ($isDraft && $lastOfProduct[$item->product_id] === $item->id)
-                                    <button form="save-all-items" name="add_product_id" value="{{ $item->product_id }}" class="mt-1 block min-h-11 text-left text-xs font-medium text-emerald-800 hover:underline md:min-h-8">+ Thêm HTX cho {{ $item->product->name }}</button>
-                                @endif
-                            </td>
-                            <td class="px-3 py-2">
-                                @if ($item->farmer)
-                                    {{ $item->farmer->name }}
-                                    @isset($unusual["{$item->farmer_id}-{$item->product_id}"])
-                                        @php($odd = $unusual["{$item->farmer_id}-{$item->product_id}"])
-                                        <span class="block text-xs text-amber-800">⚠ Báo @kg($odd['kg']), thường khoảng @kg($odd['usual_kg'])/ngày. Hỏi lại trước khi chốt.</span>
-                                    @endisset
-                                @else
-                                    <span class="font-semibold text-rose-700">Chưa có nguồn</span>
-                                @endif
-                            </td>
-                            <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">@kg($item->confirmed_order_kg)</td>
-                            <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">@kg($item->forecast_extra_kg)</td>
-                            <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">@kg($item->available_stock_kg)</td>
-                            <td class="whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums">@kg($item->suggested_kg)</td>
-                            @if ($isDraft)
-                                <td class="px-3 py-2" colspan="2" data-label="" x-data="{ final: {{ (float) old("items.{$item->id}.final_kg", $item->final_kg ?? $item->suggested_kg) }}, suggested: {{ (float) $item->suggested_kg }}, reason: @js((string) old("items.{$item->id}.adjust_reason", $item->adjust_reason)) }">
-                                    <div class="flex w-full flex-wrap items-center gap-2">
-                                        <input type="number" step="0.5" min="0" form="save-all-items" name="items[{{ $item->id }}][final_kg]" x-model.number="final" data-final data-suggested="{{ (float) $item->suggested_kg }}"
-                                            value="{{ (float) old("items.{$item->id}.final_kg", $item->final_kg ?? $item->suggested_kg) }}" aria-label="Số kg chốt cho {{ $item->product->name }}"
-                                            :class="final !== suggested ? 'border-amber-400 bg-amber-50 font-semibold text-amber-900' : 'border-stone-300'"
-                                            class="h-11 w-24 rounded-lg border px-2 text-right tabular-nums">
-                                        <input form="save-all-items" name="items[{{ $item->id }}][adjust_reason]" value="{{ old("items.{$item->id}.adjust_reason", $item->adjust_reason) }}" x-model="reason" placeholder="Lý do nếu khác gợi ý" aria-label="Lý do điều chỉnh"
-                                            :class="final !== suggested && ! reason ? 'border-amber-400' : 'border-stone-300'"
-                                            class="h-11 min-w-28 flex-1 rounded-lg border px-2">
-                                        <select form="save-all-items" name="items[{{ $item->id }}][farmer_id]" aria-label="HTX" class="h-11 w-full rounded-lg border border-stone-300 bg-white px-2 md:w-44">
-                                            @unless ($item->farmer_id)
-                                                <option value="">— chọn HTX —</option>
-                                            @endunless
-                                            {{-- Chỉ nhà đã đăng ký trồng loại rau này (giữ nhà đang được chia dù chưa đăng ký). --}}
-                                            @foreach ($allFarmers->filter(fn ($farmer) => $farmer->id === $item->farmer_id || $farmer->products->contains('id', $item->product_id)) as $farmer)
-                                                <option value="{{ $farmer->id }}" @selected((int) old("items.{$item->id}.farmer_id", $item->farmer_id) === $farmer->id)>{{ $farmer->code }} · {{ $farmer->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @if ((float) $item->suggested_kg === 0.0)
-                                            <button form="save-all-items" name="remove_item_id" value="{{ $item->id }}" class="h-11 rounded-lg px-3 text-rose-700 hover:bg-rose-50">Xoá</button>
-                                        @endif
-                                    </div>
-                                </td>
-                            @else
-                                <td class="px-3 py-2">
-                                    <span class="font-semibold tabular-nums">@kg($item->final_kg)</span>
-                                    @if ($item->adjust_reason)
-                                        <span class="block text-xs text-stone-600">{{ $item->adjust_reason }}</span>
+                @forelse ($plan->items->groupBy('product_id') as $productId => $rows)
+                    @php
+                        $product = $rows->first()->product;
+                        // Số đặt / dự báo / tồn chỉ ghi ở dòng đầu của mỗi rau (HarvestPlanService), nên cộng cả nhóm.
+                        $ordered = (float) $rows->sum('confirmed_order_kg');
+                        $extra = (float) $rows->sum('forecast_extra_kg');
+                        $stock = (float) $rows->sum('available_stock_kg');
+                        $sumSuggested = (float) $rows->sum('suggested_kg');
+                        $sumFinal = (float) $rows->sum(fn ($item) => (float) ($item->final_kg ?? $item->suggested_kg));
+                        $sumReported = (float) $rows->sum(fn ($item) => $reported["{$item->farmer_id}-{$item->product_id}"] ?? 0);
+                        $anyReceived = $rows->contains(fn ($item) => $item->received_kg !== null);
+                        $sumDiff = (float) $rows->sum(fn ($item) => $rowDiff($item));
+                        $imageUrl = $product->imageUrl();
+                    @endphp
+                    <tbody class="border-t-2 border-stone-200 first-of-type:border-t-0">
+                        <tr class="bg-stone-50 align-top">
+                            <td class="px-3 py-2" data-label="">
+                                <div class="flex items-start gap-3 text-left">
+                                    @if ($imageUrl)
+                                        <img src="{{ $imageUrl }}" alt="" class="size-10 shrink-0 rounded-lg object-cover" loading="lazy">
+                                    @else
+                                        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 font-semibold text-emerald-800" aria-hidden="true">{{ mb_substr($product->name, 0, 1) }}</span>
                                     @endif
-                                    <span class="block text-xs {{ $item->farmer_confirmed_at ? 'text-emerald-800' : 'text-stone-500' }}">
-                                        {{ $item->farmer_confirmed_at ? 'HTX xác nhận '.$item->farmer_confirmed_at->format('H:i d/m') : 'Chưa xác nhận' }}
-                                    </span>
-                                </td>
-                                <td class="px-3 py-2">
-                                    <div class="w-full">
-                                        @if ($item->batch)
-                                            <span class="font-semibold">@kg($item->received_kg)</span>
-                                            <a href="{{ route('admin.batches.show', $item->batch) }}" class="block text-xs text-emerald-800 underline">{{ $item->batch->code }}</a>
-                                        @elseif ($item->received_kg !== null)
-                                            @kg($item->received_kg)
-                                        @endif
-                                        @if ($canReceive && $item->farmer_id)
-                                            <form method="POST" action="{{ route('admin.harvest-plan-items.receive', $item) }}" class="mt-1 flex flex-wrap items-center justify-end gap-2 md:justify-start">
-                                                @csrf
-                                                <input type="number" step="0.1" min="0" name="received_kg" value="{{ (float) ($item->received_kg ?? $item->final_kg) }}" aria-label="Số kg thực nhận {{ $item->product->name }}"
-                                                    class="h-11 w-20 rounded-lg border border-stone-300 px-2 text-right">
-                                                <input type="text" name="grower_name" value="{{ $item->batch?->grower_name }}" maxlength="150" placeholder="Hộ trồng (nếu HTX khai)" aria-label="Hộ trồng {{ $item->product->name }} (nếu HTX khai)"
-                                                    class="h-11 w-44 rounded-lg border border-stone-300 px-2">
-                                                <button class="h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100">{{ $item->batch ? 'Sửa' : 'Nhận' }}</button>
-                                            </form>
+                                    <div>
+                                        <span class="font-semibold text-stone-900">{{ $product->name }}</span>
+                                        <span class="block text-xs font-normal text-stone-600">
+                                            Đặt @kg($ordered) · Dự báo +@kg($extra) · Tồn @kg($stock) ·
+                                            <span class="font-semibold text-stone-800">Cần @kg(max(0, $ordered + $extra - $stock))</span>
+                                        </span>
+                                        @if ($isDraft)
+                                            <button form="save-all-items" name="add_product_id" value="{{ $productId }}" class="mt-1 block min-h-11 text-left text-xs font-medium text-emerald-800 hover:underline md:min-h-8">+ Thêm HTX cho {{ $product->name }}</button>
                                         @endif
                                     </div>
-                                </td>
+                                </div>
+                            </td>
+                            <td class="px-3 py-2 text-stone-600">{{ $rows->whereNotNull('farmer_id')->count() }} HTX</td>
+                            <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">@kg($sumReported)</td>
+                            <td class="whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums">@kg($sumSuggested)</td>
+                            @if ($isDraft)
+                                <td class="whitespace-nowrap px-3 py-2 font-semibold tabular-nums" x-text="kg(byProduct[{{ $productId }}] ?? 0)">@kg($sumFinal)</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums"
+                                    x-text="signed((byProduct[{{ $productId }}] ?? 0) - {{ $sumSuggested }})" :class="tone((byProduct[{{ $productId }}] ?? 0) - {{ $sumSuggested }})">{{ $signedKg($sumDiff) }}</td>
+                            @else
+                                <td class="whitespace-nowrap px-3 py-2 font-semibold tabular-nums">@kg($sumFinal)</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums {{ $diffTone($sumDiff) }}">{{ $signedKg($sumDiff) }}</td>
+                                <td class="whitespace-nowrap px-3 py-2 font-semibold tabular-nums">{{ $anyReceived ? \App\Support\Format::kg($rows->sum('received_kg')) : '—' }}</td>
                             @endif
                         </tr>
-                    @empty
-                        <tr><td colspan="8" class="px-3 py-6 text-center text-stone-500">Không có nhu cầu nào cho ngày này.</td></tr>
-                    @endforelse
-                </tbody>
+                        @foreach ($rows as $item)
+                            @php($reportedKg = $reported["{$item->farmer_id}-{$item->product_id}"] ?? null)
+                            <tr class="align-top" @if ($isDraft) x-data="{ final: {{ (float) old("items.{$item->id}.final_kg", $item->final_kg ?? $item->suggested_kg) }}, suggested: {{ (float) $item->suggested_kg }}, reason: @js((string) old("items.{$item->id}.adjust_reason", $item->adjust_reason)) }" @endif>
+                                <td class="px-3 py-2 max-md:hidden" data-label=""></td>
+                                <td class="px-3 py-2">
+                                    @if ($item->farmer)
+                                        {{ $item->farmer->name }}
+                                        @isset($unusual["{$item->farmer_id}-{$item->product_id}"])
+                                            @php($odd = $unusual["{$item->farmer_id}-{$item->product_id}"])
+                                            <span class="block text-xs text-amber-800">⚠ Báo @kg($odd['kg']), thường khoảng @kg($odd['usual_kg'])/ngày. Hỏi lại trước khi chốt.</span>
+                                        @endisset
+                                    @else
+                                        <span class="font-semibold text-rose-700">Chưa có nguồn</span>
+                                    @endif
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">{{ $reportedKg !== null ? \App\Support\Format::kg($reportedKg) : '—' }}</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">@kg($item->suggested_kg)</td>
+                                @if ($isDraft)
+                                    <td class="px-3 py-2">
+                                        <div class="flex w-full flex-wrap items-center gap-2">
+                                            <input type="number" step="0.5" min="0" form="save-all-items" name="items[{{ $item->id }}][final_kg]" x-model.number="final" data-final data-product="{{ $item->product_id }}" data-suggested="{{ (float) $item->suggested_kg }}"
+                                                value="{{ (float) old("items.{$item->id}.final_kg", $item->final_kg ?? $item->suggested_kg) }}" aria-label="Số kg chốt cho {{ $item->product->name }}"
+                                                :class="final !== suggested ? 'border-amber-400 bg-amber-50 font-semibold text-amber-900' : 'border-stone-300'"
+                                                class="h-11 w-24 rounded-lg border px-2 text-right tabular-nums">
+                                            <input form="save-all-items" name="items[{{ $item->id }}][adjust_reason]" value="{{ old("items.{$item->id}.adjust_reason", $item->adjust_reason) }}" x-model="reason" placeholder="Lý do nếu khác gợi ý" aria-label="Lý do điều chỉnh"
+                                                :class="final !== suggested && ! reason ? 'border-amber-400' : 'border-stone-300'"
+                                                class="h-11 min-w-28 flex-1 rounded-lg border px-2">
+                                            <select form="save-all-items" name="items[{{ $item->id }}][farmer_id]" aria-label="HTX" class="h-11 w-full rounded-lg border border-stone-300 bg-white px-2 md:w-44">
+                                                @unless ($item->farmer_id)
+                                                    <option value="">— chọn HTX —</option>
+                                                @endunless
+                                                {{-- Chỉ nhà đã đăng ký trồng loại rau này (giữ nhà đang được chia dù chưa đăng ký). --}}
+                                                @foreach ($allFarmers->filter(fn ($farmer) => $farmer->id === $item->farmer_id || $farmer->products->contains('id', $item->product_id)) as $farmer)
+                                                    <option value="{{ $farmer->id }}" @selected((int) old("items.{$item->id}.farmer_id", $item->farmer_id) === $farmer->id)>{{ $farmer->code }} · {{ $farmer->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if ((float) $item->suggested_kg === 0.0)
+                                                <button form="save-all-items" name="remove_item_id" value="{{ $item->id }}" class="h-11 rounded-lg px-3 text-rose-700 hover:bg-rose-50">Xoá</button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums" x-text="signed(final - suggested)" :class="tone(final - suggested)">{{ $signedKg($rowDiff($item)) }}</td>
+                                @else
+                                    <td class="px-3 py-2">
+                                        <span class="font-semibold tabular-nums">@kg($item->final_kg)</span>
+                                        @if ($item->adjust_reason)
+                                            <span class="block text-xs text-stone-600">{{ $item->adjust_reason }}</span>
+                                        @endif
+                                        <span class="block text-xs {{ $item->farmer_confirmed_at ? 'text-emerald-800' : 'text-stone-500' }}">
+                                            {{ $item->farmer_confirmed_at ? 'HTX xác nhận '.$item->farmer_confirmed_at->format('H:i d/m') : 'Chưa xác nhận' }}
+                                        </span>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums {{ $diffTone($rowDiff($item)) }}">
+                                        {{ $signedKg($rowDiff($item)) }}
+                                        <span class="block text-xs font-normal text-stone-500">{{ $item->received_kg !== null ? 'nhận − chốt' : 'chốt − gợi ý' }}</span>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <div class="w-full">
+                                            @if ($item->batch)
+                                                <span class="font-semibold">@kg($item->received_kg)</span>
+                                                <a href="{{ route('admin.batches.show', $item->batch) }}" class="block text-xs text-emerald-800 underline">{{ $item->batch->code }}</a>
+                                            @elseif ($item->received_kg !== null)
+                                                @kg($item->received_kg)
+                                            @endif
+                                            @if ($canReceive && $item->farmer_id)
+                                                <form method="POST" action="{{ route('admin.harvest-plan-items.receive', $item) }}" class="mt-1 flex flex-wrap items-center justify-end gap-2 md:justify-start">
+                                                    @csrf
+                                                    <input type="number" step="0.1" min="0" name="received_kg" value="{{ (float) ($item->received_kg ?? $item->final_kg) }}" aria-label="Số kg thực nhận {{ $item->product->name }}"
+                                                        class="h-11 w-20 rounded-lg border border-stone-300 px-2 text-right">
+                                                    <input type="text" name="grower_name" value="{{ $item->batch?->grower_name }}" maxlength="150" placeholder="Hộ trồng (nếu HTX khai)" aria-label="Hộ trồng {{ $item->product->name }} (nếu HTX khai)"
+                                                        class="h-11 w-44 rounded-lg border border-stone-300 px-2">
+                                                    <button class="h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100">{{ $item->batch ? 'Sửa' : 'Nhận' }}</button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </td>
+                                @endif
+                            </tr>
+                        @endforeach
+                    </tbody>
+                @empty
+                    <tbody><tr><td colspan="7" class="px-3 py-6 text-center text-stone-500">Không có nhu cầu nào cho ngày này.</td></tr></tbody>
+                @endforelse
             </table>
         </div>
         @if ($errors->has('items.*'))

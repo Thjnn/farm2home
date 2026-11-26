@@ -14,12 +14,12 @@ class AppEntryController extends Controller
     public const FARMER_COOKIE = 'f2h_farmer';
 
     /**
-     * Trang mở đầu của app đã cài (PWA): đã đăng nhập → quản trị, máy của nông hộ → trang nông hộ, còn lại → trang khách.
+     * Trang mở đầu của app đã cài (PWA): đã đăng nhập → quản trị (người giao → màn hình giao hàng), máy của nông hộ → trang nông hộ, còn lại → trang khách.
      */
     public function __invoke(Request $request): RedirectResponse
     {
         if ($request->user()) {
-            return redirect()->route('admin.dashboard');
+            return redirect($request->user()->homeUrl());
         }
 
         $token = $request->cookie(self::FARMER_COOKIE);

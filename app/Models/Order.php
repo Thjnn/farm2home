@@ -23,6 +23,7 @@ use Illuminate\Support\Collection;
     'subtotal', 'shipping_fee', 'discount', 'total',
     'payment_method', 'payment_status', 'status',
     'confirmed_at', 'delivered_at', 'cancel_reason', 'note', 'requested_reward',
+    'shipper_id', 'delivery_issue', 'delivery_issue_at',
 ])]
 class Order extends Model
 {
@@ -45,6 +46,7 @@ class Order extends Model
             'delivery_date' => 'date',
             'confirmed_at' => 'datetime',
             'delivered_at' => 'datetime',
+            'delivery_issue_at' => 'datetime',
             'subtotal' => 'integer',
             'shipping_fee' => 'integer',
             'discount' => 'integer',
@@ -65,6 +67,11 @@ class Order extends Model
     public function zone(): BelongsTo
     {
         return $this->belongsTo(DeliveryZone::class, 'delivery_zone_id');
+    }
+
+    public function shipper(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'shipper_id');
     }
 
     public function items(): HasMany

@@ -28,6 +28,13 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Người giao không vào được quản trị nên bỏ qua trang định mở trước khi đăng nhập.
+        if ($request->user()->isShipper()) {
+            $request->session()->forget('url.intended');
+
+            return redirect()->route('shipper.index');
+        }
+
         return redirect()->intended(route('admin.dashboard'));
     }
 

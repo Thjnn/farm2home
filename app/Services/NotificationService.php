@@ -48,8 +48,11 @@ class NotificationService
         // Đơn cũ vừa đổi trạng thái (người khác bấm, hoặc giỏ định kỳ tự sinh).
         $changedOrders = Order::where($window('updated_at'))->where('created_at', '<=', $since)->latest('updated_at')->limit(self::MAX_EVENTS)->get()
             ->map(fn (Order $order) => [
+                // Người giao báo không giao được: trạng thái không đổi nên báo lý do thay vì "→ Đang giao".
                 'kind' => 'status',
-                'text' => "Đơn {$order->code} → {$order->status->label()}",
+                'text' => $order->delivery_issue_at?->greaterThan($since) && $order->delivery_issue_at->lessThanOrEqualTo($until)
+                    ? "Đơn {$order->code} không giao được: {$order->delivery_issue}"
+                    : "Đơn {$order->code} → {$order->status->label()}",
                 'url' => route('admin.orders.show', $order),
             ]);
 

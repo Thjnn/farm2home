@@ -15,7 +15,14 @@ class EnsureRole
     {
         $user = $request->user();
 
-        abort_unless($user !== null && in_array($user->role->value, $roles, true), 403);
+        abort_if($user === null, 403);
+
+        if (! in_array($user->role->value, $roles, true)) {
+            // Người giao lỡ mở trang quản trị: đưa về màn hình của họ thay vì báo lỗi.
+            abort_unless($user->isShipper(), 403);
+
+            return redirect()->route('shipper.index');
+        }
 
         return $next($request);
     }

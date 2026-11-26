@@ -57,6 +57,12 @@
                     <div><dt class="inline text-stone-600">Ngày giao:</dt> <dd class="inline">{{ $order->delivery_date->format('d/m/Y') }} · {{ $order->time_slot }}</dd></div>
                     <div><dt class="inline text-stone-600">Khu vực:</dt> <dd class="inline">{{ $order->zone?->name ?? '—' }}</dd></div>
                     <div><dt class="inline text-stone-600">Giao đến:</dt> <dd class="inline">{{ $order->delivery_address ?? 'Nhận tại điểm' }}</dd></div>
+                    @if ($order->delivery_method === \App\Enums\DeliveryMethod::Home)
+                        <div><dt class="inline text-stone-600">Người giao:</dt> <dd class="inline">{{ $order->shipper?->name ?? 'Chưa có' }}</dd></div>
+                    @endif
+                    @if ($order->delivery_issue)
+                        <div class="rounded bg-orange-50 px-2 py-1 text-orange-900"><dt class="inline">Không giao được ({{ $order->delivery_issue_at?->format('H:i d/m') }}):</dt> <dd class="inline">{{ $order->delivery_issue }}</dd></div>
+                    @endif
                     <div><dt class="inline text-stone-600">Thanh toán:</dt> <dd class="inline">{{ $order->payment_method->label() }} · {{ $order->payment_status->label() }}</dd></div>
                     @if ($order->note)
                         <div><dt class="inline text-stone-600">Ghi chú:</dt> <dd class="inline">{{ $order->note }}</dd></div>

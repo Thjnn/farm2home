@@ -26,7 +26,10 @@ use RuntimeException;
 
 class OrderService
 {
-    public function __construct(private readonly LoyaltyService $loyalty) {}
+    public function __construct(
+        private readonly LoyaltyService $loyalty,
+        private readonly ShipperAssignmentService $shippers,
+    ) {}
 
     /**
      * Create an order with its lines, price and shipping fee in one transaction.
@@ -123,6 +126,12 @@ class OrderService
 
             if ($to === OrderStatus::Cancelled) {
                 $this->loyalty->refundForCancelledOrder($order);
+            }
+
+            if ($to === OrderStatus::Packing && $order->delivery_method === DeliveryMethod::Home && $order->shipper_id === null) {
+                $this->shippers->assign($order->delivery_date);
+                $order->shipper_id = Order::whereKey($order->id)->value('shipper_id');
+                $order->syncOriginalAttribute('shipper_id');
             }
 
             return $order;

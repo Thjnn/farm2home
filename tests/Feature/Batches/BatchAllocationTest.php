@@ -14,6 +14,7 @@ use App\Services\OrderService;
 use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\BuildsCatalog;
 use Tests\TestCase;
 
@@ -146,6 +147,7 @@ class BatchAllocationTest extends TestCase
         $this->batch('F2H-261003-RM-NH01', 5.0);
         $this->batches->allocate($this->date);
         HarvestPlan::factory()->create(['delivery_date' => '2026-10-03', 'harvest_date' => '2026-10-03', 'status' => 'confirmed']);
+        DB::table('order_item_batches')->update(['packed_at' => now()]);
 
         foreach ([OrderStatus::Packing, OrderStatus::Delivering, OrderStatus::Delivered] as $status) {
             $this->orders->transition($order, $status);

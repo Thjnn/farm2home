@@ -153,7 +153,7 @@ class AdminOrderTest extends TestCase
 
         $this->actingAs($this->operator)
             ->patch('/admin/orders/bulk-status', ['status' => 'packing', 'order_ids' => [$a->id, $b->id]])
-            ->assertSessionHas('status', 'Đã chuyển 1 đơn sang "Đang đóng gói". Bỏ qua 1 đơn vì kế hoạch thu hoạch chưa chốt.');
+            ->assertSessionHas('status', 'Đã chuyển 1 đơn sang "Đang đóng gói". Bỏ qua 1 đơn vì kế hoạch thu hoạch chưa chốt hoặc còn túi chưa đóng.');
 
         $this->assertSame(OrderStatus::Packing, $a->fresh()->status);
         $this->assertSame(OrderStatus::Confirmed, $b->fresh()->status);

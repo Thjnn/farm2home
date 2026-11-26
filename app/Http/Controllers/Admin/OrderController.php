@@ -212,7 +212,7 @@ class OrderController extends Controller
             $message .= " Bỏ qua {$result['skipped']} đơn không ở bước liền trước.";
         }
         if ($result['blocked'] > 0) {
-            $message .= " Bỏ qua {$result['blocked']} đơn vì kế hoạch thu hoạch chưa chốt.";
+            $message .= " Bỏ qua {$result['blocked']} đơn vì kế hoạch thu hoạch chưa chốt hoặc còn túi chưa đóng.";
         }
 
         return back()->with('status', $message);

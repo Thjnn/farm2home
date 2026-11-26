@@ -99,9 +99,19 @@ class BatchService
 
     public function setQuality(Batch $batch, QualityStatus $status, ?string $note = null): Batch
     {
-        $batch->update(['quality_status' => $status, 'qc_note' => $note]);
+        return DB::transaction(function () use ($batch, $status, $note) {
+            $batch->update(['quality_status' => $status, 'qc_note' => $note]);
 
-        return $batch;
+            if ($status === QualityStatus::Rejected) {
+                // Lô bị loại: gỡ khỏi đơn chưa rời kho, gói đó thành "thiếu" (đơn đang giao giữ nguyên để truy xuất).
+                $itemIds = OrderItem::whereHas('order', fn ($query) => $query->whereIn('status', [OrderStatus::Confirmed, OrderStatus::Packing]))
+                    ->whereHas('batches', fn ($query) => $query->whereKey($batch->id))
+                    ->pluck('id');
+                $batch->orderItems()->detach($itemIds);
+            }
+
+            return $batch;
+        });
     }
 
     /**
@@ -161,7 +171,7 @@ class BatchService
                     }
 
                     $already = (int) ($item->batches->firstWhere('id', $batch->id)?->pivot->quantity ?? 0);
-                    $item->batches()->syncWithoutDetaching([$batch->id => ['quantity' => $already + $take]]);
+                    $item->batches()->syncWithoutDetaching([$batch->id => ['quantity' => $already + $take, 'packed_at' => null]]);
 
                     $packsLeft[$batch->id] -= $take;
                     $need -= $take;

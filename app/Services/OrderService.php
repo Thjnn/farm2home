@@ -90,6 +90,10 @@ class OrderService
             throw new DomainException("Kế hoạch thu hoạch ngày {$order->delivery_date->format('d/m')} chưa chốt. Chốt kế hoạch trước khi đóng gói hoặc giao đơn.");
         }
 
+        if ($to === OrderStatus::Delivering && $this->hasUnpackedBags($order)) {
+            throw new DomainException('Đơn còn túi chưa đóng. Đóng đủ túi trước khi giao.');
+        }
+
         if ($to === OrderStatus::Cancelled && blank($cancelReason)) {
             throw new DomainException('Cần nhập lý do hủy đơn.');
         }
@@ -158,7 +162,13 @@ class OrderService
                 continue;
             }
 
-            $this->transition($order, $to);
+            try {
+                $this->transition($order, $to);
+            } catch (DomainException) {
+                $blocked++;
+
+                continue;
+            }
             $moved++;
         }
 
@@ -189,14 +199,29 @@ class OrderService
             $order->payment_status = PaymentStatus::Paid;
         }
 
-        foreach ($order->items()->with('batches')->get() as $item) {
+        $items = $order->items()->with('batches')->get();
+        // Đơn có dùng gán lô: chỉ tính số gói thực có lô. Đơn không dùng lô nào: coi như giao đủ.
+        $usesBatches = $items->contains(fn ($item) => $item->batches->isNotEmpty());
+
+        foreach ($items as $item) {
             if ($item->fulfilled_quantity !== null) {
                 continue;
             }
 
-            $allocated = (int) $item->batches->sum('pivot.quantity');
-            $item->update(['fulfilled_quantity' => $allocated > 0 ? $allocated : $item->quantity]);
+            $item->update(['fulfilled_quantity' => $usesBatches ? (int) $item->batches->sum('pivot.quantity') : $item->quantity]);
         }
+    }
+
+    /**
+     * Túi đã gán lô nhưng chưa tick đóng. Query thẳng pivot để không phụ thuộc PackingService.
+     */
+    private function hasUnpackedBags(Order $order): bool
+    {
+        return DB::table('order_item_batches')
+            ->join('order_items', 'order_items.id', '=', 'order_item_batches.order_item_id')
+            ->where('order_items.order_id', $order->id)
+            ->whereNull('order_item_batches.packed_at')
+            ->exists();
     }
 
     /**

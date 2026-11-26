@@ -31,33 +31,54 @@ class OrderController extends Controller
         $filters = $request->validate([
             'delivery_date' => ['nullable', 'date_format:Y-m-d'],
             'status' => ['nullable', Rule::enum(OrderStatus::class)],
+            'q' => ['nullable', 'string', 'max:50'],
         ]);
         $date = $filters['delivery_date'] ?? today()->toDateString();
+        $search = trim($filters['q'] ?? '');
 
-        $orders = Order::with('customer', 'zone')
-            ->whereDate('delivery_date', $date)
-            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
-            ->orderBy('time_slot')
-            ->orderBy('id')
-            ->get();
+        if ($search !== '') {
+            // Tìm theo SĐT / mã đơn / tên khách: bỏ lọc ngày, lấy 50 đơn mới nhất.
+            $like = '%'.addcslashes($search, '%_\\').'%';
+            $digits = preg_replace('/\D/', '', $search);
 
-        $demand = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->whereDate('orders.delivery_date', $date)
-            ->where('orders.status', '!=', OrderStatus::Cancelled->value)
-            ->groupBy('products.id', 'products.name')
-            ->orderBy('products.id')
-            ->selectRaw('products.name as name, SUM(order_items.weight_kg) as kg')
-            ->get();
+            $orders = Order::with('customer', 'zone')
+                ->where(fn ($query) => $query
+                    ->whereLike('code', $like)
+                    ->orWhereHas('customer', fn ($customer) => $customer
+                        ->whereLike('name', $like)
+                        ->when($digits !== '', fn ($query) => $query->orWhereLike('phone', "%{$digits}%"))))
+                ->orderByDesc('delivery_date')
+                ->orderByDesc('id')
+                ->limit(50)
+                ->get();
+            $demand = collect();
+            $statusCounts = collect();
+        } else {
+            $orders = Order::with('customer', 'zone')
+                ->whereDate('delivery_date', $date)
+                ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+                ->orderBy('time_slot')
+                ->orderBy('id')
+                ->get();
 
-        // Số đơn theo trạng thái trong ngày, cho các chip lọc.
-        $statusCounts = Order::whereDate('delivery_date', $date)
-            ->selectRaw('status, COUNT(*) as total')
-            ->groupBy('status')
-            ->toBase()
-            ->pluck('total', 'status')
-            ->map(fn ($total) => (int) $total);
+            $demand = DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->join('products', 'products.id', '=', 'order_items.product_id')
+                ->whereDate('orders.delivery_date', $date)
+                ->where('orders.status', '!=', OrderStatus::Cancelled->value)
+                ->groupBy('products.id', 'products.name')
+                ->orderBy('products.id')
+                ->selectRaw('products.name as name, SUM(order_items.weight_kg) as kg')
+                ->get();
+
+            // Số đơn theo trạng thái trong ngày, cho các chip lọc.
+            $statusCounts = Order::whereDate('delivery_date', $date)
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->toBase()
+                ->pluck('total', 'status')
+                ->map(fn ($total) => (int) $total);
+        }
 
         return view('admin.orders.index', [
             'statusCounts' => $statusCounts,
@@ -65,6 +86,7 @@ class OrderController extends Controller
             'demand' => $demand,
             'date' => $date,
             'status' => $filters['status'] ?? null,
+            'search' => $search !== '' ? $search : null,
             'statuses' => OrderStatus::cases(),
             'bulkStatuses' => [OrderStatus::Confirmed, OrderStatus::Packing, OrderStatus::Delivering, OrderStatus::Delivered],
         ]);

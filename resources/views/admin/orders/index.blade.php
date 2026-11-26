@@ -30,30 +30,46 @@
         <noscript><button class="min-h-11 rounded-lg border border-stone-300 bg-white px-4">Xem</button></noscript>
     </form>
 
-    {{-- Lọc theo trạng thái, kèm số đơn trong ngày. --}}
-    <nav aria-label="Lọc theo trạng thái" class="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <a href="{{ route('admin.orders.index', ['delivery_date' => $date]) }}" @if (! $status) aria-current="page" @endif
-            class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-medium {{ $chip(! $status) }}">
-            Tất cả <span class="tabular-nums opacity-80">{{ $statusCounts->sum() }}</span>
-        </a>
-        @foreach ($statuses as $option)
-            @php($count = $statusCounts[$option->value] ?? 0)
-            <a href="{{ route('admin.orders.index', ['delivery_date' => $date, 'status' => $option->value]) }}" @if ($status === $option->value) aria-current="page" @endif
-                @class(['inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-medium', $chip($status === $option->value), 'opacity-60' => $count === 0 && $status !== $option->value])>
-                {{ $option->label() }} <span class="tabular-nums opacity-80">{{ $count }}</span>
-            </a>
-        @endforeach
-    </nav>
+    {{-- Tìm đơn theo SĐT / mã đơn / tên khách, mọi ngày giao. --}}
+    <form method="GET" action="{{ route('admin.orders.index') }}" role="search" class="mb-4 flex gap-2">
+        <label for="order-search" class="sr-only">Tìm đơn</label>
+        <input id="order-search" type="search" name="q" value="{{ $search }}" maxlength="50" placeholder="SĐT, mã đơn hoặc tên khách"
+            class="min-h-11 w-full max-w-md rounded-lg border border-stone-300 bg-white px-3">
+        <button class="min-h-11 shrink-0 rounded-lg border border-emerald-700 px-4 font-medium text-emerald-800 hover:bg-emerald-50">Tìm</button>
+    </form>
 
-    @if ($demand->isNotEmpty())
-        <section class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
-            <h2 class="mb-2 text-sm font-semibold text-stone-700">Nhu cầu trong ngày (đơn chưa hủy)</h2>
-            <ul class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
-                @foreach ($demand as $row)
-                    <li>{{ $row->name }}: <span class="font-semibold">@kg($row->kg)</span></li>
-                @endforeach
-            </ul>
-        </section>
+    @if ($search)
+        <p class="mb-4 text-sm text-stone-700">
+            Kết quả cho "<span class="font-semibold">{{ $search }}</span>" ({{ $orders->count() }} đơn, mới nhất trước) ·
+            <a href="{{ route('admin.orders.index', ['delivery_date' => $date]) }}" class="font-medium text-emerald-800 underline">Xoá tìm</a>
+        </p>
+    @else
+        {{-- Lọc theo trạng thái, kèm số đơn trong ngày. --}}
+        <nav aria-label="Lọc theo trạng thái" class="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <a href="{{ route('admin.orders.index', ['delivery_date' => $date]) }}" @if (! $status) aria-current="page" @endif
+                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-medium {{ $chip(! $status) }}">
+                Tất cả <span class="tabular-nums opacity-80">{{ $statusCounts->sum() }}</span>
+            </a>
+            @foreach ($statuses as $option)
+                @php($count = $statusCounts[$option->value] ?? 0)
+                <a href="{{ route('admin.orders.index', ['delivery_date' => $date, 'status' => $option->value]) }}" @if ($status === $option->value) aria-current="page" @endif
+                    @class(['inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-medium', $chip($status === $option->value), 'opacity-60' => $count === 0 && $status !== $option->value])>
+                    {{ $option->label() }} <span class="tabular-nums opacity-80">{{ $count }}</span>
+                </a>
+            @endforeach
+        </nav>
+
+        @if ($demand->isNotEmpty())
+            <section class="mb-4 rounded-xl border border-stone-200 bg-white p-4">
+                <h2 class="mb-2 text-sm font-semibold text-stone-700">Nhu cầu trong ngày (đơn chưa hủy)</h2>
+                <ul class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                    @foreach ($demand as $row)
+                        <li>{{ $row->name }}: <span class="font-semibold">@kg($row->kg)</span></li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
     @endif
 
     <div x-data="{ selected: 0, count() { this.selected = this.$root.querySelectorAll('[data-bulk-item]:checked').length } }" @change="count()">
@@ -64,6 +80,9 @@
                         <th class="w-10 px-3 py-2"><input type="checkbox" data-bulk-all class="size-5 accent-emerald-700" aria-label="Chọn tất cả đơn"
                             @change="$root.querySelectorAll('[data-bulk-item]').forEach((item) => item.checked = $event.target.checked)"></th>
                         <th class="px-3 py-2 font-medium">Mã đơn</th>
+                        @if ($search)
+                            <th class="px-3 py-2 font-medium">Ngày giao</th>
+                        @endif
                         <th class="px-3 py-2 font-medium">Khung giờ</th>
                         <th class="px-3 py-2 font-medium">Khách</th>
                         <th class="px-3 py-2 font-medium">Khu vực</th>
@@ -77,6 +96,9 @@
                         <tr class="hover:bg-stone-50 has-checked:bg-emerald-50/60">
                             <td class="px-3 py-2"><input type="checkbox" name="order_ids[]" value="{{ $order->id }}" form="bulk-orders" data-bulk-item class="size-5 accent-emerald-700" aria-label="Chọn đơn {{ $order->code }}"></td>
                             <td class="px-3 py-2"><a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-emerald-800 underline">{{ $order->code }}</a></td>
+                            @if ($search)
+                                <td class="px-3 py-2 tabular-nums">{{ $order->delivery_date->format('d/m/Y') }}</td>
+                            @endif
                             <td class="px-3 py-2">{{ $order->time_slot }}</td>
                             <td class="px-3 py-2">{{ $order->customer->name }}</td>
                             <td class="px-3 py-2">{{ $order->zone?->name ?? '—' }}</td>
@@ -85,7 +107,13 @@
                             <td class="px-3 py-2"><x-status-badge :status="$order->status" /></td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="px-3 py-10 text-center text-stone-500">Chưa có đơn nào{{ $status ? ' ở trạng thái này' : '' }} cho ngày {{ $day->format('d/m') }}.</td></tr>
+                        <tr><td colspan="9" class="px-3 py-10 text-center text-stone-500">
+                            @if ($search)
+                                Không tìm thấy đơn nào khớp "{{ $search }}".
+                            @else
+                                Chưa có đơn nào{{ $status ? ' ở trạng thái này' : '' }} cho ngày {{ $day->format('d/m') }}.
+                            @endif
+                        </td></tr>
                     @endforelse
                 </tbody>
             </table>

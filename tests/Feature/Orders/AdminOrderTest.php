@@ -70,6 +70,25 @@ class AdminOrderTest extends TestCase
         $this->get('/admin/orders?delivery_date=2026-10-03&status=delivered')->assertOk()->assertDontSee('DH261003-001');
     }
 
+    public function test_search_finds_orders_by_phone_code_or_name_across_dates(): void
+    {
+        $other = Order::factory()->create(['delivery_date' => '2026-09-20']);
+
+        foreach (['0988 000 001', '0988.000.001', '000001', $this->order->code, 'thị lan'] as $q) {
+            $this->actingAs($this->operator)->get('/admin/orders?q='.urlencode($q))
+                ->assertOk()->assertSee($this->order->code)->assertDontSee($other->code);
+        }
+    }
+
+    public function test_search_ignores_the_date_filter_and_escapes_like_wildcards(): void
+    {
+        $this->actingAs($this->operator)->get('/admin/orders?delivery_date=2026-09-01&q=0988000001')
+            ->assertOk()->assertSee($this->order->code);
+
+        $this->actingAs($this->operator)->get('/admin/orders?q=%25')
+            ->assertOk()->assertDontSee($this->order->code)->assertSee('Không tìm thấy đơn');
+    }
+
     public function test_show_lists_items_and_allowed_next_steps(): void
     {
         $this->actingAs($this->operator)->get('/admin/orders/'.$this->order->id)

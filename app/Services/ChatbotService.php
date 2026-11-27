@@ -151,7 +151,7 @@ class ChatbotService
 
     private function changeOrderReply(): string
     {
-        return 'Để hủy hoặc đổi đơn, bạn '.$this->operatorContact().', kèm mã đơn (VD DH261003-001) nhé. Đơn chưa xác nhận bạn cũng tự hủy được bằng link "xem hoặc hủy đơn" hiện sau khi đặt, trước 18:00 ngày trước ngày giao.';
+        return 'Để hủy hoặc đổi đơn, bạn '.$this->operatorContact().', kèm mã đơn (VD DH261003-001) nhé. Đơn chưa xác nhận bạn cũng tự hủy được bằng link "xem hoặc hủy đơn" hiện sau khi đặt, trước '.config('farm2home.order.cutoff_hour').':00 ngày trước ngày giao.';
     }
 
     private function operatorContact(): string

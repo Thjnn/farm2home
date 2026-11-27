@@ -11,6 +11,7 @@ use App\Services\OrderService;
 use App\Support\Reward;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\Support\BuildsCatalog;
 use Tests\TestCase;
 
@@ -241,6 +242,28 @@ class CustomerCancelTest extends TestCase
             ->assertOk()
             ->assertSee('Sao chép link cho khách')
             ->assertSee($this->order->customerUrl(), false);
+    }
+
+    public function test_cutoff_copy_follows_config(): void
+    {
+        config(['farm2home.order.cutoff_hour' => 17]);
+
+        $this->withSession(['last_order_code' => $this->order->code])
+            ->get('/dat-hang/cam-on')
+            ->assertSee('tự hủy trước 17:00 ngày trước ngày giao');
+
+        $reply = $this->postJson('/hoi-dap', ['message' => 'hủy đơn'])->json('reply');
+        $this->assertStringContainsString('trước 17:00 ngày trước ngày giao', $reply);
+    }
+
+    public function test_expired_session_page_is_vietnamese(): void
+    {
+        Route::get('/_test-419', fn () => abort(419));
+
+        $this->get('/_test-419')
+            ->assertStatus(419)
+            ->assertSee('Trang đã hết hạn')
+            ->assertSee('Tải lại trang');
     }
 
     public function test_chatbot_points_to_the_self_cancel_link(): void

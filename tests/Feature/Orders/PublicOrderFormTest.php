@@ -91,6 +91,22 @@ class PublicOrderFormTest extends TestCase
         $this->assertSame(2, Order::count());
     }
 
+    public function test_rau_param_preselects_an_active_product(): void
+    {
+        $this->get('/dat-hang?rau='.$this->rm->id)
+            ->assertOk()
+            ->assertViewHas('preselectedProduct', fn (array $product) => $product['id'] === $this->rm->id && $product['name'] === 'Rau muống' && $product['unit'] === '0,5 kg')
+            ->assertSee('preselectedProduct', false);
+    }
+
+    public function test_rau_param_ignores_unknown_or_inactive_products(): void
+    {
+        $this->rm->update(['is_active' => false]);
+
+        $this->get('/dat-hang?rau='.$this->rm->id)->assertOk()->assertViewHas('preselectedProduct', null);
+        $this->get('/dat-hang?rau=999999')->assertOk()->assertViewHas('preselectedProduct', null);
+    }
+
     public function test_order_form_carries_a_fresh_submission_token(): void
     {
         $this->get('/dat-hang')->assertOk()->assertSee('name="submission_token"', false);

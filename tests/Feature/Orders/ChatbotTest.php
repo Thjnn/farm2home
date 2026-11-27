@@ -3,6 +3,7 @@
 namespace Tests\Feature\Orders;
 
 use App\Models\Forecast;
+use App\Services\ChatbotService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -221,5 +222,77 @@ class ChatbotTest extends TestCase
         Http::fake(['generativelanguage.googleapis.com/*' => Http::response(['error' => ['code' => 429]], 429)]);
 
         $this->assertStringContainsString('Cụm 1 – Trung tâm: 10.000đ', $this->ask('phí ship bao nhiêu'));
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function cards(string $message): array
+    {
+        return $this->postJson('/hoi-dap', ['message' => $message])->assertOk()->json('products');
+    }
+
+    public function test_named_product_in_question_gets_a_card(): void
+    {
+        $cards = $this->cards('rau muống giá sao');
+
+        $this->assertCount(1, $cards);
+        $this->assertSame(['Rau muống', 12000, '0,5 kg'], [$cards[0]['name'], $cards[0]['price'], $cards[0]['unit']]);
+        $this->assertStringEndsWith('/dat-hang?rau='.$this->rm->id, $cards[0]['orderUrl']);
+    }
+
+    public function test_reply_with_up_to_three_products_gets_cards(): void
+    {
+        $this->assertSame(['Rau muống', 'Cải ngọt', 'Hành lá'], array_column($this->cards('bảng giá'), 'name'));
+    }
+
+    public function test_reply_with_more_than_three_products_gets_no_cards(): void
+    {
+        $this->makeProduct('XL', 'Xà lách', 0.3, 10000, 12000, 2);
+
+        $this->assertSame([], $this->cards('bảng giá'));
+    }
+
+    public function test_question_named_products_win_over_reply_list(): void
+    {
+        $this->makeProduct('XL', 'Xà lách', 0.3, 10000, 12000, 2);
+
+        $this->assertEqualsCanonicalizing(['Rau muống', 'Cải ngọt'], array_column($this->cards('rau muống với cải ngọt giá bao nhiêu'), 'name'));
+    }
+
+    public function test_non_product_question_has_no_cards(): void
+    {
+        $this->assertSame([], $this->cards('phí ship bao nhiêu'));
+    }
+
+    public function test_partial_name_does_not_match(): void
+    {
+        $this->assertSame([], $this->cards('phí ship cải'));
+    }
+
+    public function test_words_inside_other_words_do_not_match(): void
+    {
+        // "nhanh lắm" bỏ dấu thành "nhanh lam", chứa "hanh la" (Hành lá) nếu không so theo từ.
+        $this->assertSame([], app(ChatbotService::class)->productCards('giao nhanh lắm không', 'Giao nhanh lắm bạn ơi.'));
+        $this->assertSame(['Hành lá'], array_column($this->cards('hành lá bao nhiêu'), 'name'));
+    }
+
+    public function test_greeting_examples_do_not_show_cards(): void
+    {
+        $this->assertSame([], $this->cards('chào'));
+        $this->assertSame([], $this->cards('xyz'));
+    }
+
+    public function test_gemini_reply_gets_cards(): void
+    {
+        config(['services.gemini.key' => 'test-key']);
+        Http::fake(['generativelanguage.googleapis.com/*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Hành lá đang 8.000đ một gói.']]]]]])]);
+
+        $this->assertSame(['Hành lá'], array_column($this->cards('có gì ngon'), 'name'));
+    }
+
+    public function test_widget_renders_product_cards(): void
+    {
+        $this->get('/dat-hang')->assertOk()->assertSee('Đặt rau này');
     }
 }

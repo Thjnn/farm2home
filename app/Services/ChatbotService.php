@@ -56,6 +56,49 @@ class ChatbotService
     }
 
     /**
+     * Thẻ rau kèm link đặt hàng dưới câu trả lời: rau khách gọi tên trong câu hỏi;
+     * không gọi tên thì rau câu trả lời nhắc tới, chỉ khi có từ 1 tới 3 rau (bảng giá dài thì thôi).
+     *
+     * @return list<array{id: int, name: string, price: int, unit: string, imageUrl: ?string, orderUrl: string}>
+     */
+    public function productCards(string $question, string $reply): array
+    {
+        $products = $this->products();
+        $named = $this->productsNamedIn($question, $products);
+
+        if ($named->isEmpty()) {
+            $named = $this->productsNamedIn($reply, $products);
+            if ($named->count() > 3) {
+                return [];
+            }
+        }
+
+        return $named->map(fn (Product $product) => [
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => $product->price,
+            'unit' => Format::kg($product->pack_weight_kg),
+            'imageUrl' => $product->imageUrl(),
+            'orderUrl' => route('orders.create', ['rau' => $product->id]),
+        ])->values()->all();
+    }
+
+    /**
+     * @param  Collection<int, Product>  $products
+     * @return Collection<int, Product>
+     */
+    private function productsNamedIn(string $text, Collection $products): Collection
+    {
+        $plain = Str::ascii(mb_strtolower($text));
+
+        // So nguyên từ: "nhanh lắm" bỏ dấu thành "nhanh lam" chứa "hanh la" (Hành lá).
+        return $products->filter(fn (Product $product) => preg_match(
+            '/(?<![a-z0-9])'.preg_quote(Str::ascii(mb_strtolower($product->name)), '/').'(?![a-z0-9])/',
+            $plain,
+        ) === 1);
+    }
+
+    /**
      * Trả lời theo kịch bản, dùng khi không gọi được Gemini.
      */
     public function reply(string $message): string
@@ -288,7 +331,7 @@ class ChatbotService
 
     private function topics(): string
     {
-        return "• Giá rau (VD: \"rau muống giá bao nhiêu\")\n• Giỏ rau có gì\n• Phí ship, khu vực giao\n• Mấy giờ giao, đặt trước bao lâu\n• Thanh toán, tra cứu đơn, điểm thưởng\n• Dự kiến nhu cầu (VD: \"dự báo rau muống tuần này\")";
+        return "• Giá rau (gõ tên rau kèm \"giá bao nhiêu\")\n• Giỏ rau có gì\n• Phí ship, khu vực giao\n• Mấy giờ giao, đặt trước bao lâu\n• Thanh toán, tra cứu đơn, điểm thưởng\n• Dự kiến nhu cầu (gõ \"dự báo\" kèm tên rau)";
     }
 
     /**

@@ -11,6 +11,9 @@ class ChatbotController extends Controller
 {
     public function __invoke(ChatbotMessageRequest $request, ChatbotService $chatbot): JsonResponse
     {
-        return response()->json(['reply' => $chatbot->answer($request->validated('message'))]);
+        $message = $request->validated('message');
+        $reply = $chatbot->answer($message);
+
+        return response()->json(['reply' => $reply, 'products' => $chatbot->productCards($message, $reply)]);
     }
 }

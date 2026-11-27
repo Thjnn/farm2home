@@ -15,6 +15,7 @@
             zones: @js($zoneMap),
             zoneId: @js(old('delivery_zone_id', $zones->first()?->id)),
             preselectedBasket: @js($preselectedBasket),
+            preselectedProduct: @js($preselectedProduct),
             startAtDelivery: @js($startAtDelivery),
         })">
         <div x-ref="top" class="mb-5 scroll-mt-4">

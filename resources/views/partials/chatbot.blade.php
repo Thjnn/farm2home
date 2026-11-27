@@ -27,7 +27,9 @@
                     body: JSON.stringify({ message: text }),
                 });
                 const data = await response.json();
-                this.messages.push({ from: 'bot', text: response.ok ? data.reply : 'Bạn hỏi ngắn gọn hơn giúp mình nhé (tối đa 300 ký tự).' });
+                this.messages.push(response.ok
+                    ? { from: 'bot', text: data.reply, products: data.products ?? [] }
+                    : { from: 'bot', text: 'Bạn hỏi ngắn gọn hơn giúp mình nhé (tối đa 300 ký tự).' });
             } catch (error) {
                 this.messages.push({ from: 'bot', text: 'Mất kết nối, bạn thử lại sau nhé.' });
             } finally {
@@ -60,9 +62,29 @@
         </header>
         <div x-ref="log" class="flex-1 space-y-2 overflow-y-auto bg-stone-50 p-3 text-sm" aria-live="polite">
             <template x-for="(message, index) in messages" :key="index">
-                <p x-html="chatbotLinkify(message.text)"
-                   :class="message.from === 'me' ? 'ml-auto bg-emerald-700 text-white rounded-br-sm' : 'bg-white ring-1 ring-stone-200 rounded-bl-sm'"
-                   class="w-fit max-w-[85%] whitespace-pre-line rounded-2xl px-3 py-2"></p>
+                <div class="space-y-2">
+                    <p x-html="chatbotLinkify(message.text)"
+                       :class="message.from === 'me' ? 'ml-auto bg-emerald-700 text-white rounded-br-sm' : 'bg-white ring-1 ring-stone-200 rounded-bl-sm'"
+                       class="w-fit max-w-[85%] whitespace-pre-line rounded-2xl px-3 py-2"></p>
+                    {{-- Thẻ rau dựng từ dữ liệu server (ChatbotService::productCards), không chèn HTML. --}}
+                    <div x-show="message.products?.length" class="flex gap-2 overflow-x-auto pb-1">
+                        <template x-for="product in message.products ?? []" :key="product.id">
+                            <div class="flex w-36 shrink-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-stone-200">
+                                <template x-if="product.imageUrl">
+                                    <img :src="product.imageUrl" alt="" loading="lazy" class="h-20 w-full bg-stone-100 object-cover">
+                                </template>
+                                <template x-if="!product.imageUrl">
+                                    <span aria-hidden="true" class="block h-20 w-full bg-emerald-50"></span>
+                                </template>
+                                <div class="flex flex-1 flex-col p-2">
+                                    <span class="font-medium" x-text="product.name"></span>
+                                    <span class="text-xs text-stone-600" x-text="product.price.toLocaleString('vi-VN') + 'đ / ' + product.unit"></span>
+                                    <a :href="product.orderUrl" class="mt-2 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-2 text-sm font-semibold text-white hover:bg-emerald-800">Đặt rau này</a>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </template>
             <p x-show="sending" class="text-xs text-stone-500">Đang trả lời…</p>
         </div>

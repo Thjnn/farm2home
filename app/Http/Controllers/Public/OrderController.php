@@ -11,8 +11,10 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Models\Basket;
 use App\Models\DeliveryZone;
 use App\Models\Order;
+use App\Models\Product;
 use App\Services\CatalogService;
 use App\Services\OrderService;
+use App\Support\Format;
 use App\Support\OrderWindow;
 use App\Support\Reward;
 use Carbon\CarbonImmutable;
@@ -35,6 +37,8 @@ class OrderController extends Controller
         $now = CarbonImmutable::now();
         // Link "Đặt giỏ này" ở trang chủ: /dat-hang?goi=<id> chọn sẵn giỏ đó.
         $preselected = Basket::with('items.product')->where('is_active', true)->find($request->integer('goi'));
+        // Thẻ rau trong chatbot: /dat-hang?rau=<id> thêm sẵn 1 gói rau đó vào giỏ chọn lẻ.
+        $product = Product::where('is_active', true)->find($request->integer('rau'));
 
         return view('public.orders.create', [
             'baskets' => $catalog->baskets(1, self::LIST_PER_PAGE),
@@ -45,6 +49,13 @@ class OrderController extends Controller
                 'name' => $preselected->name,
                 'price' => $preselected->price,
                 'summary' => $preselected->items->map(fn ($item) => $item->quantity.' × '.$item->product->name)->join(', '),
+            ],
+            'preselectedProduct' => $product === null ? null : [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'unit' => Format::kg($product->pack_weight_kg),
+                'imageUrl' => $product->imageUrl(),
             ],
             'zones' => DeliveryZone::where('is_active', true)->orderBy('id')->get(),
             'dates' => collect(CarbonPeriod::create(

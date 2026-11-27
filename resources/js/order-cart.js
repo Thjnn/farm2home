@@ -5,7 +5,7 @@
 const STORAGE_KEY = 'f2h-cart';
 const MAX_QUANTITY = 20;
 
-export default ({ zones, zoneId, preselectedBasket, startAtDelivery }) => ({
+export default ({ zones, zoneId, preselectedBasket, preselectedProduct, startAtDelivery }) => ({
     step: startAtDelivery ? 2 : 1,
     type: 'basket',
     basket: null,
@@ -28,6 +28,24 @@ export default ({ zones, zoneId, preselectedBasket, startAtDelivery }) => ({
         if (preselectedBasket) {
             this.type = 'basket';
             this.basket = preselectedBasket;
+        }
+
+        // Thẻ rau trong chatbot (?rau=<id>): thêm 1 gói nếu chưa có; đã có thì giữ số lượng để tải lại trang không cộng dồn.
+        if (preselectedProduct) {
+            this.type = 'single';
+            if (!this.lines[preselectedProduct.id]) {
+                this.lines[preselectedProduct.id] = { ...preselectedProduct, quantity: 1 };
+            }
+        }
+
+        // Lưu ngay phần chọn sẵn từ link (watch bên dưới chưa gắn nên không tự lưu).
+        // Gỡ ?goi= / ?rau= khỏi URL để tải lại trang không thêm lại món khách vừa bỏ ra.
+        if (preselectedBasket || preselectedProduct) {
+            this.save();
+            const url = new URL(window.location.href);
+            url.searchParams.delete('goi');
+            url.searchParams.delete('rau');
+            window.history.replaceState(window.history.state, '', url);
         }
 
         this.$watch('type', () => this.save());

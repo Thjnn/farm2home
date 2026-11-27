@@ -41,6 +41,11 @@ class OrderLookupTest extends TestCase
             ->assertDontSee('Nguyễn Thị Lan');
     }
 
+    public function test_lookup_does_not_leak_the_cancel_link(): void
+    {
+        $this->post('/tra-cuu', ['phone' => '0988000001'])->assertOk()->assertDontSee('/don/');
+    }
+
     public function test_unknown_phone_gets_a_neutral_message(): void
     {
         $this->post('/tra-cuu', ['phone' => '0977000000'])

@@ -37,6 +37,19 @@
         @endif
     </div>
 
+    <section class="mt-4 rounded-xl border border-stone-200 bg-white p-4 text-sm" x-data="{ copied: false }">
+        <h2 class="font-semibold">Lưu link này để xem hoặc hủy đơn</h2>
+        <p class="mt-1 text-stone-600">Link chỉ dành cho bạn. Đơn chưa xác nhận có thể tự hủy trước 18:00 ngày trước ngày giao.</p>
+        <p x-ref="link" class="mt-2 break-all rounded-lg bg-stone-50 p-2 font-mono text-xs">{{ $order->customerUrl() }}</p>
+        <div class="mt-2 flex flex-wrap gap-2">
+            <button type="button" class="min-h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100"
+                @click="copyText($refs.link.textContent).then(() => { copied = true; setTimeout(() => copied = false, 1500) })">
+                <span x-show="!copied">Sao chép link</span><span x-show="copied" x-cloak>Đã sao chép</span>
+            </button>
+            <a href="{{ $order->customerUrl() }}" class="inline-flex min-h-11 items-center rounded-lg border border-stone-300 px-3 hover:bg-stone-100">Mở trang đơn</a>
+        </div>
+    </section>
+
     <div class="mt-5 flex flex-wrap gap-3">
         @if (Route::has('lookup.show'))
             <a href="{{ route('lookup.show') }}" class="inline-flex min-h-11 items-center rounded-lg border border-stone-300 bg-white px-4 font-medium hover:bg-stone-100">Tra cứu đơn</a>

@@ -80,6 +80,13 @@ class DemoOrdersTest extends TestCase
         }
     }
 
+    public function test_every_order_has_a_customer_link_key(): void
+    {
+        $this->artisan('demo:orders', self::OPTIONS)->assertSuccessful();
+
+        $this->assertSame(0, DB::table('orders')->whereNull('access_key')->count());
+    }
+
     public function test_ahead_option_adds_fewer_advance_orders_up_to_that_day(): void
     {
         $this->artisan('demo:orders', ['--ahead' => 16] + self::OPTIONS)->expectsOutputToContain('22/10/2026')->assertSuccessful();

@@ -15,6 +15,7 @@ use App\Models\DeliveryZone;
 use App\Models\HarvestPlan;
 use App\Models\Order;
 use App\Models\Product;
+use App\Support\OrderWindow;
 use App\Support\ShippingCalculator;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -102,6 +103,12 @@ class OrderService
         }
 
         return DB::transaction(function () use ($order, $to, $cancelReason) {
+            // Khóa dòng và so trạng thái thật: tránh ghi đè lúc khách vừa tự hủy (hoặc người khác vừa bấm) cùng lúc.
+            $current = Order::whereKey($order->id)->lockForUpdate()->value('status');
+            if ($current !== $order->status) {
+                throw new DomainException("Đơn {$order->code} vừa được cập nhật ở nơi khác. Tải lại trang rồi thử lại.");
+            }
+
             $order->status = $to;
 
             if ($to === OrderStatus::Confirmed) {
@@ -135,6 +142,63 @@ class OrderService
             }
 
             return $order;
+        });
+    }
+
+    /**
+     * Lý do khách không tự hủy được đơn qua link bí mật; null = hủy được.
+     * Chỉ đơn chờ xác nhận, chưa thanh toán, trước giờ chốt ngày trước ngày giao (dự báo 18:15 còn tính đơn chờ).
+     */
+    public function customerCancelBlockReason(Order $order): ?string
+    {
+        if ($order->status === OrderStatus::Cancelled) {
+            return 'Đơn này đã được hủy.';
+        }
+
+        if ($order->status !== OrderStatus::Pending) {
+            return 'Đơn đã được xác nhận hoặc đã xử lý nên không tự hủy được nữa.';
+        }
+
+        if ($order->payment_status === PaymentStatus::Paid) {
+            return 'Đơn đã thanh toán. Vui lòng nhắn Zalo để được hỗ trợ hủy và hoàn tiền.';
+        }
+
+        $deadline = $this->customerCancelDeadline($order);
+        if (now()->greaterThanOrEqualTo($deadline)) {
+            return "Đã quá giờ hủy (trước {$deadline->format('G')}:00 ngày {$deadline->format('d/m')}). Vui lòng nhắn Zalo nếu cần hỗ trợ.";
+        }
+
+        return null;
+    }
+
+    public function customerCancelDeadline(Order $order): CarbonImmutable
+    {
+        return OrderWindow::customerCancelDeadline(
+            CarbonImmutable::parse($order->delivery_date->toDateString()),
+            (int) config('farm2home.order.cutoff_hour'),
+        );
+    }
+
+    /**
+     * Khách tự hủy qua link bí mật. Đọc lại đơn có khóa dòng để không đè lên lúc người vận hành vừa xác nhận.
+     *
+     * @throws DomainException when the order can no longer be cancelled by the customer
+     */
+    public function cancelByCustomer(Order $order, string $reason): Order
+    {
+        return DB::transaction(function () use ($order, $reason) {
+            $fresh = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if (($blocked = $this->customerCancelBlockReason($fresh)) !== null) {
+                throw new DomainException($blocked);
+            }
+
+            // Khách có thể đã quét QR chuyển khoản trước khi người vận hành bấm "Đã nhận tiền": ghi rõ để kiểm tra hoàn tiền.
+            $prefix = $fresh->payment_method === PaymentMethod::BankTransfer
+                ? 'Khách tự hủy (chuyển khoản, kiểm tra hoàn tiền nếu đã nhận): '
+                : 'Khách tự hủy: ';
+
+            return $this->transition($fresh, OrderStatus::Cancelled, $prefix.$reason);
         });
     }
 

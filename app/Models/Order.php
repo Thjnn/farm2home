@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'code', 'customer_id', 'subscription_id', 'delivery_zone_id', 'order_type', 'channel',
@@ -29,6 +30,21 @@ class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Order $order) {
+            $order->access_key ??= Str::random(24);
+        });
+    }
+
+    /**
+     * Link bí mật để khách xem và tự hủy đơn (không có trong trang tra cứu theo số điện thoại).
+     */
+    public function customerUrl(): string
+    {
+        return route('orders.public', [$this->code, $this->access_key]);
+    }
 
     /**
      * @return array<string, string>

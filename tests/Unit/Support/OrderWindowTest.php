@@ -28,4 +28,18 @@ class OrderWindowTest extends TestCase
 
         $this->assertSame('2026-10-09', OrderWindow::latest($now, 7)->toDateString());
     }
+
+    public function test_cancel_deadline_is_cutoff_hour_the_day_before(): void
+    {
+        $delivery = CarbonImmutable::parse('2026-12-02', 'Asia/Ho_Chi_Minh');
+
+        $this->assertSame('2026-12-01 18:00:00', OrderWindow::customerCancelDeadline($delivery, 18)->toDateTimeString());
+    }
+
+    public function test_cancel_deadline_ignores_time_on_delivery_date(): void
+    {
+        $delivery = CarbonImmutable::parse('2026-12-02 15:30:00', 'Asia/Ho_Chi_Minh');
+
+        $this->assertSame('2026-12-01 18:00:00', OrderWindow::customerCancelDeadline($delivery, 18)->toDateTimeString());
+    }
 }

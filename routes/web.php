@@ -26,6 +26,7 @@ use App\Http\Controllers\Farmer\FarmerPortalController;
 use App\Http\Controllers\Public\BatchPageController;
 use App\Http\Controllers\Public\CatalogController;
 use App\Http\Controllers\Public\ChatbotController;
+use App\Http\Controllers\Public\CustomerOrderController;
 use App\Http\Controllers\Public\FeedbackController as PublicFeedbackController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\OrderController as PublicOrderController;
@@ -53,6 +54,9 @@ Route::post('/lo/{batch:code}/{key}/phan-hoi', [PublicFeedbackController::class,
 Route::get('/tra-cuu', [OrderLookupController::class, 'show'])->name('lookup.show');
 Route::post('/tra-cuu', [OrderLookupController::class, 'search'])->middleware('throttle:10,1')->name('lookup.search');
 Route::post('/diem-thuong', [OrderLookupController::class, 'points'])->middleware('throttle:20,1')->name('lookup.points');
+
+Route::get('/don/{order:code}/{key}', [CustomerOrderController::class, 'show'])->name('orders.public');
+Route::post('/don/{order:code}/{key}/huy', [CustomerOrderController::class, 'cancel'])->middleware('throttle:10,1')->name('orders.public.cancel');
 
 Route::prefix('htx/{farmer:access_token}')->name('farmer.')->middleware('throttle:30,1')->group(function () {
     Route::get('/', [FarmerPortalController::class, 'show'])->name('show');

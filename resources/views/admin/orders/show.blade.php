@@ -82,6 +82,16 @@
                 @endif
             </section>
 
+            <section class="rounded-xl border border-stone-200 bg-white p-4 text-sm" x-data="{ copied: false }">
+                <h2 class="mb-1 font-semibold">Link xem / hủy đơn của khách</h2>
+                <p class="text-stone-600">Gửi qua Zalo khi khách đặt bằng Zalo, điện thoại hoặc mất link.</p>
+                <p x-ref="link" class="mt-2 break-all rounded-lg bg-stone-50 p-2 font-mono text-xs">{{ $order->customerUrl() }}</p>
+                <button type="button" class="mt-2 min-h-11 rounded-lg border border-stone-300 px-3 hover:bg-stone-100"
+                    @click="copyText($refs.link.textContent).then(() => { copied = true; setTimeout(() => copied = false, 1500) })">
+                    <span x-show="!copied">Sao chép link cho khách</span><span x-show="copied" x-cloak>Đã chép</span>
+                </button>
+            </section>
+
             @if ($order->feedbackBatches()->isNotEmpty())
                 <section class="rounded-xl border border-stone-200 bg-white p-4 text-sm" x-data="{ copied: false }">
                     <h2 class="mb-2 font-semibold">Nhờ khách đánh giá</h2>

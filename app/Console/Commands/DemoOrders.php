@@ -12,6 +12,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 #[Signature('demo:orders
     {--count=2000 : Tổng số đơn mô phỏng}
@@ -198,6 +199,7 @@ class DemoOrders extends Command
 
                 $orderId = DB::table('orders')->insertGetId([
                     'code' => 'DH'.$day->format('ymd').'-'.str_pad((string) ++$sequence, 3, '0', STR_PAD_LEFT),
+                    'access_key' => Str::random(24),
                     'customer_id' => $customer['id'],
                     'delivery_zone_id' => $zone->id,
                     'order_type' => $basket === null ? 'single' : 'basket',

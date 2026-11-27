@@ -54,4 +54,13 @@ class User extends Authenticatable
     {
         $query->where('role', UserRole::Shipper)->orderBy('id');
     }
+
+    /**
+     * Số của tài khoản người vận hành đầu tiên có điền số (admin nhập ở màn Tài khoản); không có thì lấy số admin.
+     */
+    public static function operatorPhone(): ?string
+    {
+        return static::where('role', UserRole::Operator)->whereNotNull('phone')->orderBy('id')->value('phone')
+            ?? static::where('role', UserRole::Admin)->whereNotNull('phone')->orderBy('id')->value('phone');
+    }
 }

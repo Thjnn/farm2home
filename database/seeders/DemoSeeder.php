@@ -24,9 +24,12 @@ class DemoSeeder extends Seeder
             DB::unprepared($statement);
         }
 
-        // File SQL mẫu ghi dữ liệu thô: thêm khoá QR cho lô và mã hoá địa chỉ như dữ liệu thật.
+        // File SQL mẫu ghi dữ liệu thô: thêm khoá QR cho lô, khoá link khách cho đơn và mã hoá địa chỉ như dữ liệu thật.
         DB::table('batches')->whereNull('qr_key')->pluck('id')->each(
             fn (int $id) => DB::table('batches')->where('id', $id)->update(['qr_key' => Str::random(10)])
+        );
+        DB::table('orders')->whereNull('access_key')->pluck('id')->each(
+            fn (int $id) => DB::table('orders')->where('id', $id)->update(['access_key' => Str::random(24)])
         );
         AddressEncryption::encryptPlaintextRows();
         self::convertSampleFarmersToCooperative();

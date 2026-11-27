@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enums\PaymentMethod;
-use App\Enums\UserRole;
 use App\Models\Basket;
 use App\Models\DeliveryZone;
 use App\Models\Product;
@@ -152,16 +151,12 @@ class ChatbotService
 
     private function changeOrderReply(): string
     {
-        return 'Để hủy hoặc đổi đơn, bạn '.$this->operatorContact().', kèm mã đơn (VD DH261003-001) nhé.';
+        return 'Để hủy hoặc đổi đơn, bạn '.$this->operatorContact().', kèm mã đơn (VD DH261003-001) nhé. Đơn chưa xác nhận bạn cũng tự hủy được bằng link "xem hoặc hủy đơn" hiện sau khi đặt, trước 18:00 ngày trước ngày giao.';
     }
 
-    /**
-     * Số của tài khoản người vận hành đầu tiên có điền số (admin nhập ở màn Tài khoản); không có thì lấy số admin.
-     */
     private function operatorContact(): string
     {
-        $phone = User::where('role', UserRole::Operator)->whereNotNull('phone')->orderBy('id')->value('phone')
-            ?? User::where('role', UserRole::Admin)->whereNotNull('phone')->orderBy('id')->value('phone');
+        $phone = User::operatorPhone();
 
         return $phone === null
             ? 'gọi lại số FARM2HOME đã liên hệ xác nhận đơn'
